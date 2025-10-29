@@ -1,14 +1,11 @@
+import ImportOptions from '../../domain/ImportOptions.js';
+
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 export default class ImportDialog extends HandlebarsApplicationMixin(ApplicationV2) {
     constructor(options = {}) {
         super(options);
-        this.vaultPath = '';
-        this.vaultFiles = null;
-        this.combineNotes = false;
-        this.skipFolderCombine = false;
-        this.importAssets = false;
-        this.dataPath = '';
+        this.importOptions = new ImportOptions();
     }
 
     static DEFAULT_OPTIONS = {
@@ -45,11 +42,11 @@ export default class ImportDialog extends HandlebarsApplicationMixin(Application
 
     async _prepareContext(options) {
         return {
-            vaultPath: this.vaultPath,
-            combineNotes: this.combineNotes,
-            skipFolderCombine: this.skipFolderCombine,
-            importAssets: this.importAssets,
-            dataPath: this.dataPath
+            vaultPath: this.importOptions.vaultPath,
+            combineNotes: this.importOptions.combineNotes,
+            skipFolderCombine: this.importOptions.skipFolderCombine,
+            importAssets: this.importOptions.importAssets,
+            dataPath: this.importOptions.dataPath
         };
     }
 
@@ -67,14 +64,14 @@ export default class ImportDialog extends HandlebarsApplicationMixin(Application
                 return;
             }
 
-            this.vaultFiles = files;
+            this.importOptions.vaultFiles = files;
             const firstFile = files[0];
             const pathParts = firstFile.webkitRelativePath.split('/');
-            this.vaultPath = pathParts[0];
+            this.importOptions.vaultPath = pathParts[0];
 
             const pathInput = this.element.querySelector('.vault-path');
             if (pathInput) {
-                pathInput.value = this.vaultPath;
+                pathInput.value = this.importOptions.vaultPath;
             }
         });
     }
@@ -98,12 +95,12 @@ export default class ImportDialog extends HandlebarsApplicationMixin(Application
     static async _onSubmit(event, form, formData) {
         const data = formData.object;
 
-        this.combineNotes = data.combineNotes || false;
-        this.skipFolderCombine = data.skipFolderCombine || false;
-        this.importAssets = data.importAssets || false;
-        this.dataPath = data.dataPath || '';
+        this.importOptions.combineNotes = data.combineNotes || false;
+        this.importOptions.skipFolderCombine = data.skipFolderCombine || false;
+        this.importOptions.importAssets = data.importAssets || false;
+        this.importOptions.dataPath = data.dataPath || '';
 
-        if (!this.vaultFiles || this.vaultFiles.length === 0) {
+        if (!this.importOptions.isValid()) {
             ui.notifications.warn(game.i18n.localize('obsidian-bridge.import.vault-path-hint'));
             return;
         }
