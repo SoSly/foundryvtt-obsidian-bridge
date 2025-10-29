@@ -1,0 +1,16 @@
+.obsidian-bridge {
+    &.import-dialog {
+        .select-folder-button {
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        input[name="dataPath"] {
+            flex-grow: 1;
+        }
+    }
+}

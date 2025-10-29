@@ -1,0 +1,54 @@
+<div class="import-dialog-content">
+    <div class="form-group">
+        <label for="obsidian-vault-path">{{localize "obsidian-bridge.import.vault-path-label"}}</label>
+        <div class="form-fields">
+            <input type="text" id="obsidian-vault-path" class="vault-path" name="vaultPath" value="{{vaultPath}}"
+                   readonly placeholder="No vault selected" />
+            <button type="button" data-action="selectVault" class="select-folder-button">
+                <i class="fas fa-folder-open"></i> {{localize "obsidian-bridge.import.select-vault-button"}}
+            </button>
+        </div>
+        <input type="file" class="vault-input" webkitdirectory directory multiple />
+        <p class="hint">{{localize "obsidian-bridge.import.vault-path-hint"}}</p>
+    </div>
+
+    <div class="form-group">
+        <label>
+            <input type="checkbox" name="combineNotes" {{checked combineNotes}} />
+            {{localize "obsidian-bridge.import.combine-notes-label"}}
+        </label>
+        <p class="hint">{{localize "obsidian-bridge.import.combine-notes-hint"}}</p>
+    </div>
+
+    <div class="form-group">
+        <label>
+            <input type="checkbox" name="skipFolderCombine" {{checked skipFolderCombine}} />
+            {{localize "obsidian-bridge.import.skip-folder-combine-label"}}
+        </label>
+        <p class="hint">{{localize "obsidian-bridge.import.skip-folder-combine-hint"}}</p>
+    </div>
+
+    <div class="form-group">
+        <label>
+            <input type="checkbox" name="importAssets" {{checked importAssets}} />
+            {{localize "obsidian-bridge.import.import-assets-label"}}
+        </label>
+        <p class="hint">{{localize "obsidian-bridge.import.import-assets-hint"}}</p>
+    </div>
+
+    <div class="form-group">
+        <label for="obsidian-data-path">{{localize "obsidian-bridge.import.data-path-label"}}</label>
+        <input type="text" id="obsidian-data-path" name="dataPath" value="{{dataPath}}"
+               placeholder="worlds/my-world/obsidian-assets" />
+        <p class="hint">{{localize "obsidian-bridge.import.data-path-hint"}}</p>
+    </div>
+
+    <footer class="form-footer flexrow">
+        <button type="submit" class="primary">
+            <i class="fas fa-file-import"></i> {{localize "obsidian-bridge.import.import-button"}}
+        </button>
+        <button type="button" data-action="close">
+            <i class="fas fa-times"></i> {{localize "obsidian-bridge.import.cancel-button"}}
+        </button>
+    </footer>
+</div>

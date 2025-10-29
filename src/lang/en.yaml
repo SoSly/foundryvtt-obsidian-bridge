@@ -1,2 +1,25 @@
 obsidian-bridge:
   name: Obsidian Bridge
+
+  import:
+    button: Import Obsidian Vault
+    dialog-title: Import Obsidian Vault
+
+    vault-path-label: Vault Path
+    vault-path-hint: Select the root directory of your Obsidian vault
+    select-vault-button: Select Vault
+
+    combine-notes-label: Combine multiple notes into pages
+    combine-notes-hint: When enabled, multiple markdown files will be combined into multi-page journal entries
+
+    skip-folder-combine-label: Don't combine folders with subfolders
+    skip-folder-combine-hint: Folders containing subfolders will not be combined into single journal entries
+
+    import-assets-label: Import non-markdown files
+    import-assets-hint: Import images and other asset files alongside markdown content
+
+    data-path-label: Data path for non-markdown files
+    data-path-hint: Directory where imported assets will be stored
+
+    import-button: Import
+    cancel-button: Cancel

@@ -1,6 +1,8 @@
 # Obsidian Bridge
 
-## Release 1.0.0 (TBD)
-- Initial release
-- Import Obsidian vaults to Foundry journals
-- Export Foundry journals to Obsidian format
+## [Unreleased](https://github.com/SoSly/foundryvtt-obsidian-bridge)
+
+### Added
+- Import Obsidian Vault button in Journal Directory sidebar
+- Import dialog with options for combining notes, handling subfolders, and importing assets
+- Native OS folder picker for selecting local Obsidian vaults
