@@ -1,0 +1,7 @@
+/.claude
+/dist
+/node_modules
+/CLAUDE.md
+.env
+.idea/
+*.iml

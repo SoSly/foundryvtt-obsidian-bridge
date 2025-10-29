@@ -1,0 +1,89 @@
+{
+  "name": "obsidian-bridge",
+  "version": "1.0.0",
+  "description": "A FoundryVTT module for importing Obsidian MD vaults and exporting Foundry journals",
+  "type": "module",
+  "scripts": {
+    "build": "npm run lint:code && npm run build:code && npm run build:styles",
+    "build:code": "npx rollup --config rollup.config.mjs",
+    "build:styles": "sass src/styles/obsidian-bridge.scss:dist/obsidian-bridge.css --style compressed",
+    "clean": "del-cli dist",
+    "lint": "npm run lint:code",
+    "lint:code": "npx eslint -c .eslintrc.json src/**/*.js",
+    "watch": "npm-run-all --parallel watch:*",
+    "watch:code": "npm-watch build:code",
+    "watch:lint": "npm-watch lint:code",
+    "watch:styles": "npm-watch build:styles"
+  },
+  "watch": {
+    "build:code": {
+      "patterns": [
+        "src/",
+        "src/**/"
+      ],
+      "extensions": [
+        "js",
+        "json",
+        "yaml"
+      ],
+      "quiet": false,
+      "silent": false,
+      "inherit": true
+    },
+    "build:styles": {
+      "patterns": [
+        "src/styles/"
+      ],
+      "extensions": [
+        "scss"
+      ],
+      "quiet": false,
+      "silent": false,
+      "inherit": true
+    },
+    "lint:code": {
+      "patterns": [
+        "src/",
+        "src/**/"
+      ],
+      "extensions": [
+        "js",
+        "json",
+        "yaml"
+      ],
+      "quiet": false,
+      "silent": false,
+      "inherit": true
+    }
+  },
+  "keywords": [
+    "foundry",
+    "foundryvtt",
+    "obsidian",
+    "markdown",
+    "journal"
+  ],
+  "author": "Kevin Kragenbrink",
+  "license": "MIT",
+  "devDependencies": {
+    "@foundryvtt/foundryvtt-cli": "^1.0.3",
+    "@rollup/plugin-alias": "^5.1.0",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "del-cli": "^6.0.0",
+    "eslint": "^8.57.0",
+    "fancy-log": "^2.0.0",
+    "js-yaml": "^4.1.0",
+    "npm-run-all": "^4.1.5",
+    "npm-watch": "^0.13.0",
+    "rollup": "^4.20.0",
+    "rollup-plugin-combine": "^2.1.1",
+    "rollup-plugin-copy": "^3.5.0",
+    "rollup-plugin-match": "^1.0.0",
+    "sass": "^1.80.5"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.21.0"
+  }
+}

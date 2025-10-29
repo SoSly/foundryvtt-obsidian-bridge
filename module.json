@@ -1,0 +1,36 @@
+{
+  "id": "obsidian-bridge",
+  "title": "Obsidian Bridge",
+  "description": "Import Obsidian MD vaults into Foundry journals and export Foundry journals back to Obsidian format",
+  "version": "1.0.0",
+  "authors": [
+    {
+      "name": "nivthefox",
+      "discord": "nivthefox",
+      "flags": {}
+    }
+  ],
+  "compatibility": {
+    "minimum": "12",
+    "verified": "12"
+  },
+  "esmodules": [
+    "dist/obsidian-bridge.js"
+  ],
+  "styles": [
+    "dist/obsidian-bridge.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "dist/lang/en.json",
+      "flags": {}
+    }
+  ],
+  "url": "https://github.com/SoSly/foundryvtt-obsidian-bridge",
+  "license": "https://github.com/SoSly/foundryvtt-obsidian-bridge/LICENSE",
+  "manifest": "https://github.com/SoSly/foundryvtt-obsidian-bridge/bundle/module.json",
+  "download": "https://github.com/SoSly/foundryvtt-obsidian-bridge/bundle/obsidian-bridge.zip",
+  "readme": "https://github.com/SoSly/foundryvtt-obsidian-bridge/README.md"
+}
