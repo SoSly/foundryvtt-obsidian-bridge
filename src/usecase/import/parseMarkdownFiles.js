@@ -20,13 +20,13 @@ export default async function parseMarkdownFiles(converter, files) {
             links: linksWithPlaceholders,
             assets: assetsWithPlaceholders
         } = replaceWithPlaceholders(markdownText, links, assets);
-        const htmlContent = converter.makeHtml(textWithPlaceholders);
+        const content = converter.makeHtml(textWithPlaceholders);
         const lookupKeys = generateLookupKeys(file.webkitRelativePath);
 
         const markdownFile = new MarkdownFile({
             filePath: file.webkitRelativePath,
             lookupKeys,
-            htmlContent,
+            content,
             links: linksWithPlaceholders,
             assets: assetsWithPlaceholders,
             foundryPageUuid: null

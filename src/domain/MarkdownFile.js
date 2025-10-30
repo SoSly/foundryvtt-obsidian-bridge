@@ -3,14 +3,14 @@
  * Object is sealed after construction to prevent accidental property additions.
  *
  * Properties mutated during pipeline execution:
- * - htmlContent: Populated by resolvePlaceholders usecase
+ * - content: Populated by resolvePlaceholders usecase
  * - foundryPageUuid: Set by createJournalDocuments interface function
  */
 export default class MarkdownFile {
     static DEFAULTS = {
         filePath: '',
         lookupKeys: [],
-        htmlContent: '',
+        content: '',
         links: [],
         assets: [],
         foundryPageUuid: null
@@ -25,8 +25,8 @@ export default class MarkdownFile {
         if (!Array.isArray(this.lookupKeys)) {
             throw new Error('MarkdownFile requires lookupKeys array');
         }
-        if (this.htmlContent === undefined || this.htmlContent === null) {
-            throw new Error('MarkdownFile requires htmlContent');
+        if (this.content === undefined || this.content === null) {
+            throw new Error('MarkdownFile requires content');
         }
 
         Object.seal(this);

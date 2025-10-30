@@ -25,7 +25,7 @@ describe('parseMarkdownFiles', () => {
         expect(result).toHaveLength(1);
         expect(result[0].filePath).toBe('Dragons/Ancient Red Dragon.md');
         expect(result[0].lookupKeys).toEqual(['Ancient Red Dragon', 'Dragons/Ancient Red Dragon']);
-        expect(result[0].htmlContent).toContain('Ancient Red Dragon');
+        expect(result[0].content).toContain('Ancient Red Dragon');
         expect(result[0].links).toEqual([]);
         expect(result[0].assets).toEqual([]);
         expect(result[0].foundryPageUuid).toBeNull();
@@ -40,8 +40,8 @@ describe('parseMarkdownFiles', () => {
         const result = await parseMarkdownFiles(converter, files);
 
         expect(result).toHaveLength(1);
-        expect(result[0].htmlContent).toContain('{{LINK:0}}');
-        expect(result[0].htmlContent).not.toContain('[[Ancient Red Dragon]]');
+        expect(result[0].content).toContain('{{LINK:0}}');
+        expect(result[0].content).not.toContain('[[Ancient Red Dragon]]');
         expect(result[0].links).toHaveLength(1);
         expect(result[0].links[0].obsidianTarget).toBe('Ancient Red Dragon');
         expect(result[0].links[0].placeholder).toBe('{{LINK:0}}');
@@ -56,7 +56,7 @@ describe('parseMarkdownFiles', () => {
         const result = await parseMarkdownFiles(converter, files);
 
         expect(result).toHaveLength(1);
-        expect(result[0].htmlContent).toContain('{{ASSET:0}}');
+        expect(result[0].content).toContain('{{ASSET:0}}');
         expect(result[0].assets).toHaveLength(1);
         expect(result[0].assets[0].obsidianPath).toBe('dragon.png');
         expect(result[0].assets[0].placeholder).toBe('{{ASSET:0}}');
@@ -71,8 +71,8 @@ describe('parseMarkdownFiles', () => {
         const result = await parseMarkdownFiles(converter, files);
 
         expect(result).toHaveLength(1);
-        expect(result[0].htmlContent).toContain('{{LINK:0}}');
-        expect(result[0].htmlContent).toContain('{{ASSET:0}}');
+        expect(result[0].content).toContain('{{LINK:0}}');
+        expect(result[0].content).toContain('{{ASSET:0}}');
         expect(result[0].links).toHaveLength(1);
         expect(result[0].assets).toHaveLength(1);
     });
@@ -164,7 +164,7 @@ describe('parseMarkdownFiles', () => {
         const result = await parseMarkdownFiles(converter, files);
 
         expect(result).toHaveLength(1);
-        expect(result[0].htmlContent).toBeTruthy();
+        expect(result[0].content).toBeTruthy();
         expect(result[0].links).toEqual([]);
         expect(result[0].assets).toEqual([]);
     });
@@ -194,8 +194,8 @@ Also check [[Dragons/Ancient Red Dragon#Abilities|abilities]].
         expect(result).toHaveLength(1);
         expect(result[0].links.length).toBeGreaterThan(2);
         expect(result[0].assets.length).toBeGreaterThan(0);
-        expect(result[0].htmlContent).toContain('{{LINK:');
-        expect(result[0].htmlContent).toContain('{{ASSET:');
+        expect(result[0].content).toContain('{{LINK:');
+        expect(result[0].content).toContain('{{ASSET:');
     });
 
     it('should strip .md extension from targets in links', async () => {

@@ -9,7 +9,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
-                    htmlContent: '<p>See {{LINK:0}} for details.</p>',
+                    content: '<p>See {{LINK:0}} for details.</p>',
                     links: [{
                         obsidianTarget: 'Target',
                         displayText: null,
@@ -24,7 +24,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Folder/Target.md',
                     lookupKeys: ['Target', 'Folder/Target'],
-                    htmlContent: '<p>Target content</p>',
+                    content: '<p>Target content</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
@@ -33,7 +33,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>See @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Target} for details.</p>'
             );
         });
@@ -43,7 +43,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
-                    htmlContent: '<p>See {{LINK:0}} for info.</p>',
+                    content: '<p>See {{LINK:0}} for info.</p>',
                     links: [{
                         obsidianTarget: 'Target',
                         displayText: 'this page',
@@ -58,7 +58,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Target.md',
                     lookupKeys: ['Target'],
-                    htmlContent: '<p>Target content</p>',
+                    content: '<p>Target content</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
@@ -67,7 +67,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>See @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{this page} for info.</p>'
             );
         });
@@ -77,7 +77,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
-                    htmlContent: '<p>Read {{LINK:0}} section.</p>',
+                    content: '<p>Read {{LINK:0}} section.</p>',
                     links: [{
                         obsidianTarget: 'Target',
                         displayText: null,
@@ -92,7 +92,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Target.md',
                     lookupKeys: ['Target'],
-                    htmlContent: '<p>Target content</p>',
+                    content: '<p>Target content</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
@@ -101,7 +101,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>Read @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Target} section.</p>'
             );
         });
@@ -111,7 +111,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
-                    htmlContent: '<p>Check {{LINK:0}} out.</p>',
+                    content: '<p>Check {{LINK:0}} out.</p>',
                     links: [{
                         obsidianTarget: 'Target',
                         displayText: 'abilities section',
@@ -126,7 +126,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Target.md',
                     lookupKeys: ['Target'],
-                    htmlContent: '<p>Target content</p>',
+                    content: '<p>Target content</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
@@ -135,7 +135,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>Check @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{abilities section} out.</p>'
             );
         });
@@ -145,7 +145,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
-                    htmlContent: '<p>Content: {{LINK:0}}</p>',
+                    content: '<p>Content: {{LINK:0}}</p>',
                     links: [{
                         obsidianTarget: 'Target',
                         displayText: null,
@@ -160,7 +160,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Target.md',
                     lookupKeys: ['Target'],
-                    htmlContent: '<p>Target content</p>',
+                    content: '<p>Target content</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
@@ -169,7 +169,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>Content: @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Target}</p>'
             );
         });
@@ -179,7 +179,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
-                    htmlContent: '<p>See {{LINK:0}} for details.</p>',
+                    content: '<p>See {{LINK:0}} for details.</p>',
                     links: [{
                         obsidianTarget: 'Folder/Target',
                         displayText: null,
@@ -194,7 +194,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Folder/Target.md',
                     lookupKeys: ['Target', 'Folder/Target'],
-                    htmlContent: '<p>Target in folder</p>',
+                    content: '<p>Target in folder</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
@@ -202,7 +202,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Target.md',
                     lookupKeys: ['Target'],
-                    htmlContent: '<p>Target at root</p>',
+                    content: '<p>Target at root</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.ghi789.JournalEntryPage.rst345'
@@ -211,7 +211,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>See @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Folder/Target} for details.</p>'
             );
         });
@@ -221,7 +221,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
-                    htmlContent: '<p>See {{LINK:0}} for details.</p>',
+                    content: '<p>See {{LINK:0}} for details.</p>',
                     links: [{
                         obsidianTarget: 'Target',
                         displayText: null,
@@ -236,7 +236,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Foo/Bar/Target.md',
                     lookupKeys: ['Target', 'Bar/Target', 'Foo/Bar/Target'],
-                    htmlContent: '<p>Longer path target</p>',
+                    content: '<p>Longer path target</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
@@ -244,7 +244,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Baz/Target.md',
                     lookupKeys: ['Target', 'Baz/Target'],
-                    htmlContent: '<p>Shorter path target</p>',
+                    content: '<p>Shorter path target</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.ghi789.JournalEntryPage.rst345'
@@ -253,7 +253,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>See @UUID[JournalEntry.ghi789.JournalEntryPage.rst345]{Target} for details.</p>'
             );
         });
@@ -263,7 +263,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
-                    htmlContent: '<p>See {{LINK:0}} for details.</p>',
+                    content: '<p>See {{LINK:0}} for details.</p>',
                     links: [{
                         obsidianTarget: 'NonExistent',
                         displayText: null,
@@ -279,7 +279,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe('<p>See [[NonExistent]] for details.</p>');
+            expect(result[0].content).toBe('<p>See [[NonExistent]] for details.</p>');
         });
 
         it('should revert to original markdown with display text when link not found', () => {
@@ -287,7 +287,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
-                    htmlContent: '<p>See {{LINK:0}} for info.</p>',
+                    content: '<p>See {{LINK:0}} for info.</p>',
                     links: [{
                         obsidianTarget: 'NonExistent',
                         displayText: 'broken link',
@@ -303,7 +303,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe('<p>See [[NonExistent|broken link]] for info.</p>');
+            expect(result[0].content).toBe('<p>See [[NonExistent|broken link]] for info.</p>');
         });
 
         it('should resolve self-reference correctly', () => {
@@ -311,7 +311,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Target.md',
                     lookupKeys: ['Target'],
-                    htmlContent: '<p>See {{LINK:0}} for more.</p>',
+                    content: '<p>See {{LINK:0}} for more.</p>',
                     links: [{
                         obsidianTarget: 'Target',
                         displayText: null,
@@ -327,7 +327,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>See @UUID[JournalEntry.abc123.JournalEntryPage.xyz789]{Target} for more.</p>'
             );
         });
@@ -337,7 +337,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
-                    htmlContent: '<p>See {{LINK:0}} and {{LINK:1}} for details.</p>',
+                    content: '<p>See {{LINK:0}} and {{LINK:1}} for details.</p>',
                     links: [
                         {
                             obsidianTarget: 'Target1',
@@ -362,7 +362,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Target1.md',
                     lookupKeys: ['Target1'],
-                    htmlContent: '<p>First target</p>',
+                    content: '<p>First target</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
@@ -370,7 +370,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Target2.md',
                     lookupKeys: ['Target2'],
-                    htmlContent: '<p>Second target</p>',
+                    content: '<p>Second target</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.ghi789.JournalEntryPage.rst345'
@@ -379,7 +379,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>See @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Target1} and @UUID[JournalEntry.ghi789.JournalEntryPage.rst345]{Target2} for details.</p>'
             );
         });
@@ -389,7 +389,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
-                    htmlContent: '<p>See {{LINK:0}} for details. Also check {{LINK:0}} again. One more: {{LINK:0}}</p>',
+                    content: '<p>See {{LINK:0}} for details. Also check {{LINK:0}} again. One more: {{LINK:0}}</p>',
                     links: [{
                         obsidianTarget: 'Target',
                         displayText: null,
@@ -404,7 +404,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Target.md',
                     lookupKeys: ['Target'],
-                    htmlContent: '<p>Target content</p>',
+                    content: '<p>Target content</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
@@ -413,7 +413,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>See @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Target} for details. Also check @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Target} again. One more: @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Target}</p>'
             );
         });
@@ -423,7 +423,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
-                    htmlContent: '<p>See {{LINK:0}} and {{LINK:1}} and {{LINK:2}}</p>',
+                    content: '<p>See {{LINK:0}} and {{LINK:1}} and {{LINK:2}}</p>',
                     links: [
                         {
                             obsidianTarget: 'Districts',
@@ -456,7 +456,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Path/To/Districts.md',
                     lookupKeys: ['Districts', 'To/Districts', 'Path/To/Districts'],
-                    htmlContent: '<p>Districts content</p>',
+                    content: '<p>Districts content</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
@@ -465,7 +465,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>See @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Districts} and @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{districts} and @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{DISTRICTS}</p>'
             );
         });
@@ -475,7 +475,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
-                    htmlContent: '<p>See {{LINK:0}} for details.</p>',
+                    content: '<p>See {{LINK:0}} for details.</p>',
                     links: [{
                         obsidianTarget: 'Target',
                         displayText: null,
@@ -490,7 +490,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Target.md',
                     lookupKeys: ['Target'],
-                    htmlContent: '<p>Target content</p>',
+                    content: '<p>Target content</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: null
@@ -499,7 +499,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe('<p>See [[Target]] for details.</p>');
+            expect(result[0].content).toBe('<p>See [[Target]] for details.</p>');
         });
     });
 
@@ -509,7 +509,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Campaign/NPCs/Villain.md',
                     lookupKeys: ['Villain', 'NPCs/Villain', 'Campaign/NPCs/Villain'],
-                    htmlContent: '<p>Check out {{LINK:0}}</p>',
+                    content: '<p>Check out {{LINK:0}}</p>',
                     links: [{
                         obsidianTarget: 'Waterdeep',
                         displayText: null,
@@ -524,7 +524,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Campaign/NPCs/Waterdeep.md',
                     lookupKeys: ['Waterdeep', 'NPCs/Waterdeep', 'Campaign/NPCs/Waterdeep'],
-                    htmlContent: '<p>NPC named Waterdeep</p>',
+                    content: '<p>NPC named Waterdeep</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.npc-waterdeep'
@@ -532,7 +532,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Campaign/Locations/Waterdeep.md',
                     lookupKeys: ['Waterdeep', 'Locations/Waterdeep', 'Campaign/Locations/Waterdeep'],
-                    htmlContent: '<p>City of Waterdeep</p>',
+                    content: '<p>City of Waterdeep</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.location-waterdeep'
@@ -541,7 +541,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>Check out @UUID[JournalEntry.xxx.JournalEntryPage.npc-waterdeep]{Waterdeep}</p>'
             );
         });
@@ -551,7 +551,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Campaign/NPCs/Villains/BigBad.md',
                     lookupKeys: ['BigBad', 'Villains/BigBad', 'NPCs/Villains/BigBad', 'Campaign/NPCs/Villains/BigBad'],
-                    htmlContent: '<p>Lives in {{LINK:0}}</p>',
+                    content: '<p>Lives in {{LINK:0}}</p>',
                     links: [{
                         obsidianTarget: 'Waterdeep',
                         displayText: null,
@@ -566,7 +566,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Campaign/NPCs/Waterdeep.md',
                     lookupKeys: ['Waterdeep', 'NPCs/Waterdeep', 'Campaign/NPCs/Waterdeep'],
-                    htmlContent: '<p>NPC named Waterdeep</p>',
+                    content: '<p>NPC named Waterdeep</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.npc-waterdeep'
@@ -574,7 +574,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Other/Locations/Waterdeep.md',
                     lookupKeys: ['Waterdeep', 'Locations/Waterdeep', 'Other/Locations/Waterdeep'],
-                    htmlContent: '<p>City of Waterdeep</p>',
+                    content: '<p>City of Waterdeep</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.location-waterdeep'
@@ -583,7 +583,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>Lives in @UUID[JournalEntry.xxx.JournalEntryPage.npc-waterdeep]{Waterdeep}</p>'
             );
         });
@@ -593,7 +593,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Campaign/NPCs/Villains/MiniBoss/Details.md',
                     lookupKeys: ['Details', 'MiniBoss/Details', 'Villains/MiniBoss/Details', 'NPCs/Villains/MiniBoss/Details', 'Campaign/NPCs/Villains/MiniBoss/Details'],
-                    htmlContent: '<p>Check {{LINK:0}}</p>',
+                    content: '<p>Check {{LINK:0}}</p>',
                     links: [{
                         obsidianTarget: 'Waterdeep',
                         displayText: null,
@@ -608,7 +608,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Campaign/Waterdeep.md',
                     lookupKeys: ['Waterdeep', 'Campaign/Waterdeep'],
-                    htmlContent: '<p>Campaign-level Waterdeep</p>',
+                    content: '<p>Campaign-level Waterdeep</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.campaign-waterdeep'
@@ -616,7 +616,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Other/Waterdeep.md',
                     lookupKeys: ['Waterdeep', 'Other/Waterdeep'],
-                    htmlContent: '<p>Other Waterdeep</p>',
+                    content: '<p>Other Waterdeep</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.other-waterdeep'
@@ -625,7 +625,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>Check @UUID[JournalEntry.xxx.JournalEntryPage.campaign-waterdeep]{Waterdeep}</p>'
             );
         });
@@ -635,7 +635,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Campaign/NPCs/Villain.md',
                     lookupKeys: ['Villain', 'NPCs/Villain', 'Campaign/NPCs/Villain'],
-                    htmlContent: '<p>Check out {{LINK:0}}</p>',
+                    content: '<p>Check out {{LINK:0}}</p>',
                     links: [{
                         obsidianTarget: 'Waterdeep',
                         displayText: null,
@@ -650,7 +650,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Other/Locations/Waterdeep.md',
                     lookupKeys: ['Waterdeep', 'Locations/Waterdeep', 'Other/Locations/Waterdeep'],
-                    htmlContent: '<p>Long path</p>',
+                    content: '<p>Long path</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.long-waterdeep'
@@ -658,7 +658,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Places/Waterdeep.md',
                     lookupKeys: ['Waterdeep', 'Places/Waterdeep'],
-                    htmlContent: '<p>Short path</p>',
+                    content: '<p>Short path</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.short-waterdeep'
@@ -667,7 +667,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>Check out @UUID[JournalEntry.xxx.JournalEntryPage.short-waterdeep]{Waterdeep}</p>'
             );
         });
@@ -677,7 +677,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Root.md',
                     lookupKeys: ['Root'],
-                    htmlContent: '<p>Check {{LINK:0}}</p>',
+                    content: '<p>Check {{LINK:0}}</p>',
                     links: [{
                         obsidianTarget: 'Other',
                         displayText: null,
@@ -692,7 +692,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Other.md',
                     lookupKeys: ['Other'],
-                    htmlContent: '<p>Also in root</p>',
+                    content: '<p>Also in root</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.other-root'
@@ -700,7 +700,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Folder/Other.md',
                     lookupKeys: ['Other', 'Folder/Other'],
-                    htmlContent: '<p>In folder</p>',
+                    content: '<p>In folder</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.other-folder'
@@ -709,7 +709,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>Check @UUID[JournalEntry.xxx.JournalEntryPage.other-root]{Other}</p>'
             );
         });
@@ -719,7 +719,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Campaign/NPCs/Villain.md',
                     lookupKeys: ['Villain', 'NPCs/Villain', 'Campaign/NPCs/Villain'],
-                    htmlContent: '<p>Check {{LINK:0}}</p>',
+                    content: '<p>Check {{LINK:0}}</p>',
                     links: [{
                         obsidianTarget: 'Waterdeep',
                         displayText: null,
@@ -734,7 +734,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Campaign/NPCs/Waterdeep.md',
                     lookupKeys: ['Waterdeep', 'NPCs/Waterdeep', 'Campaign/NPCs/Waterdeep'],
-                    htmlContent: '<p>Short name</p>',
+                    content: '<p>Short name</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.short'
@@ -742,7 +742,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Campaign/NPCs/WaterdeepLongName.md',
                     lookupKeys: ['Waterdeep', 'NPCs/Waterdeep', 'Campaign/NPCs/Waterdeep'],
-                    htmlContent: '<p>Long name</p>',
+                    content: '<p>Long name</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.long'
@@ -751,7 +751,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>Check @UUID[JournalEntry.xxx.JournalEntryPage.short]{Waterdeep}</p>'
             );
         });
@@ -761,7 +761,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Notes.md',
                     lookupKeys: ['Notes'],
-                    htmlContent: '<p>See {{LINK:0}}</p>',
+                    content: '<p>See {{LINK:0}}</p>',
                     links: [{
                         obsidianTarget: 'Target',
                         displayText: null,
@@ -776,7 +776,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Target.md',
                     lookupKeys: ['Target'],
-                    htmlContent: '<p>Target in root</p>',
+                    content: '<p>Target in root</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.target-root'
@@ -784,7 +784,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Folder/Target.md',
                     lookupKeys: ['Target', 'Folder/Target'],
-                    htmlContent: '<p>Target in folder</p>',
+                    content: '<p>Target in folder</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.target-folder'
@@ -793,7 +793,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>See @UUID[JournalEntry.xxx.JournalEntryPage.target-root]{Target}</p>'
             );
         });
@@ -805,7 +805,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Document.md',
                     lookupKeys: ['Document'],
-                    htmlContent: '<p>Image: {{ASSET:0}}</p>',
+                    content: '<p>Image: {{ASSET:0}}</p>',
                     links: [],
                     assets: [{
                         obsidianPath: 'images/dragon.png',
@@ -827,7 +827,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, nonMarkdownFiles);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>Image: <img src="modules/obsidian-bridge/imported/images/dragon.png" alt="" /></p>'
             );
         });
@@ -837,7 +837,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Document.md',
                     lookupKeys: ['Document'],
-                    htmlContent: '<p>Image: {{ASSET:0}}</p>',
+                    content: '<p>Image: {{ASSET:0}}</p>',
                     links: [],
                     assets: [{
                         obsidianPath: 'images/missing.png',
@@ -852,7 +852,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe('<p>Image: ![](images/missing.png)</p>');
+            expect(result[0].content).toBe('<p>Image: ![](images/missing.png)</p>');
         });
 
         it('should resolve non-image asset with anchor tag', () => {
@@ -860,7 +860,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Document.md',
                     lookupKeys: ['Document'],
-                    htmlContent: '<p>File: {{ASSET:0}}</p>',
+                    content: '<p>File: {{ASSET:0}}</p>',
                     links: [],
                     assets: [{
                         obsidianPath: 'files/document.pdf',
@@ -882,7 +882,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, nonMarkdownFiles);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>File: <a href="modules/obsidian-bridge/imported/files/document.pdf">Download PDF</a></p>'
             );
         });
@@ -892,7 +892,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Document.md',
                     lookupKeys: ['Document'],
-                    htmlContent: '<p>File: {{ASSET:0}}</p>',
+                    content: '<p>File: {{ASSET:0}}</p>',
                     links: [],
                     assets: [{
                         obsidianPath: 'files/document.pdf',
@@ -907,7 +907,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe('<p>File: ![[document.pdf]]</p>');
+            expect(result[0].content).toBe('<p>File: ![[document.pdf]]</p>');
         });
 
         it('should resolve multiple assets in same file', () => {
@@ -915,7 +915,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Document.md',
                     lookupKeys: ['Document'],
-                    htmlContent: '<p>{{ASSET:0}} and {{ASSET:1}}</p>',
+                    content: '<p>{{ASSET:0}} and {{ASSET:1}}</p>',
                     links: [],
                     assets: [
                         {
@@ -950,7 +950,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, nonMarkdownFiles);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p><img src="modules/obsidian-bridge/imported/images/dragon.png" alt="" /> and <img src="modules/obsidian-bridge/imported/images/goblin.png" alt="" /></p>'
             );
         });
@@ -960,7 +960,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Document.md',
                     lookupKeys: ['Document'],
-                    htmlContent: '<p>First: {{ASSET:0}} and second: {{ASSET:0}} and third: {{ASSET:0}}</p>',
+                    content: '<p>First: {{ASSET:0}} and second: {{ASSET:0}} and third: {{ASSET:0}}</p>',
                     links: [],
                     assets: [{
                         obsidianPath: 'images/dragon.png',
@@ -982,7 +982,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, nonMarkdownFiles);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>First: <img src="modules/obsidian-bridge/imported/images/dragon.png" alt="" /> and second: <img src="modules/obsidian-bridge/imported/images/dragon.png" alt="" /> and third: <img src="modules/obsidian-bridge/imported/images/dragon.png" alt="" /></p>'
             );
         });
@@ -992,7 +992,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Document.md',
                     lookupKeys: ['Document'],
-                    htmlContent: '<p>Image: {{ASSET:0}}</p>',
+                    content: '<p>Image: {{ASSET:0}}</p>',
                     links: [],
                     assets: [{
                         obsidianPath: 'images/dragon.png',
@@ -1014,7 +1014,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, nonMarkdownFiles);
 
-            expect(result[0].htmlContent).toBe('<p>Image: ![](images/dragon.png)</p>');
+            expect(result[0].content).toBe('<p>Image: ![](images/dragon.png)</p>');
         });
 
         it('should match assets by suffix when full path not provided', () => {
@@ -1022,7 +1022,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Document.md',
                     lookupKeys: ['Document'],
-                    htmlContent: '<p>Image: {{ASSET:0}}</p>',
+                    content: '<p>Image: {{ASSET:0}}</p>',
                     links: [],
                     assets: [{
                         obsidianPath: 'images/dragon.png',
@@ -1044,7 +1044,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, nonMarkdownFiles);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>Image: <img src="modules/obsidian-bridge/imported/assets/images/dragon.png" alt="" /></p>'
             );
         });
@@ -1054,7 +1054,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Document.md',
                     lookupKeys: ['Document'],
-                    htmlContent: '<p>Image: {{ASSET:0}}</p>',
+                    content: '<p>Image: {{ASSET:0}}</p>',
                     links: [],
                     assets: [{
                         obsidianPath: 'dragon.png',
@@ -1080,7 +1080,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, nonMarkdownFiles);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>Image: <img src="modules/obsidian-bridge/imported/dragon.png" alt="" /></p>'
             );
         });
@@ -1092,7 +1092,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Document.md',
                     lookupKeys: ['Document'],
-                    htmlContent: '<p>See {{LINK:0}} for {{ASSET:0}}</p>',
+                    content: '<p>See {{LINK:0}} for {{ASSET:0}}</p>',
                     links: [{
                         obsidianTarget: 'Target',
                         displayText: null,
@@ -1113,7 +1113,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Target.md',
                     lookupKeys: ['Target'],
-                    htmlContent: '<p>Target content</p>',
+                    content: '<p>Target content</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
@@ -1129,7 +1129,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, nonMarkdownFiles);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>See @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Target} for <img src="modules/obsidian-bridge/imported/images/dragon.png" alt="" /></p>'
             );
         });
@@ -1139,7 +1139,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Document.md',
                     lookupKeys: ['Document'],
-                    htmlContent: '<p>See {{LINK:0}} and {{LINK:1}} with {{ASSET:0}} and {{ASSET:1}}</p>',
+                    content: '<p>See {{LINK:0}} and {{LINK:1}} with {{ASSET:0}} and {{ASSET:1}}</p>',
                     links: [
                         {
                             obsidianTarget: 'Target',
@@ -1179,7 +1179,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Target.md',
                     lookupKeys: ['Target'],
-                    htmlContent: '<p>Target content</p>',
+                    content: '<p>Target content</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
@@ -1195,7 +1195,7 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, nonMarkdownFiles);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>See @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Target} and [[Missing]] with <img src="modules/obsidian-bridge/imported/images/dragon.png" alt="" /> and ![](images/missing.png)</p>'
             );
         });
@@ -1205,7 +1205,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'File1.md',
                     lookupKeys: ['File1'],
-                    htmlContent: '<p>See {{LINK:0}}</p>',
+                    content: '<p>See {{LINK:0}}</p>',
                     links: [{
                         obsidianTarget: 'File2',
                         displayText: null,
@@ -1220,7 +1220,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'File2.md',
                     lookupKeys: ['File2'],
-                    htmlContent: '<p>See {{LINK:0}}</p>',
+                    content: '<p>See {{LINK:0}}</p>',
                     links: [{
                         obsidianTarget: 'File1',
                         displayText: null,
@@ -1236,10 +1236,10 @@ describe('resolvePlaceholders', () => {
 
             const result = resolvePlaceholders(markdownFiles, []);
 
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>See @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{File2}</p>'
             );
-            expect(result[1].htmlContent).toBe(
+            expect(result[1].content).toBe(
                 '<p>See @UUID[JournalEntry.abc123.JournalEntryPage.xyz789]{File1}</p>'
             );
         });
@@ -1266,7 +1266,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Document.md',
                     lookupKeys: ['Document'],
-                    htmlContent: '<p>Content</p>',
+                    content: '<p>Content</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
@@ -1274,7 +1274,7 @@ describe('resolvePlaceholders', () => {
             ];
 
             const result = resolvePlaceholders(markdownFiles, null);
-            expect(result[0].htmlContent).toBe('<p>Content</p>');
+            expect(result[0].content).toBe('<p>Content</p>');
         });
 
         it('should handle undefined nonMarkdownFiles gracefully', () => {
@@ -1282,7 +1282,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Document.md',
                     lookupKeys: ['Document'],
-                    htmlContent: '<p>Content</p>',
+                    content: '<p>Content</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
@@ -1290,7 +1290,7 @@ describe('resolvePlaceholders', () => {
             ];
 
             const result = resolvePlaceholders(markdownFiles, undefined);
-            expect(result[0].htmlContent).toBe('<p>Content</p>');
+            expect(result[0].content).toBe('<p>Content</p>');
         });
 
         it('should handle empty nonMarkdownFiles array', () => {
@@ -1298,7 +1298,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Document.md',
                     lookupKeys: ['Document'],
-                    htmlContent: '<p>{{ASSET:0}}</p>',
+                    content: '<p>{{ASSET:0}}</p>',
                     links: [],
                     assets: [{
                         obsidianPath: 'images/dragon.png',
@@ -1312,7 +1312,7 @@ describe('resolvePlaceholders', () => {
             ];
 
             const result = resolvePlaceholders(markdownFiles, []);
-            expect(result[0].htmlContent).toBe('<p>![](images/dragon.png)</p>');
+            expect(result[0].content).toBe('<p>![](images/dragon.png)</p>');
         });
 
         it('should handle file with no links or assets', () => {
@@ -1320,7 +1320,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Document.md',
                     lookupKeys: ['Document'],
-                    htmlContent: '<p>Just plain content</p>',
+                    content: '<p>Just plain content</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
@@ -1328,7 +1328,7 @@ describe('resolvePlaceholders', () => {
             ];
 
             const result = resolvePlaceholders(markdownFiles, []);
-            expect(result[0].htmlContent).toBe('<p>Just plain content</p>');
+            expect(result[0].content).toBe('<p>Just plain content</p>');
         });
 
         it('should handle file with empty links array', () => {
@@ -1336,7 +1336,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Document.md',
                     lookupKeys: ['Document'],
-                    htmlContent: '<p>Content with {{ASSET:0}}</p>',
+                    content: '<p>Content with {{ASSET:0}}</p>',
                     links: [],
                     assets: [{
                         obsidianPath: 'images/dragon.png',
@@ -1357,7 +1357,7 @@ describe('resolvePlaceholders', () => {
             ];
 
             const result = resolvePlaceholders(markdownFiles, nonMarkdownFiles);
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>Content with <img src="modules/obsidian-bridge/imported/images/dragon.png" alt="" /></p>'
             );
         });
@@ -1367,7 +1367,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Document.md',
                     lookupKeys: ['Document'],
-                    htmlContent: '<p>See {{LINK:0}}</p>',
+                    content: '<p>See {{LINK:0}}</p>',
                     links: [{
                         obsidianTarget: 'Target',
                         displayText: null,
@@ -1382,7 +1382,7 @@ describe('resolvePlaceholders', () => {
                 new MarkdownFile({
                     filePath: 'Target.md',
                     lookupKeys: ['Target'],
-                    htmlContent: '<p>Target</p>',
+                    content: '<p>Target</p>',
                     links: [],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
@@ -1390,7 +1390,7 @@ describe('resolvePlaceholders', () => {
             ];
 
             const result = resolvePlaceholders(markdownFiles, []);
-            expect(result[0].htmlContent).toBe(
+            expect(result[0].content).toBe(
                 '<p>See @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Target}</p>'
             );
         });

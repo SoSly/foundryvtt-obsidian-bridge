@@ -6,7 +6,7 @@ function createMarkdownFile(filePath) {
     return new MarkdownFile({
         filePath,
         lookupKeys: [],
-        htmlContent: '<p>test</p>',
+        content: '<p>test</p>',
         links: [],
         assets: []
     });

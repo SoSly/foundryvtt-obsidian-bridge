@@ -20,7 +20,7 @@ export default async function updatePageContent(markdownFiles) {
         const originalContent = page.text?.content || '';
 
         await page.update({
-            'text.content': markdownFile.htmlContent
+            'text.content': markdownFile.content
         });
 
         updatedPages.push({

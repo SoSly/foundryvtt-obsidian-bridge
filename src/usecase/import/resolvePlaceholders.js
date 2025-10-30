@@ -10,12 +10,12 @@ export default function resolvePlaceholders(markdownFiles, nonMarkdownFiles) {
     const assetFiles = buildAssetFiles(nonMarkdownFiles);
 
     for (const markdownFile of markdownFiles) {
-        let htmlContent = markdownFile.htmlContent;
+        let content = markdownFile.content;
 
-        htmlContent = resolveLinks(htmlContent, markdownFile.links, linkMap, markdownFile.filePath);
-        htmlContent = resolveAssets(htmlContent, markdownFile.assets, assetFiles);
+        content = resolveLinks(content, markdownFile.links, linkMap, markdownFile.filePath);
+        content = resolveAssets(content, markdownFile.assets, assetFiles);
 
-        markdownFile.htmlContent = htmlContent;
+        markdownFile.content = content;
     }
 
     return markdownFiles;
@@ -160,9 +160,9 @@ function findBestAssetMatch(obsidianPath, nonMarkdownFiles) {
     return best.foundryDataPath;
 }
 
-function resolveLinks(htmlContent, links, linkMap, sourceFilePath) {
+function resolveLinks(content, links, linkMap, sourceFilePath) {
     if (!Array.isArray(links) || links.length === 0) {
-        return htmlContent;
+        return content;
     }
 
     for (const link of links) {
@@ -173,19 +173,19 @@ function resolveLinks(htmlContent, links, linkMap, sourceFilePath) {
         if (targetFile) {
             const displayText = link.displayText || link.obsidianTarget;
             const resolvedLink = `@UUID[${targetFile.foundryPageUuid}]{${displayText}}`;
-            htmlContent = htmlContent.replaceAll(link.placeholder, resolvedLink);
+            content = content.replaceAll(link.placeholder, resolvedLink);
         } else {
             console.warn(`Unresolved link: ${link.obsidianTarget}`);
-            htmlContent = htmlContent.replaceAll(link.placeholder, link.originalText);
+            content = content.replaceAll(link.placeholder, link.originalText);
         }
     }
 
-    return htmlContent;
+    return content;
 }
 
-function resolveAssets(htmlContent, assets, assetFiles) {
+function resolveAssets(content, assets, assetFiles) {
     if (!Array.isArray(assets) || assets.length === 0) {
-        return htmlContent;
+        return content;
     }
 
     for (const asset of assets) {
@@ -200,12 +200,12 @@ function resolveAssets(htmlContent, assets, assetFiles) {
                 const text = asset.altText || asset.obsidianPath;
                 replacement = `<a href="${foundryPath}">${text}</a>`;
             }
-            htmlContent = htmlContent.replaceAll(asset.placeholder, replacement);
+            content = content.replaceAll(asset.placeholder, replacement);
         } else {
             console.warn(`Unresolved asset: ${asset.obsidianPath}`);
-            htmlContent = htmlContent.replaceAll(asset.placeholder, asset.originalText);
+            content = content.replaceAll(asset.placeholder, asset.originalText);
         }
     }
 
-    return htmlContent;
+    return content;
 }
