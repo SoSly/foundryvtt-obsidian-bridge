@@ -216,7 +216,7 @@ describe('resolvePlaceholders', () => {
             );
         });
 
-        it('should pick shortest path when multiple files have same basename', () => {
+        it('should pick shortest path when multiple files have same basename (fallback)', () => {
             const markdownFiles = [
                 new MarkdownFile({
                     filePath: 'Source.md',
@@ -500,6 +500,302 @@ describe('resolvePlaceholders', () => {
             const result = resolvePlaceholders(markdownFiles, []);
 
             expect(result[0].htmlContent).toBe('<p>See [[Target]] for details.</p>');
+        });
+    });
+
+    describe('context-aware link resolution', () => {
+        it('should prioritize files in same folder over files elsewhere', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Campaign/NPCs/Villain.md',
+                    lookupKeys: ['Villain', 'NPCs/Villain', 'Campaign/NPCs/Villain'],
+                    htmlContent: '<p>Check out {{LINK:0}}</p>',
+                    links: [{
+                        obsidianTarget: 'Waterdeep',
+                        displayText: null,
+                        heading: null,
+                        isEmbed: false,
+                        originalText: '[[Waterdeep]]',
+                        placeholder: '{{LINK:0}}'
+                    }],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.villain'
+                }),
+                new MarkdownFile({
+                    filePath: 'Campaign/NPCs/Waterdeep.md',
+                    lookupKeys: ['Waterdeep', 'NPCs/Waterdeep', 'Campaign/NPCs/Waterdeep'],
+                    htmlContent: '<p>NPC named Waterdeep</p>',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.npc-waterdeep'
+                }),
+                new MarkdownFile({
+                    filePath: 'Campaign/Locations/Waterdeep.md',
+                    lookupKeys: ['Waterdeep', 'Locations/Waterdeep', 'Campaign/Locations/Waterdeep'],
+                    htmlContent: '<p>City of Waterdeep</p>',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.location-waterdeep'
+                })
+            ];
+
+            const result = resolvePlaceholders(markdownFiles, []);
+
+            expect(result[0].htmlContent).toBe(
+                '<p>Check out @UUID[JournalEntry.xxx.JournalEntryPage.npc-waterdeep]{Waterdeep}</p>'
+            );
+        });
+
+        it('should prioritize files in parent folder when no same-folder match exists', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Campaign/NPCs/Villains/BigBad.md',
+                    lookupKeys: ['BigBad', 'Villains/BigBad', 'NPCs/Villains/BigBad', 'Campaign/NPCs/Villains/BigBad'],
+                    htmlContent: '<p>Lives in {{LINK:0}}</p>',
+                    links: [{
+                        obsidianTarget: 'Waterdeep',
+                        displayText: null,
+                        heading: null,
+                        isEmbed: false,
+                        originalText: '[[Waterdeep]]',
+                        placeholder: '{{LINK:0}}'
+                    }],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.bigbad'
+                }),
+                new MarkdownFile({
+                    filePath: 'Campaign/NPCs/Waterdeep.md',
+                    lookupKeys: ['Waterdeep', 'NPCs/Waterdeep', 'Campaign/NPCs/Waterdeep'],
+                    htmlContent: '<p>NPC named Waterdeep</p>',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.npc-waterdeep'
+                }),
+                new MarkdownFile({
+                    filePath: 'Other/Locations/Waterdeep.md',
+                    lookupKeys: ['Waterdeep', 'Locations/Waterdeep', 'Other/Locations/Waterdeep'],
+                    htmlContent: '<p>City of Waterdeep</p>',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.location-waterdeep'
+                })
+            ];
+
+            const result = resolvePlaceholders(markdownFiles, []);
+
+            expect(result[0].htmlContent).toBe(
+                '<p>Lives in @UUID[JournalEntry.xxx.JournalEntryPage.npc-waterdeep]{Waterdeep}</p>'
+            );
+        });
+
+        it('should walk up parent folders from most specific to root', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Campaign/NPCs/Villains/MiniBoss/Details.md',
+                    lookupKeys: ['Details', 'MiniBoss/Details', 'Villains/MiniBoss/Details', 'NPCs/Villains/MiniBoss/Details', 'Campaign/NPCs/Villains/MiniBoss/Details'],
+                    htmlContent: '<p>Check {{LINK:0}}</p>',
+                    links: [{
+                        obsidianTarget: 'Waterdeep',
+                        displayText: null,
+                        heading: null,
+                        isEmbed: false,
+                        originalText: '[[Waterdeep]]',
+                        placeholder: '{{LINK:0}}'
+                    }],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.details'
+                }),
+                new MarkdownFile({
+                    filePath: 'Campaign/Waterdeep.md',
+                    lookupKeys: ['Waterdeep', 'Campaign/Waterdeep'],
+                    htmlContent: '<p>Campaign-level Waterdeep</p>',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.campaign-waterdeep'
+                }),
+                new MarkdownFile({
+                    filePath: 'Other/Waterdeep.md',
+                    lookupKeys: ['Waterdeep', 'Other/Waterdeep'],
+                    htmlContent: '<p>Other Waterdeep</p>',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.other-waterdeep'
+                })
+            ];
+
+            const result = resolvePlaceholders(markdownFiles, []);
+
+            expect(result[0].htmlContent).toBe(
+                '<p>Check @UUID[JournalEntry.xxx.JournalEntryPage.campaign-waterdeep]{Waterdeep}</p>'
+            );
+        });
+
+        it('should fall back to shortest path when no contextual match exists', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Campaign/NPCs/Villain.md',
+                    lookupKeys: ['Villain', 'NPCs/Villain', 'Campaign/NPCs/Villain'],
+                    htmlContent: '<p>Check out {{LINK:0}}</p>',
+                    links: [{
+                        obsidianTarget: 'Waterdeep',
+                        displayText: null,
+                        heading: null,
+                        isEmbed: false,
+                        originalText: '[[Waterdeep]]',
+                        placeholder: '{{LINK:0}}'
+                    }],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.villain'
+                }),
+                new MarkdownFile({
+                    filePath: 'Other/Locations/Waterdeep.md',
+                    lookupKeys: ['Waterdeep', 'Locations/Waterdeep', 'Other/Locations/Waterdeep'],
+                    htmlContent: '<p>Long path</p>',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.long-waterdeep'
+                }),
+                new MarkdownFile({
+                    filePath: 'Places/Waterdeep.md',
+                    lookupKeys: ['Waterdeep', 'Places/Waterdeep'],
+                    htmlContent: '<p>Short path</p>',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.short-waterdeep'
+                })
+            ];
+
+            const result = resolvePlaceholders(markdownFiles, []);
+
+            expect(result[0].htmlContent).toBe(
+                '<p>Check out @UUID[JournalEntry.xxx.JournalEntryPage.short-waterdeep]{Waterdeep}</p>'
+            );
+        });
+
+        it('should handle files in root folder correctly', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Root.md',
+                    lookupKeys: ['Root'],
+                    htmlContent: '<p>Check {{LINK:0}}</p>',
+                    links: [{
+                        obsidianTarget: 'Other',
+                        displayText: null,
+                        heading: null,
+                        isEmbed: false,
+                        originalText: '[[Other]]',
+                        placeholder: '{{LINK:0}}'
+                    }],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.root'
+                }),
+                new MarkdownFile({
+                    filePath: 'Other.md',
+                    lookupKeys: ['Other'],
+                    htmlContent: '<p>Also in root</p>',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.other-root'
+                }),
+                new MarkdownFile({
+                    filePath: 'Folder/Other.md',
+                    lookupKeys: ['Other', 'Folder/Other'],
+                    htmlContent: '<p>In folder</p>',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.other-folder'
+                })
+            ];
+
+            const result = resolvePlaceholders(markdownFiles, []);
+
+            expect(result[0].htmlContent).toBe(
+                '<p>Check @UUID[JournalEntry.xxx.JournalEntryPage.other-root]{Other}</p>'
+            );
+        });
+
+        it('should use shortest path as tiebreaker within same priority level', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Campaign/NPCs/Villain.md',
+                    lookupKeys: ['Villain', 'NPCs/Villain', 'Campaign/NPCs/Villain'],
+                    htmlContent: '<p>Check {{LINK:0}}</p>',
+                    links: [{
+                        obsidianTarget: 'Waterdeep',
+                        displayText: null,
+                        heading: null,
+                        isEmbed: false,
+                        originalText: '[[Waterdeep]]',
+                        placeholder: '{{LINK:0}}'
+                    }],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.villain'
+                }),
+                new MarkdownFile({
+                    filePath: 'Campaign/NPCs/Waterdeep.md',
+                    lookupKeys: ['Waterdeep', 'NPCs/Waterdeep', 'Campaign/NPCs/Waterdeep'],
+                    htmlContent: '<p>Short name</p>',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.short'
+                }),
+                new MarkdownFile({
+                    filePath: 'Campaign/NPCs/WaterdeepLongName.md',
+                    lookupKeys: ['Waterdeep', 'NPCs/Waterdeep', 'Campaign/NPCs/Waterdeep'],
+                    htmlContent: '<p>Long name</p>',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.long'
+                })
+            ];
+
+            const result = resolvePlaceholders(markdownFiles, []);
+
+            expect(result[0].htmlContent).toBe(
+                '<p>Check @UUID[JournalEntry.xxx.JournalEntryPage.short]{Waterdeep}</p>'
+            );
+        });
+
+        it('should work correctly when source file is in root', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Notes.md',
+                    lookupKeys: ['Notes'],
+                    htmlContent: '<p>See {{LINK:0}}</p>',
+                    links: [{
+                        obsidianTarget: 'Target',
+                        displayText: null,
+                        heading: null,
+                        isEmbed: false,
+                        originalText: '[[Target]]',
+                        placeholder: '{{LINK:0}}'
+                    }],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.notes'
+                }),
+                new MarkdownFile({
+                    filePath: 'Target.md',
+                    lookupKeys: ['Target'],
+                    htmlContent: '<p>Target in root</p>',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.target-root'
+                }),
+                new MarkdownFile({
+                    filePath: 'Folder/Target.md',
+                    lookupKeys: ['Target', 'Folder/Target'],
+                    htmlContent: '<p>Target in folder</p>',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.target-folder'
+                })
+            ];
+
+            const result = resolvePlaceholders(markdownFiles, []);
+
+            expect(result[0].htmlContent).toBe(
+                '<p>See @UUID[JournalEntry.xxx.JournalEntryPage.target-root]{Target}</p>'
+            );
         });
     });
 

@@ -12,7 +12,7 @@ export default function resolvePlaceholders(markdownFiles, nonMarkdownFiles) {
     for (const markdownFile of markdownFiles) {
         let htmlContent = markdownFile.htmlContent;
 
-        htmlContent = resolveLinks(htmlContent, markdownFile.links, linkMap);
+        htmlContent = resolveLinks(htmlContent, markdownFile.links, linkMap, markdownFile.filePath);
         htmlContent = resolveAssets(htmlContent, markdownFile.assets, assetFiles);
 
         markdownFile.htmlContent = htmlContent;
@@ -44,7 +44,28 @@ function buildAssetFiles(nonMarkdownFiles) {
     return nonMarkdownFiles.filter(f => f.foundryDataPath);
 }
 
-function selectBestMatch(candidates) {
+/**
+ * Selects the best matching file for a link target using context-aware resolution.
+ *
+ * Resolution priority (matching Obsidian's behavior):
+ * 1. Files in the same folder as the source file
+ * 2. Files in parent folders (walking up the tree)
+ * 3. Files anywhere in the vault (shortest path wins as tiebreaker)
+ *
+ * Examples:
+ *   Source: "Campaign/NPCs/Villain.md"
+ *   Link: "[[Waterdeep]]"
+ *
+ *   Candidates:
+ *     "Campaign/NPCs/Waterdeep.md"        - Priority 1 (same folder)
+ *     "Campaign/Locations/Waterdeep.md"   - Priority 2 (parent folder)
+ *     "Other/Places/Waterdeep.md"         - Priority 3 (fallback)
+ *
+ * @param {Array<MarkdownFile>} candidates - All files matching the link target
+ * @param {string} sourceFilePath - Full path of the file containing the link
+ * @returns {MarkdownFile|null} Best matching file, or null if no candidates
+ */
+function selectBestMatch(candidates, sourceFilePath) {
     if (candidates.length === 0) {
         return null;
     }
@@ -52,6 +73,69 @@ function selectBestMatch(candidates) {
         return candidates[0];
     }
 
+    const sourceFolderPath = extractFolderPath(sourceFilePath);
+
+    const sameFolder = candidates.filter(c =>
+        extractFolderPath(c.filePath) === sourceFolderPath
+    );
+    if (sameFolder.length > 0) {
+        return pickShortestPath(sameFolder);
+    }
+
+    const parentFolders = getParentFolders(sourceFolderPath);
+    for (const parentFolder of parentFolders) {
+        const inParent = candidates.filter(c =>
+            extractFolderPath(c.filePath) === parentFolder
+        );
+        if (inParent.length > 0) {
+            return pickShortestPath(inParent);
+        }
+    }
+
+    return pickShortestPath(candidates);
+}
+
+/**
+ * Extracts the folder path from a full file path.
+ *
+ * @param {string} filePath - Full file path (e.g., "folder/subfolder/file.md")
+ * @returns {string} Folder path (e.g., "folder/subfolder")
+ */
+function extractFolderPath(filePath) {
+    const lastSlash = filePath.lastIndexOf('/');
+    return lastSlash === -1 ? '' : filePath.substring(0, lastSlash);
+}
+
+/**
+ * Gets all parent folders from most specific to root.
+ *
+ * @param {string} folderPath - Folder path (e.g., "Campaign/NPCs")
+ * @returns {Array<string>} Parent folders (e.g., ["Campaign", ""])
+ */
+function getParentFolders(folderPath) {
+    if (!folderPath) {
+        return [];
+    }
+
+    const parts = folderPath.split('/');
+    const parents = [];
+
+    for (let i = parts.length - 1; i > 0; i--) {
+        parents.push(parts.slice(0, i).join('/'));
+    }
+
+    parents.push('');
+
+    return parents;
+}
+
+/**
+ * Picks the file with the shortest path from a list of candidates.
+ *
+ * @param {Array<MarkdownFile>} candidates - Files to compare
+ * @returns {MarkdownFile} File with shortest path
+ */
+function pickShortestPath(candidates) {
     return candidates.reduce((best, current) => {
         return current.filePath.length < best.filePath.length ? current : best;
     });
@@ -76,7 +160,7 @@ function findBestAssetMatch(obsidianPath, nonMarkdownFiles) {
     return best.foundryDataPath;
 }
 
-function resolveLinks(htmlContent, links, linkMap) {
+function resolveLinks(htmlContent, links, linkMap, sourceFilePath) {
     if (!Array.isArray(links) || links.length === 0) {
         return htmlContent;
     }
@@ -84,7 +168,7 @@ function resolveLinks(htmlContent, links, linkMap) {
     for (const link of links) {
         const lowercaseTarget = link.obsidianTarget.toLowerCase();
         const candidates = linkMap.get(lowercaseTarget) || [];
-        const targetFile = selectBestMatch(candidates);
+        const targetFile = selectBestMatch(candidates, sourceFilePath);
 
         if (targetFile) {
             const displayText = link.displayText || link.obsidianTarget;
