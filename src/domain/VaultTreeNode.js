@@ -8,6 +8,7 @@ export default class VaultTreeNode {
         path: '',
         isDirectory: false,
         isSelected: true,
+        isIndeterminate: false,
         children: undefined
     };
 
