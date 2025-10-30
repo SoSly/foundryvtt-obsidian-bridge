@@ -1,4 +1,5 @@
 import ImportDialog from './ImportDialog.js';
+import { registerHandlebarsHelpers } from './registerHandlebarsHelpers.js';
 
 let importDialogInstance = null;
 
@@ -26,6 +27,7 @@ async function onRenderJournalDirectory(app, html, data) {
     header.append(button);
 }
 
-export function registerImportHooks() {
+export async function registerImportHooks() {
+    await registerHandlebarsHelpers();
     Hooks.on('renderJournalDirectory', onRenderJournalDirectory);
 }

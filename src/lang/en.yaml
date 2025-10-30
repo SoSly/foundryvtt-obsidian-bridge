@@ -9,6 +9,9 @@ obsidian-bridge:
     vault-path-hint: Select the root directory of your Obsidian vault
     select-vault-button: Select Vault
 
+    file-selection-label: Select Files and Folders to Import
+    file-selection-hint: Choose which files and folders from your vault to import. Folders are shown only if they contain markdown files.
+
     combine-notes-label: Combine multiple notes into pages
     combine-notes-hint: When enabled, multiple markdown files will be combined into multi-page journal entries
 

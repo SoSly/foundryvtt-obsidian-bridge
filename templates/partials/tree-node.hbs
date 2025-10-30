@@ -1,0 +1,33 @@
+{{#if isDirectory}}
+    <div class="tree-item folder {{#if isRoot}}root {{/if}}collapsed" data-path="{{path}}">
+        <div class="tree-header">
+            {{#unless isRoot}}<span class="tree-char">{{treeChar}}</span>{{/unless}}
+            <button type="button" class="tree-toggle">
+                <i class="fas fa-caret-right"></i>
+            </button>
+            <label>
+                <input type="checkbox" {{checked isSelected}} />
+                <i class="fas fa-folder"></i>
+                <span>{{name}}</span>
+            </label>
+        </div>
+        <div class="tree-children" style="display: none;">
+            {{#each children}}
+                {{> tree-node this}}
+            {{/each}}
+        </div>
+    </div>
+{{else}}
+    {{#if (endsWith name ".md")}}
+    <div class="tree-item file" data-path="{{path}}">
+        <div class="tree-header">
+            <span class="tree-char">{{treeChar}}</span>
+            <label>
+                <input type="checkbox" {{checked isSelected}} />
+                <i class="fas fa-file"></i>
+                <span>{{name}}</span>
+            </label>
+        </div>
+    </div>
+    {{/if}}
+{{/if}}

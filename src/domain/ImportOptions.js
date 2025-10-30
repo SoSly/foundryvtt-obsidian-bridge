@@ -2,6 +2,7 @@ export default class ImportOptions {
     static DEFAULTS = {
         vaultPath: '',
         vaultFiles: null,
+        vaultFileTree: null,
         combineNotes: false,
         skipFolderCombine: false,
         importAssets: false,
