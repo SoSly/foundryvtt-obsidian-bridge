@@ -40,29 +40,29 @@ export async function uploadAssets(markdownFiles, vaultFiles, importOptions) {
     const directories = collectRequiredDirectories(vaultPaths, importOptions.dataPath);
     await ensureDirectoriesExist(directories);
 
-    const nonMarkdownFiles = [];
-    const uploadedPaths = [];
+    const uploadResults = await Promise.all(
+        resolvedAssets.map(async ({ vaultFile, vaultRelativePath }) => {
+            const pathParts = vaultRelativePath.split('/');
+            pathParts.pop();
+            const directory = pathParts.length > 0
+                ? `${importOptions.dataPath}/${pathParts.join('/')}`
+                : importOptions.dataPath;
 
-    const uploadPromises = resolvedAssets.map(async ({ vaultFile, vaultRelativePath }) => {
-        const pathParts = vaultRelativePath.split('/');
-        pathParts.pop();
-        const directory = pathParts.length > 0
-            ? `${importOptions.dataPath}/${pathParts.join('/')}`
-            : importOptions.dataPath;
+            const response = await FilePicker.upload('data', directory, vaultFile, {}, { notify: false });
 
-        const response = await FilePicker.upload('data', directory, vaultFile, {}, { notify: false });
+            if (!response || !response.path) {
+                throw new Error(`Failed to upload asset: ${vaultRelativePath}`);
+            }
 
-        if (!response || !response.path) {
-            throw new Error(`Failed to upload asset: ${vaultRelativePath}`);
-        }
+            const nonMarkdownFile = new NonMarkdownFile({ filePath: vaultRelativePath });
+            nonMarkdownFile.foundryDataPath = response.path;
 
-        const nonMarkdownFile = new NonMarkdownFile({ filePath: vaultRelativePath });
-        nonMarkdownFile.foundryDataPath = response.path;
-        nonMarkdownFiles.push(nonMarkdownFile);
-        uploadedPaths.push(response.path);
-    });
+            return { nonMarkdownFile, uploadedPath: response.path };
+        })
+    );
 
-    await Promise.all(uploadPromises);
+    const nonMarkdownFiles = uploadResults.map(r => r.nonMarkdownFile);
+    const uploadedPaths = uploadResults.map(r => r.uploadedPath);
 
     return { nonMarkdownFiles, uploadedPaths };
 }
