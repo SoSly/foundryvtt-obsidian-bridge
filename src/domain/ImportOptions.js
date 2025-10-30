@@ -19,6 +19,22 @@ export default class ImportOptions {
     }
 
     isValid() {
-        return this.vaultFiles && this.vaultFiles.length > 0;
+        if (!this.vaultFiles || this.vaultFiles.length === 0) {
+            return false;
+        }
+
+        if (!this.vaultFileTree) {
+            return false;
+        }
+
+        if (this.importAssets && !this.dataPath) {
+            return false;
+        }
+
+        if (this.skipFolderCombine && !this.combineNotes) {
+            return false;
+        }
+
+        return true;
     }
 }
