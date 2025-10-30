@@ -1,17 +1,10 @@
 import ImportOptions from '../../domain/ImportOptions';
 import { buildFileTree } from '../../usecase/import/buildFileTree';
-import { collectSelectedPaths } from '../../usecase/import/collectSelectedPaths';
-import { filterFilesBySelection } from '../../usecase/import/filterFilesBySelection';
-import parseMarkdownFiles from '../../usecase/import/parseMarkdownFiles';
-import planJournalStructure from '../../usecase/import/planJournalStructure';
-import resolvePlaceholders from '../../usecase/import/resolvePlaceholders';
 import { annotateTreeForDisplay } from '../../usecase/import/annotateTreeForDisplay';
 import { findNodeByPath } from '../../usecase/import/findNodeByPath';
 import { updateTreeSelection } from '../../usecase/import/updateTreeSelection';
-import { createJournalDocuments, rollbackJournalDocuments } from './createJournalDocuments';
-import { uploadAssets, rollbackAssetUploads } from './uploadAssets';
-import updatePageContent from './updatePageContent';
-import rollbackPageUpdates from './rollbackPageUpdates';
+import executePipeline from '../../usecase/executePipeline';
+import createImportPipeline from './createImportPipeline';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -231,70 +224,29 @@ export default class ImportDialog extends HandlebarsApplicationMixin(Application
             return;
         }
 
-        const originalVaultFiles = this.importOptions.vaultFiles;
-        let filesToParse = originalVaultFiles;
-
-        if (this.importOptions.vaultFileTree) {
-            const selectedPaths = collectSelectedPaths(this.importOptions.vaultFileTree);
-            const selectedFiles = filterFilesBySelection(originalVaultFiles, selectedPaths);
-
-            if (selectedFiles.length === 0) {
-                ui.notifications.warn('No files selected for import');
-                return;
-            }
-
-            filesToParse = selectedFiles;
-        }
-
         const showdownConverter = new showdown.Converter();
         Object.entries(CONST.SHOWDOWN_OPTIONS).forEach(([k, v]) => {
             showdownConverter.setOption(k, v);
         });
 
-        const markdownFiles = await parseMarkdownFiles(showdownConverter, filesToParse);
-        const structurePlan = planJournalStructure(markdownFiles, this.importOptions);
+        const pipeline = createImportPipeline(this.importOptions, showdownConverter);
+        const result = await executePipeline(pipeline);
 
-        let phase3Result = null;
-        let phase4Result = null;
-        let phase6Result = null;
-
-        try {
-            phase3Result = await createJournalDocuments(structurePlan, markdownFiles);
-
-            if (this.importOptions.importAssets) {
-                phase4Result = await uploadAssets(markdownFiles, originalVaultFiles, this.importOptions);
-            }
-
-            resolvePlaceholders(markdownFiles, phase4Result?.nonMarkdownFiles || []);
-
-            phase6Result = await updatePageContent(markdownFiles);
-
-        } catch (error) {
-            console.error('Import failed:', error);
-
-            if (phase6Result) {
-                await rollbackPageUpdates(phase6Result.updatedPages);
-            }
-
-            if (phase4Result) {
-                await rollbackAssetUploads(phase4Result.uploadedPaths);
-            }
-
-            if (phase3Result) {
-                await rollbackJournalDocuments(
-                    phase3Result.createdPages,
-                    phase3Result.createdEntries,
-                    phase3Result.createdFolders
-                );
-            }
-
-            ui.notifications.error(`Import failed: ${error.message}`);
+        if (!result.success) {
+            console.error('Import failed:', result.error);
+            ui.notifications.error(`Import failed: ${result.error.message}`);
             return;
         }
 
-        const assetCount = phase4Result?.uploadedPaths.length || 0;
-        const pageCount = phase6Result?.updatedPages.length || 0;
-        ui.notifications.info(`Import complete: ${pageCount} pages updated from ${markdownFiles.length} files, ${assetCount} assets`);
+        const parseResult = result.getPhaseResult('parse-markdown');
+        const uploadResult = result.getPhaseResult('upload-assets');
+        const updateResult = result.getPhaseResult('update-content');
+
+        const assetCount = uploadResult?.uploadedPaths?.length || 0;
+        const pageCount = updateResult?.updatedPages?.length || 0;
+        const fileCount = parseResult?.markdownFiles?.length || 0;
+
+        ui.notifications.info(`Import complete: ${pageCount} pages updated from ${fileCount} files, ${assetCount} assets`);
 
         this.close();
     }
