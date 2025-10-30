@@ -1,4 +1,35 @@
+/**
+ * Matches Obsidian wiki-link syntax with optional embeds, headings, and display text.
+ *
+ * Examples:
+ *   [[Page Name]]           - Basic link
+ *   [[Page#Heading]]        - Link with heading
+ *   [[Page|Display Text]]   - Link with custom display
+ *   ![[Image.png]]          - Embedded content
+ *   [[Page#Heading|Text]]   - Link with heading and custom display
+ *
+ * Capture groups:
+ *   1: ! (embed marker, optional)
+ *   2: target page name (required)
+ *   3: full heading match including # (optional)
+ *   4: heading text after # (optional)
+ *   5: full display text match including | (optional)
+ *   6: display text after | (optional)
+ *
+ * Does not match: External URLs, standard markdown links []()
+ *
+ * Reference: https://help.obsidian.md/Linking+notes+and+files/Internal+links
+ */
 const OBSIDIAN_LINK_PATTERN = /(!?)\[\[([^\]#|]+)(#([^\]|]+))?(\|([^\]]+))?\]\]/g;
+
+/**
+ * Matches file extensions for determining asset vs page links.
+ *
+ * Examples:
+ *   image.png  - matches ".png"
+ *   file.md    - matches ".md"
+ *   document   - no match
+ */
 const FILE_EXTENSION_PATTERN = /\.[^.]+$/;
 
 export default function extractObsidianLinks(markdownText) {
