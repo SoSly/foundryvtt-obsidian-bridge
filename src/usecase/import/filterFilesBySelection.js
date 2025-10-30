@@ -10,9 +10,11 @@ export function filterFilesBySelection(fileList, selectedPaths) {
         const parts = file.webkitRelativePath.split('/');
         const relativePath = parts.slice(1).join('/');
 
-        if (selectedPaths.has(relativePath)) {
-            result.push(file);
+        if (!selectedPaths.has(relativePath)) {
+            continue;
         }
+
+        result.push(file);
     }
 
     return result;

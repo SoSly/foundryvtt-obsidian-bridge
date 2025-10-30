@@ -1,14 +1,26 @@
-import ImportOptions from '../../domain/ImportOptions.js';
-import { buildFileTree } from '../../usecase/import/buildFileTree.js';
-import { collectSelectedPaths } from '../../usecase/import/collectSelectedPaths.js';
-import { filterFilesBySelection } from '../../usecase/import/filterFilesBySelection.js';
+import ImportOptions from '../../domain/ImportOptions';
+import { buildFileTree } from '../../usecase/import/buildFileTree';
+import { collectSelectedPaths } from '../../usecase/import/collectSelectedPaths';
+import { filterFilesBySelection } from '../../usecase/import/filterFilesBySelection';
+import parseMarkdownFiles from '../../usecase/import/parseMarkdownFiles';
+import planJournalStructure from '../../usecase/import/planJournalStructure';
+import resolvePlaceholders from '../../usecase/import/resolvePlaceholders';
+import { annotateTreeForDisplay } from '../../usecase/import/annotateTreeForDisplay';
+import { findNodeByPath } from '../../usecase/import/findNodeByPath';
+import { updateTreeSelection } from '../../usecase/import/updateTreeSelection';
+import { createJournalDocuments, rollbackJournalDocuments } from './createJournalDocuments';
+import { uploadAssets, rollbackAssetUploads } from './uploadAssets';
+import updatePageContent from './updatePageContent';
+import rollbackPageUpdates from './rollbackPageUpdates';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 export default class ImportDialog extends HandlebarsApplicationMixin(ApplicationV2) {
     constructor(options = {}) {
         super(options);
-        this.importOptions = new ImportOptions();
+        this.importOptions = new ImportOptions({
+            dataPath: `worlds/${game.world.id}/obsidian-assets`
+        });
     }
 
     static DEFAULT_OPTIONS = {
@@ -102,7 +114,7 @@ export default class ImportDialog extends HandlebarsApplicationMixin(Application
             return;
         }
 
-        const annotatedTree = this._annotateTreeWithChars(this.importOptions.vaultFileTree, true, true);
+        const annotatedTree = annotateTreeForDisplay(this.importOptions.vaultFileTree, true, true);
         const template = Handlebars.partials['tree-node'];
         treeContainer.innerHTML = template(annotatedTree);
 
@@ -121,28 +133,10 @@ export default class ImportDialog extends HandlebarsApplicationMixin(Application
                 this._handleCheckboxChange(checkbox);
             });
         });
+
+        this._syncCheckboxStates();
     }
 
-    _annotateTreeWithChars(node, isRoot = true, isLast = true) {
-        if (!node) {
-            return null;
-        }
-
-        const annotated = {
-            ...node,
-            isRoot,
-            treeChar: isRoot ? '' : (isLast ? '└─ ' : '├─ ')
-        };
-
-        if (node.isDirectory && node.children) {
-            const filteredChildren = node.children.filter(child => child.isDirectory || child.name.endsWith('.md'));
-            annotated.children = filteredChildren.map((child, index) =>
-                this._annotateTreeWithChars(child, false, index === filteredChildren.length - 1)
-            );
-        }
-
-        return annotated;
-    }
 
     _handleToggleFolder(toggleButton) {
         const folderItem = toggleButton.closest('.tree-item.folder');
@@ -181,7 +175,7 @@ export default class ImportDialog extends HandlebarsApplicationMixin(Application
 
         const path = treeItem.dataset.path;
         const isChecked = checkbox.checked;
-        this._updateTreeNodeSelection(this.importOptions.vaultFileTree, path, isChecked);
+        updateTreeSelection(this.importOptions.vaultFileTree, path, isChecked);
         this._syncCheckboxStates();
     }
 
@@ -199,7 +193,7 @@ export default class ImportDialog extends HandlebarsApplicationMixin(Application
                 return;
             }
 
-            const node = this._findNodeByPath(this.importOptions.vaultFileTree, path);
+            const node = findNodeByPath(this.importOptions.vaultFileTree, path);
             if (node) {
                 checkbox.checked = node.isSelected;
                 checkbox.indeterminate = node.isIndeterminate || false;
@@ -207,82 +201,6 @@ export default class ImportDialog extends HandlebarsApplicationMixin(Application
         });
     }
 
-    _findNodeByPath(node, targetPath) {
-        if (!node) {
-            return null;
-        }
-
-        if (node.path === targetPath) {
-            return node;
-        }
-
-        if (node.isDirectory && node.children) {
-            for (const child of node.children) {
-                const found = this._findNodeByPath(child, targetPath);
-                if (found) {
-                    return found;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    _updateTreeNodeSelection(node, targetPath, isSelected) {
-        if (!node) {
-            return false;
-        }
-
-        if (node.path === targetPath) {
-            node.isSelected = isSelected;
-            node.isIndeterminate = false;
-            this._updateChildrenSelection(node, isSelected);
-            return true;
-        }
-
-        if (node.isDirectory && node.children) {
-            for (const child of node.children) {
-                if (this._updateTreeNodeSelection(child, targetPath, isSelected)) {
-                    this._updateParentSelection(node);
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    _updateChildrenSelection(node, isSelected) {
-        if (!node.isDirectory || !node.children) {
-            return;
-        }
-
-        for (const child of node.children) {
-            child.isSelected = isSelected;
-            child.isIndeterminate = false;
-            this._updateChildrenSelection(child, isSelected);
-        }
-    }
-
-    _updateParentSelection(node) {
-        if (!node.isDirectory || !node.children) {
-            return;
-        }
-
-        const allChildrenSelected = node.children.every(child => child.isSelected && !child.isIndeterminate);
-        const someChildrenSelected = node.children.some(child => child.isSelected || child.isIndeterminate);
-
-        if (allChildrenSelected) {
-            node.isSelected = true;
-            node.isIndeterminate = false;
-        } else if (someChildrenSelected) {
-            node.isSelected = false;
-            node.isIndeterminate = true;
-        } else {
-            node.isSelected = false;
-            node.isIndeterminate = false;
-        }
-    }
 
     static _onSelectVault(event, target) {
         event.preventDefault();
@@ -313,18 +231,71 @@ export default class ImportDialog extends HandlebarsApplicationMixin(Application
             return;
         }
 
+        const originalVaultFiles = this.importOptions.vaultFiles;
+        let filesToParse = originalVaultFiles;
+
         if (this.importOptions.vaultFileTree) {
             const selectedPaths = collectSelectedPaths(this.importOptions.vaultFileTree);
-            const selectedFiles = filterFilesBySelection(this.importOptions.vaultFiles, selectedPaths);
+            const selectedFiles = filterFilesBySelection(originalVaultFiles, selectedPaths);
 
             if (selectedFiles.length === 0) {
                 ui.notifications.warn('No files selected for import');
                 return;
             }
 
-            this.importOptions.vaultFiles = selectedFiles;
+            filesToParse = selectedFiles;
         }
 
-        ui.notifications.info('Import functionality not yet implemented');
+        const showdownConverter = new showdown.Converter();
+        Object.entries(CONST.SHOWDOWN_OPTIONS).forEach(([k, v]) => {
+            showdownConverter.setOption(k, v);
+        });
+
+        const markdownFiles = await parseMarkdownFiles(showdownConverter, filesToParse);
+        const structurePlan = planJournalStructure(markdownFiles, this.importOptions);
+
+        let phase3Result = null;
+        let phase4Result = null;
+        let phase6Result = null;
+
+        try {
+            phase3Result = await createJournalDocuments(structurePlan, markdownFiles);
+
+            if (this.importOptions.importAssets) {
+                phase4Result = await uploadAssets(markdownFiles, originalVaultFiles, this.importOptions);
+            }
+
+            resolvePlaceholders(markdownFiles, phase4Result?.nonMarkdownFiles || []);
+
+            phase6Result = await updatePageContent(markdownFiles);
+
+        } catch (error) {
+            console.error('Import failed:', error);
+
+            if (phase6Result) {
+                await rollbackPageUpdates(phase6Result.updatedPages);
+            }
+
+            if (phase4Result) {
+                await rollbackAssetUploads(phase4Result.uploadedPaths);
+            }
+
+            if (phase3Result) {
+                await rollbackJournalDocuments(
+                    phase3Result.createdPages,
+                    phase3Result.createdEntries,
+                    phase3Result.createdFolders
+                );
+            }
+
+            ui.notifications.error(`Import failed: ${error.message}`);
+            return;
+        }
+
+        const assetCount = phase4Result?.uploadedPaths.length || 0;
+        const pageCount = phase6Result?.updatedPages.length || 0;
+        ui.notifications.info(`Import complete: ${pageCount} pages updated from ${markdownFiles.length} files, ${assetCount} assets`);
+
+        this.close();
     }
 }
