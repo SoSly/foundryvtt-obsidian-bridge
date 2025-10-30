@@ -2,7 +2,7 @@ import ImportOptions from '../../domain/ImportOptions';
 import { buildFileTree } from '../../usecase/import/buildFileTree';
 import { annotateTreeForDisplay } from '../../usecase/import/annotateTreeForDisplay';
 import { findNodeByPath } from '../../usecase/import/findNodeByPath';
-import { updateTreeSelection } from '../../usecase/import/updateTreeSelection';
+import { updateTreeSelection } from './updateTreeSelection';
 import executePipeline from '../../usecase/executePipeline';
 import createImportPipeline from './createImportPipeline';
 
