@@ -28,19 +28,17 @@ export async function createJournalDocuments(plan, markdownFiles) {
 async function createFolders(folders, createdFolders) {
     const folderMap = new Map();
 
+    const existingFoldersIndex = new Map();
+    for (const folder of game.folders.filter(f => f.type === 'JournalEntry')) {
+        const key = `${folder.folder?.id ?? null}:${folder.name}`;
+        existingFoldersIndex.set(key, folder);
+    }
+
     for (const folderPlan of folders) {
         const parentId = folderPlan.parentPath ? folderMap.get(folderPlan.parentPath)?.folder.id : null;
 
-        const existing = game.folders.find(f => {
-            if (f.type !== 'JournalEntry') {
-                return false;
-            }
-            if (f.name !== folderPlan.name) {
-                return false;
-            }
-            const folderId = f.folder?.id ?? null;
-            return folderId === parentId;
-        });
+        const lookupKey = `${parentId}:${folderPlan.name}`;
+        const existing = existingFoldersIndex.get(lookupKey);
 
         if (existing) {
             folderMap.set(folderPlan.path, { folder: existing, isNew: false });
@@ -67,16 +65,17 @@ async function createFolders(folders, createdFolders) {
 async function createEntries(entries, folderMap, createdEntries) {
     const entryMap = new Map();
 
+    const existingEntriesIndex = new Map();
+    for (const entry of game.journal) {
+        const key = `${entry.folder?.id ?? null}:${entry.name}`;
+        existingEntriesIndex.set(key, entry);
+    }
+
     for (const entryPlan of entries) {
         const folderId = entryPlan.folderPath ? folderMap.get(entryPlan.folderPath)?.folder.id : null;
 
-        const existing = game.journal.find(j => {
-            if (j.name !== entryPlan.name) {
-                return false;
-            }
-            const entryFolderId = j.folder?.id ?? null;
-            return entryFolderId === folderId;
-        });
+        const lookupKey = `${folderId}:${entryPlan.name}`;
+        const existing = existingEntriesIndex.get(lookupKey);
 
         if (existing) {
             entryMap.set(entryPlan, { entry: existing, isNew: false });
@@ -103,8 +102,13 @@ async function createPages(entries, entryMap, createdPages) {
     for (const entryPlan of entries) {
         const { entry } = entryMap.get(entryPlan);
 
+        const existingPagesIndex = new Map();
+        for (const page of entry.pages) {
+            existingPagesIndex.set(page.name, page);
+        }
+
         for (const pagePlan of entryPlan.pages) {
-            const existing = entry.pages.find(p => p.name === pagePlan.name);
+            const existing = existingPagesIndex.get(pagePlan.name);
 
             if (existing) {
                 pagePlan.markdownFile.foundryPageUuid = existing.uuid;
