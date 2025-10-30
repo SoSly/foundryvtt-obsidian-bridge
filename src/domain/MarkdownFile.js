@@ -1,3 +1,11 @@
+/**
+ * Represents a markdown file from the vault.
+ * Object is sealed after construction to prevent accidental property additions.
+ *
+ * Properties mutated during pipeline execution:
+ * - htmlContent: Populated by resolvePlaceholders usecase
+ * - foundryPageUuid: Set by createJournalDocuments interface function
+ */
 export default class MarkdownFile {
     static DEFAULTS = {
         filePath: '',
@@ -20,5 +28,7 @@ export default class MarkdownFile {
         if (this.htmlContent === undefined || this.htmlContent === null) {
             throw new Error('MarkdownFile requires htmlContent');
         }
+
+        Object.seal(this);
     }
 }

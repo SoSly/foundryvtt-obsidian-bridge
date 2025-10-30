@@ -38,8 +38,9 @@ export function buildFileTree(fileList) {
         }
     }
 
-    markDirectoriesWithMarkdown(root);
-    pruneDirectoriesWithoutMarkdown(root);
+    const markdownMap = new Map();
+    markDirectoriesWithMarkdown(root, markdownMap);
+    pruneDirectoriesWithoutMarkdown(root, markdownMap);
 
     if (root.children.length === 0) {
         return null;
@@ -59,23 +60,23 @@ function createNode(name, path, isDirectory) {
     });
 }
 
-function markDirectoriesWithMarkdown(node) {
+function markDirectoriesWithMarkdown(node, markdownMap) {
     if (!node.isDirectory) {
         return node.name.endsWith('.md');
     }
 
     let hasMarkdown = false;
     for (const child of node.children) {
-        if (markDirectoriesWithMarkdown(child)) {
+        if (markDirectoriesWithMarkdown(child, markdownMap)) {
             hasMarkdown = true;
         }
     }
 
-    node._hasMarkdown = hasMarkdown;
+    markdownMap.set(node, hasMarkdown);
     return hasMarkdown;
 }
 
-function pruneDirectoriesWithoutMarkdown(node) {
+function pruneDirectoriesWithoutMarkdown(node, markdownMap) {
     if (!node.isDirectory) {
         return;
     }
@@ -85,15 +86,11 @@ function pruneDirectoriesWithoutMarkdown(node) {
             return true;
         }
 
-        if (!child._hasMarkdown) {
+        if (!markdownMap.get(child)) {
             return false;
         }
 
-        pruneDirectoriesWithoutMarkdown(child);
+        pruneDirectoriesWithoutMarkdown(child, markdownMap);
         return true;
     });
-
-    for (const child of node.children) {
-        delete child._hasMarkdown;
-    }
 }

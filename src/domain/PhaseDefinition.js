@@ -1,5 +1,6 @@
 /**
  * Defines a single phase in a pipeline execution.
+ * Object is sealed after construction to prevent accidental property additions.
  *
  * @typedef {Object} PhaseDefinitionData
  * @property {string} name - Unique identifier for this phase
@@ -8,27 +9,33 @@
  * @property {function(Object): boolean} [condition] - Optional predicate to determine if phase should execute
  */
 export default class PhaseDefinition {
+    static DEFAULTS = {
+        name: '',
+        execute: null,
+        rollback: null,
+        condition: null
+    };
+
     /**
-     * @param {PhaseDefinitionData} data
+     * @param {PhaseDefinitionData} options
      */
-    constructor(data) {
-        if (!data.name || typeof data.name !== 'string') {
+    constructor(options = {}) {
+        Object.assign(this, PhaseDefinition.DEFAULTS, options);
+
+        if (!this.name || typeof this.name !== 'string') {
             throw new Error('PhaseDefinition requires a valid name');
         }
-        if (typeof data.execute !== 'function') {
+        if (typeof this.execute !== 'function') {
             throw new Error('PhaseDefinition requires an execute function');
         }
-        if (data.rollback !== undefined && typeof data.rollback !== 'function') {
+        if (this.rollback !== null && typeof this.rollback !== 'function') {
             throw new Error('PhaseDefinition rollback must be a function');
         }
-        if (data.condition !== undefined && typeof data.condition !== 'function') {
+        if (this.condition !== null && typeof this.condition !== 'function') {
             throw new Error('PhaseDefinition condition must be a function');
         }
 
-        this.name = data.name;
-        this.execute = data.execute;
-        this.rollback = data.rollback || null;
-        this.condition = data.condition || null;
+        Object.seal(this);
     }
 
     /**

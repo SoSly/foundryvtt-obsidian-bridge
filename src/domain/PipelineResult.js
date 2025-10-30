@@ -1,5 +1,7 @@
 /**
  * Result of a pipeline execution.
+ * Object is sealed after construction to prevent accidental property additions.
+ * The phaseResults Map is mutated as phases execute.
  *
  * @typedef {Object} PipelineResultData
  * @property {boolean} success - Whether the pipeline completed successfully
@@ -8,14 +10,24 @@
  * @property {string} [failedPhase] - Name of the phase that failed, if any
  */
 export default class PipelineResult {
+    static DEFAULTS = {
+        success: false,
+        phaseResults: null,
+        error: null,
+        failedPhase: null
+    };
+
     /**
-     * @param {PipelineResultData} data
+     * @param {PipelineResultData} options
      */
-    constructor(data = {}) {
-        this.success = data.success ?? false;
-        this.phaseResults = data.phaseResults || new Map();
-        this.error = data.error || null;
-        this.failedPhase = data.failedPhase || null;
+    constructor(options = {}) {
+        Object.assign(this, PipelineResult.DEFAULTS, options);
+
+        if (!this.phaseResults) {
+            this.phaseResults = new Map();
+        }
+
+        Object.seal(this);
     }
 
     /**

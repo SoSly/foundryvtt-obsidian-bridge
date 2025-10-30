@@ -1,3 +1,7 @@
+/**
+ * Represents a node in the vault file tree.
+ * Object is sealed after construction to prevent accidental property additions.
+ */
 export default class VaultTreeNode {
     static DEFAULTS = {
         name: '',
@@ -17,5 +21,7 @@ export default class VaultTreeNode {
         if (this.isDirectory && this.children === undefined) {
             this.children = [];
         }
+
+        Object.seal(this);
     }
 }

@@ -1,3 +1,7 @@
+/**
+ * Configuration options for importing an Obsidian vault.
+ * Object is sealed after construction to prevent accidental property additions.
+ */
 export default class ImportOptions {
     static DEFAULTS = {
         vaultPath: '',
@@ -11,6 +15,7 @@ export default class ImportOptions {
 
     constructor(options = {}) {
         Object.assign(this, ImportOptions.DEFAULTS, options);
+        Object.seal(this);
     }
 
     isValid() {

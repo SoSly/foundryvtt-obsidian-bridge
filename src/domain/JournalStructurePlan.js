@@ -1,3 +1,7 @@
+/**
+ * Plan for creating Foundry journal structure.
+ * Object is sealed after construction to prevent accidental property additions.
+ */
 export default class JournalStructurePlan {
     static DEFAULTS = {
         folders: [],
@@ -13,5 +17,7 @@ export default class JournalStructurePlan {
         if (!Array.isArray(this.entries)) {
             throw new Error('entries must be an array');
         }
+
+        Object.seal(this);
     }
 }

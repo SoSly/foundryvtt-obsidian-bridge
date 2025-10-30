@@ -1,20 +1,27 @@
 /**
  * Configuration for a pipeline execution.
+ * Object is sealed after construction to prevent accidental property additions.
  *
  * @typedef {Object} PipelineConfigData
  * @property {import('./PhaseDefinition').default[]} phases - Ordered phases to execute
  * @property {Object} context - Shared data passed to all phases
  */
 export default class PipelineConfig {
+    static DEFAULTS = {
+        phases: [],
+        context: {}
+    };
+
     /**
-     * @param {PipelineConfigData} data
+     * @param {PipelineConfigData} options
      */
-    constructor(data) {
-        if (!Array.isArray(data.phases) || data.phases.length === 0) {
+    constructor(options = {}) {
+        Object.assign(this, PipelineConfig.DEFAULTS, options);
+
+        if (!Array.isArray(this.phases) || this.phases.length === 0) {
             throw new Error('PipelineConfig requires at least one phase');
         }
 
-        this.phases = data.phases;
-        this.context = data.context || {};
+        Object.seal(this);
     }
 }
