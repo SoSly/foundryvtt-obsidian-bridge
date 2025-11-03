@@ -1,10 +1,9 @@
 import PipelineConfig from '../domain/PipelineConfig';
 import PhaseDefinition from '../domain/PhaseDefinition';
-import MarkdownFile from '../domain/MarkdownFile.js';
 import { collectSelectedPaths } from '../tree/collect';
 import { filterFilesBySelection } from '../vault/filter';
+import prepareFilesForImport from '../vault/prepare.js';
 import { extractLinkReferences, extractAssetReferences } from '../reference/extractFromMarkdown.js';
-import generateLookupKeys from '../reference/keys.js';
 import replaceWithPlaceholders from '../reference/replace.js';
 import planJournalStructure from '../journal/plan';
 import resolvePlaceholders from '../reference/resolve.js';
@@ -65,32 +64,10 @@ export default function createImportPipeline(importOptions, showdownConverter) {
         new PhaseDefinition({
             name: 'prepare-documents',
             execute: async ctx => {
-                if (!ctx.filesToParse || ctx.filesToParse.length === 0) {
-                    ctx.markdownFiles = [];
-                    return { markdownFiles: [] };
-                }
-
-                const markdownFiles = [];
-
-                for (const file of ctx.filesToParse) {
-                    const markdownText = await file.text();
-                    const lookupKeys = generateLookupKeys(file.webkitRelativePath);
-
-                    const markdownFile = new MarkdownFile({
-                        filePath: file.webkitRelativePath,
-                        lookupKeys,
-                        content: markdownText,
-                        links: [],
-                        assets: [],
-                        foundryPageUuid: null
-                    });
-
-                    markdownFiles.push(markdownFile);
-                }
-
+                const markdownFiles = await prepareFilesForImport(ctx.filesToParse);
                 ctx.markdownFiles = markdownFiles;
-                return { markdownFiles };
-            },
+                return { markdownFiles: markdownFiles.length };
+            }
         }),
 
         new PhaseDefinition({
