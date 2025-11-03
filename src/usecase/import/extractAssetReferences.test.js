@@ -1,4 +1,5 @@
 import extractAssetReferences from '../../../src/usecase/import/extractAssetReferences.js';
+import Reference from '../../../src/domain/Reference.js';
 
 describe('extractAssetReferences', () => {
     it('should extract markdown image syntax', () => {
@@ -6,12 +7,12 @@ describe('extractAssetReferences', () => {
         const result = extractAssetReferences(markdown);
 
         expect(result).toHaveLength(1);
-        expect(result[0]).toEqual({
-            obsidianPath: 'dragon.png',
-            originalText: '![Dragon](dragon.png)',
-            isImage: true,
-            altText: 'Dragon'
-        });
+        expect(result[0]).toBeInstanceOf(Reference);
+        expect(result[0].source).toBe('![Dragon](dragon.png)');
+        expect(result[0].obsidian).toBe('dragon.png');
+        expect(result[0].label).toBe('Dragon');
+        expect(result[0].type).toBe('asset');
+        expect(result[0].isImage).toBe(true);
     });
 
     it('should extract markdown link to PDF', () => {
@@ -19,12 +20,12 @@ describe('extractAssetReferences', () => {
         const result = extractAssetReferences(markdown);
 
         expect(result).toHaveLength(1);
-        expect(result[0]).toEqual({
-            obsidianPath: 'rules.pdf',
-            originalText: '[rulebook](rules.pdf)',
-            isImage: false,
-            altText: 'rulebook'
-        });
+        expect(result[0]).toBeInstanceOf(Reference);
+        expect(result[0].source).toBe('[rulebook](rules.pdf)');
+        expect(result[0].obsidian).toBe('rules.pdf');
+        expect(result[0].label).toBe('rulebook');
+        expect(result[0].type).toBe('asset');
+        expect(result[0].isImage).toBe(false);
     });
 
     it('should extract Obsidian embedded image', () => {
@@ -32,12 +33,12 @@ describe('extractAssetReferences', () => {
         const result = extractAssetReferences(markdown);
 
         expect(result).toHaveLength(1);
-        expect(result[0]).toEqual({
-            obsidianPath: 'dragon.png',
-            originalText: '![[dragon.png]]',
-            isImage: true,
-            altText: ''
-        });
+        expect(result[0]).toBeInstanceOf(Reference);
+        expect(result[0].source).toBe('![[dragon.png]]');
+        expect(result[0].obsidian).toBe('dragon.png');
+        expect(result[0].label).toBeNull();
+        expect(result[0].type).toBe('asset');
+        expect(result[0].isImage).toBe(true);
     });
 
     it('should extract Obsidian link to file', () => {
@@ -45,12 +46,12 @@ describe('extractAssetReferences', () => {
         const result = extractAssetReferences(markdown);
 
         expect(result).toHaveLength(1);
-        expect(result[0]).toEqual({
-            obsidianPath: 'rules.pdf',
-            originalText: '[[rules.pdf]]',
-            isImage: false,
-            altText: ''
-        });
+        expect(result[0]).toBeInstanceOf(Reference);
+        expect(result[0].source).toBe('[[rules.pdf]]');
+        expect(result[0].obsidian).toBe('rules.pdf');
+        expect(result[0].label).toBeNull();
+        expect(result[0].type).toBe('asset');
+        expect(result[0].isImage).toBe(false);
     });
 
     it('should extract assets with paths', () => {
@@ -58,7 +59,7 @@ describe('extractAssetReferences', () => {
         const result = extractAssetReferences(markdown);
 
         expect(result).toHaveLength(1);
-        expect(result[0].obsidianPath).toBe('assets/images/dragon.png');
+        expect(result[0].obsidian).toBe('assets/images/dragon.png');
     });
 
     it('should extract multiple assets', () => {
@@ -66,8 +67,8 @@ describe('extractAssetReferences', () => {
         const result = extractAssetReferences(markdown);
 
         expect(result).toHaveLength(2);
-        expect(result[0].obsidianPath).toBe('a.png');
-        expect(result[1].obsidianPath).toBe('b.jpg');
+        expect(result[0].obsidian).toBe('a.png');
+        expect(result[1].obsidian).toBe('b.jpg');
     });
 
     it('should not extract markdown file links', () => {
@@ -94,9 +95,9 @@ describe('extractAssetReferences', () => {
         const result = extractAssetReferences(markdown);
 
         expect(result.length).toBeGreaterThan(5);
-        expect(result.some(a => a.obsidianPath === 'a.png')).toBe(true);
-        expect(result.some(a => a.obsidianPath === 'd.pdf')).toBe(true);
-        expect(result.some(a => a.obsidianPath === 'audio.mp3')).toBe(true);
+        expect(result.some(a => a.obsidian === 'a.png')).toBe(true);
+        expect(result.some(a => a.obsidian === 'd.pdf')).toBe(true);
+        expect(result.some(a => a.obsidian === 'audio.mp3')).toBe(true);
     });
 
     it('should return empty array for text with no assets', () => {

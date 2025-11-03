@@ -141,9 +141,9 @@ function pickShortestPath(candidates) {
     });
 }
 
-function findBestAssetMatch(obsidianPath, nonMarkdownFiles) {
+function findBestAssetMatch(obsidian, nonMarkdownFiles) {
     const matches = nonMarkdownFiles.filter(f =>
-        f.filePath.endsWith(obsidianPath) || f.filePath === obsidianPath
+        f.filePath.endsWith(obsidian) || f.filePath === obsidian
     );
 
     if (matches.length === 0) {
@@ -166,17 +166,18 @@ function resolveLinks(content, links, linkMap, sourceFilePath) {
     }
 
     for (const link of links) {
-        const lowercaseTarget = link.obsidianTarget.toLowerCase();
+        const lowercaseTarget = link.obsidian.toLowerCase();
         const candidates = linkMap.get(lowercaseTarget) || [];
         const targetFile = selectBestMatch(candidates, sourceFilePath);
 
         if (targetFile) {
-            const displayText = link.displayText || link.obsidianTarget;
+            const displayText = link.label || link.obsidian;
             const resolvedLink = `@UUID[${targetFile.foundryPageUuid}]{${displayText}}`;
+            link.foundry = targetFile.foundryPageUuid;
             content = content.replaceAll(link.placeholder, resolvedLink);
         } else {
-            console.warn(`Unresolved link: ${link.obsidianTarget}`);
-            content = content.replaceAll(link.placeholder, link.originalText);
+            console.warn(`Unresolved link: ${link.obsidian}`);
+            content = content.replaceAll(link.placeholder, link.source);
         }
     }
 
@@ -189,21 +190,22 @@ function resolveAssets(content, assets, assetFiles) {
     }
 
     for (const asset of assets) {
-        const foundryPath = findBestAssetMatch(asset.obsidianPath, assetFiles);
+        const foundryPath = findBestAssetMatch(asset.obsidian, assetFiles);
 
         if (foundryPath) {
             let replacement;
             if (asset.isImage) {
-                const alt = asset.altText || '';
+                const alt = asset.label || '';
                 replacement = `<img src="${foundryPath}" alt="${alt}" />`;
             } else {
-                const text = asset.altText || asset.obsidianPath;
+                const text = asset.label || asset.obsidian;
                 replacement = `<a href="${foundryPath}">${text}</a>`;
             }
+            asset.foundry = foundryPath;
             content = content.replaceAll(asset.placeholder, replacement);
         } else {
-            console.warn(`Unresolved asset: ${asset.obsidianPath}`);
-            content = content.replaceAll(asset.placeholder, asset.originalText);
+            console.warn(`Unresolved asset: ${asset.obsidian}`);
+            content = content.replaceAll(asset.placeholder, asset.source);
         }
     }
 

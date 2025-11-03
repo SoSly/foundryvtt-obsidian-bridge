@@ -1,10 +1,11 @@
 import replaceWithPlaceholders from '../../../src/usecase/import/replaceWithPlaceholders.js';
+import Reference from '../../../src/domain/Reference.js';
 
 describe('replaceWithPlaceholders', () => {
     it('should replace links with placeholders', () => {
         const markdown = 'See [[Dragon]] for details.';
         const links = [
-            { obsidianTarget: 'Dragon', displayText: null, heading: null, isEmbed: false, originalText: '[[Dragon]]' }
+            new Reference({ source: '[[Dragon]]', obsidian: 'Dragon', label: null, type: 'document', metadata: { heading: null, isEmbed: false } })
         ];
         const assets = [];
 
@@ -18,7 +19,7 @@ describe('replaceWithPlaceholders', () => {
         const markdown = 'Image: ![alt](dragon.png)';
         const links = [];
         const assets = [
-            { obsidianPath: 'dragon.png', originalText: '![alt](dragon.png)' }
+            new Reference({ source: '![alt](dragon.png)', obsidian: 'dragon.png', label: 'alt', type: 'asset', isImage: true, metadata: {} })
         ];
 
         const result = replaceWithPlaceholders(markdown, links, assets);
@@ -30,8 +31,8 @@ describe('replaceWithPlaceholders', () => {
     it('should replace multiple links with numbered placeholders', () => {
         const markdown = 'See [[Dragon]] and [[Goblin]] here.';
         const links = [
-            { obsidianTarget: 'Dragon', displayText: null, heading: null, isEmbed: false, originalText: '[[Dragon]]' },
-            { obsidianTarget: 'Goblin', displayText: null, heading: null, isEmbed: false, originalText: '[[Goblin]]' }
+            new Reference({ source: '[[Dragon]]', obsidian: 'Dragon', label: null, type: 'document', metadata: { heading: null, isEmbed: false } }),
+            new Reference({ source: '[[Goblin]]', obsidian: 'Goblin', label: null, type: 'document', metadata: { heading: null, isEmbed: false } })
         ];
         const assets = [];
 
@@ -45,10 +46,10 @@ describe('replaceWithPlaceholders', () => {
     it('should replace both links and assets', () => {
         const markdown = 'See [[Dragon]] and this image: ![alt](dragon.png)';
         const links = [
-            { obsidianTarget: 'Dragon', displayText: null, heading: null, isEmbed: false, originalText: '[[Dragon]]' }
+            new Reference({ source: '[[Dragon]]', obsidian: 'Dragon', label: null, type: 'document', metadata: { heading: null, isEmbed: false } })
         ];
         const assets = [
-            { obsidianPath: 'dragon.png', originalText: '![alt](dragon.png)' }
+            new Reference({ source: '![alt](dragon.png)', obsidian: 'dragon.png', label: 'alt', type: 'asset', isImage: true, metadata: {} })
         ];
 
         const result = replaceWithPlaceholders(markdown, links, assets);
@@ -61,8 +62,8 @@ describe('replaceWithPlaceholders', () => {
     it('should replace longer patterns first to avoid partial matches', () => {
         const markdown = '[[Dragon Lair]] and [[Dragon]]';
         const links = [
-            { obsidianTarget: 'Dragon', displayText: null, heading: null, isEmbed: false, originalText: '[[Dragon]]' },
-            { obsidianTarget: 'Dragon Lair', displayText: null, heading: null, isEmbed: false, originalText: '[[Dragon Lair]]' }
+            new Reference({ source: '[[Dragon]]', obsidian: 'Dragon', label: null, type: 'document', metadata: { heading: null, isEmbed: false } }),
+            new Reference({ source: '[[Dragon Lair]]', obsidian: 'Dragon Lair', label: null, type: 'document', metadata: { heading: null, isEmbed: false } })
         ];
         const assets = [];
 
@@ -74,7 +75,7 @@ describe('replaceWithPlaceholders', () => {
     it('should handle all occurrences of the same pattern', () => {
         const markdown = '[[Dragon]] here and [[Dragon]] there.';
         const links = [
-            { obsidianTarget: 'Dragon', displayText: null, heading: null, isEmbed: false, originalText: '[[Dragon]]' }
+            new Reference({ source: '[[Dragon]]', obsidian: 'Dragon', label: null, type: 'document', metadata: { heading: null, isEmbed: false } })
         ];
         const assets = [];
 
@@ -86,20 +87,17 @@ describe('replaceWithPlaceholders', () => {
     it('should preserve original link and asset data', () => {
         const markdown = 'See [[Dragon|the beast]]';
         const links = [
-            { obsidianTarget: 'Dragon', displayText: 'the beast', heading: null, isEmbed: false, originalText: '[[Dragon|the beast]]' }
+            new Reference({ source: '[[Dragon|the beast]]', obsidian: 'Dragon', label: 'the beast', type: 'document', metadata: { heading: null, isEmbed: false } })
         ];
         const assets = [];
 
         const result = replaceWithPlaceholders(markdown, links, assets);
 
-        expect(result.links[0]).toEqual({
-            obsidianTarget: 'Dragon',
-            displayText: 'the beast',
-            heading: null,
-            isEmbed: false,
-            originalText: '[[Dragon|the beast]]',
-            placeholder: '{{LINK:0}}'
-        });
+        expect(result.links[0]).toBeInstanceOf(Reference);
+        expect(result.links[0].source).toBe('[[Dragon|the beast]]');
+        expect(result.links[0].obsidian).toBe('Dragon');
+        expect(result.links[0].label).toBe('the beast');
+        expect(result.links[0].placeholder).toBe('{{LINK:0}}');
     });
 
     it('should handle empty links and assets arrays', () => {
@@ -139,13 +137,13 @@ Embedded: ![[map.png]]
 `;
 
         const links = [
-            { obsidianTarget: 'Dragons/Ancient Red Dragon', displayText: null, heading: null, isEmbed: false, originalText: '[[Dragons/Ancient Red Dragon]]' },
-            { obsidianTarget: 'Dragons/Ancient Red Dragon', displayText: 'dragon abilities', heading: 'Abilities', isEmbed: false, originalText: '[[Dragons/Ancient Red Dragon#Abilities|dragon abilities]]' }
+            new Reference({ source: '[[Dragons/Ancient Red Dragon]]', obsidian: 'Dragons/Ancient Red Dragon', label: null, type: 'document', metadata: { heading: null, isEmbed: false } }),
+            new Reference({ source: '[[Dragons/Ancient Red Dragon#Abilities|dragon abilities]]', obsidian: 'Dragons/Ancient Red Dragon', label: 'dragon abilities', type: 'document', metadata: { heading: 'Abilities', isEmbed: false } })
         ];
 
         const assets = [
-            { obsidianPath: 'assets/dragon.png', originalText: '![Dragon](assets/dragon.png)' },
-            { obsidianPath: 'map.png', originalText: '![[map.png]]' }
+            new Reference({ source: '![Dragon](assets/dragon.png)', obsidian: 'assets/dragon.png', label: 'Dragon', type: 'asset', isImage: true, metadata: {} }),
+            new Reference({ source: '![[map.png]]', obsidian: 'map.png', label: null, type: 'asset', isImage: true, metadata: {} })
         ];
 
         const result = replaceWithPlaceholders(markdown, links, assets);

@@ -7,18 +7,22 @@ export default function replaceWithPlaceholders(markdownText, links, assets) {
     const replacements = [];
 
     links.forEach((link, index) => {
+        const placeholder = `{{LINK:${index}}}`;
+        link.placeholder = placeholder;
         replacements.push({
-            original: link.originalText,
-            placeholder: `{{LINK:${index}}}`,
+            original: link.source,
+            placeholder,
             type: 'link',
             index
         });
     });
 
     assets.forEach((asset, index) => {
+        const placeholder = `{{ASSET:${index}}}`;
+        asset.placeholder = placeholder;
         replacements.push({
-            original: asset.originalText,
-            placeholder: `{{ASSET:${index}}}`,
+            original: asset.source,
+            placeholder,
             type: 'asset',
             index
         });
@@ -30,19 +34,9 @@ export default function replaceWithPlaceholders(markdownText, links, assets) {
         text = text.replaceAll(replacement.original, replacement.placeholder);
     }
 
-    const updatedLinks = links.map((link, index) => ({
-        ...link,
-        placeholder: `{{LINK:${index}}}`
-    }));
-
-    const updatedAssets = assets.map((asset, index) => ({
-        ...asset,
-        placeholder: `{{ASSET:${index}}}`
-    }));
-
     return {
         text,
-        links: updatedLinks,
-        assets: updatedAssets
+        links,
+        assets
     };
 }

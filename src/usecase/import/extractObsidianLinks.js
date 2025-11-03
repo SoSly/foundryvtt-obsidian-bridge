@@ -1,3 +1,5 @@
+import Reference from '../../domain/Reference.js';
+
 /**
  * Matches Obsidian wiki-link syntax with optional embeds, headings, and display text.
  *
@@ -58,13 +60,17 @@ export default function extractObsidianLinks(markdownText) {
             obsidianTarget = obsidianTarget.slice(0, -3);
         }
 
-        links.push({
-            obsidianTarget,
-            displayText,
-            heading,
-            isEmbed,
-            originalText
-        });
+        links.push(new Reference({
+            source: originalText,
+            obsidian: obsidianTarget,
+            label: displayText,
+            type: 'document',
+            isImage: false,
+            metadata: {
+                heading,
+                isEmbed
+            }
+        }));
     }
 
     return links;

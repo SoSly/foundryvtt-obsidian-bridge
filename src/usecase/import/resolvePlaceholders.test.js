@@ -1,6 +1,7 @@
 import resolvePlaceholders from '../../../src/usecase/import/resolvePlaceholders.js';
 import MarkdownFile from '../../../src/domain/MarkdownFile.js';
 import NonMarkdownFile from '../../../src/domain/NonMarkdownFile.js';
+import Reference from '../../../src/domain/Reference.js';
 
 describe('resolvePlaceholders', () => {
     describe('link resolution', () => {
@@ -10,14 +11,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
                     content: '<p>See {{LINK:0}} for details.</p>',
-                    links: [{
-                        obsidianTarget: 'Target',
-                        displayText: null,
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[Target]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[Target]]', obsidian: 'Target', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 }),
@@ -44,14 +38,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
                     content: '<p>See {{LINK:0}} for info.</p>',
-                    links: [{
-                        obsidianTarget: 'Target',
-                        displayText: 'this page',
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[Target|this page]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[Target|this page]]', obsidian: 'Target', label: 'this page', type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 }),
@@ -78,14 +65,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
                     content: '<p>Read {{LINK:0}} section.</p>',
-                    links: [{
-                        obsidianTarget: 'Target',
-                        displayText: null,
-                        heading: 'Abilities',
-                        isEmbed: false,
-                        originalText: '[[Target#Abilities]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[Target#Abilities]]', obsidian: 'Target', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: 'Abilities', isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 }),
@@ -112,14 +92,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
                     content: '<p>Check {{LINK:0}} out.</p>',
-                    links: [{
-                        obsidianTarget: 'Target',
-                        displayText: 'abilities section',
-                        heading: 'Abilities',
-                        isEmbed: false,
-                        originalText: '[[Target#Abilities|abilities section]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[Target#Abilities|abilities section]]', obsidian: 'Target', label: 'abilities section', type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: 'Abilities', isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 }),
@@ -146,14 +119,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
                     content: '<p>Content: {{LINK:0}}</p>',
-                    links: [{
-                        obsidianTarget: 'Target',
-                        displayText: null,
-                        heading: null,
-                        isEmbed: true,
-                        originalText: '![[Target]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '![[Target]]', obsidian: 'Target', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: true } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 }),
@@ -180,14 +146,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
                     content: '<p>See {{LINK:0}} for details.</p>',
-                    links: [{
-                        obsidianTarget: 'Folder/Target',
-                        displayText: null,
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[Folder/Target]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[Folder/Target]]', obsidian: 'Folder/Target', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 }),
@@ -222,14 +181,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
                     content: '<p>See {{LINK:0}} for details.</p>',
-                    links: [{
-                        obsidianTarget: 'Target',
-                        displayText: null,
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[Target]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[Target]]', obsidian: 'Target', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 }),
@@ -264,14 +216,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
                     content: '<p>See {{LINK:0}} for details.</p>',
-                    links: [{
-                        obsidianTarget: 'NonExistent',
-                        displayText: null,
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[NonExistent]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[NonExistent]]', obsidian: 'NonExistent', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 })
@@ -288,14 +233,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
                     content: '<p>See {{LINK:0}} for info.</p>',
-                    links: [{
-                        obsidianTarget: 'NonExistent',
-                        displayText: 'broken link',
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[NonExistent|broken link]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[NonExistent|broken link]]', obsidian: 'NonExistent', label: 'broken link', type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 })
@@ -312,14 +250,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Target.md',
                     lookupKeys: ['Target'],
                     content: '<p>See {{LINK:0}} for more.</p>',
-                    links: [{
-                        obsidianTarget: 'Target',
-                        displayText: null,
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[Target]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[Target]]', obsidian: 'Target', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 })
@@ -339,22 +270,8 @@ describe('resolvePlaceholders', () => {
                     lookupKeys: ['Source'],
                     content: '<p>See {{LINK:0}} and {{LINK:1}} for details.</p>',
                     links: [
-                        {
-                            obsidianTarget: 'Target1',
-                            displayText: null,
-                            heading: null,
-                            isEmbed: false,
-                            originalText: '[[Target1]]',
-                            placeholder: '{{LINK:0}}'
-                        },
-                        {
-                            obsidianTarget: 'Target2',
-                            displayText: null,
-                            heading: null,
-                            isEmbed: false,
-                            originalText: '[[Target2]]',
-                            placeholder: '{{LINK:1}}'
-                        }
+                        new Reference({ source: '[[Target1]]', obsidian: 'Target1', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } }),
+                        new Reference({ source: '[[Target2]]', obsidian: 'Target2', label: null, type: 'document', isImage: false, placeholder: '{{LINK:1}}', metadata: { heading: null, isEmbed: false } })
                     ],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
@@ -390,14 +307,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
                     content: '<p>See {{LINK:0}} for details. Also check {{LINK:0}} again. One more: {{LINK:0}}</p>',
-                    links: [{
-                        obsidianTarget: 'Target',
-                        displayText: null,
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[Target]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[Target]]', obsidian: 'Target', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 }),
@@ -425,30 +335,9 @@ describe('resolvePlaceholders', () => {
                     lookupKeys: ['Source'],
                     content: '<p>See {{LINK:0}} and {{LINK:1}} and {{LINK:2}}</p>',
                     links: [
-                        {
-                            obsidianTarget: 'Districts',
-                            displayText: null,
-                            heading: null,
-                            isEmbed: false,
-                            originalText: '[[Districts]]',
-                            placeholder: '{{LINK:0}}'
-                        },
-                        {
-                            obsidianTarget: 'districts',
-                            displayText: null,
-                            heading: null,
-                            isEmbed: false,
-                            originalText: '[[districts]]',
-                            placeholder: '{{LINK:1}}'
-                        },
-                        {
-                            obsidianTarget: 'DISTRICTS',
-                            displayText: null,
-                            heading: null,
-                            isEmbed: false,
-                            originalText: '[[DISTRICTS]]',
-                            placeholder: '{{LINK:2}}'
-                        }
+                        new Reference({ source: '[[Districts]]', obsidian: 'Districts', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } }),
+                        new Reference({ source: '[[districts]]', obsidian: 'districts', label: null, type: 'document', isImage: false, placeholder: '{{LINK:1}}', metadata: { heading: null, isEmbed: false } }),
+                        new Reference({ source: '[[DISTRICTS]]', obsidian: 'DISTRICTS', label: null, type: 'document', isImage: false, placeholder: '{{LINK:2}}', metadata: { heading: null, isEmbed: false } })
                     ],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
@@ -476,14 +365,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Source.md',
                     lookupKeys: ['Source'],
                     content: '<p>See {{LINK:0}} for details.</p>',
-                    links: [{
-                        obsidianTarget: 'Target',
-                        displayText: null,
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[Target]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[Target]]', obsidian: 'Target', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 }),
@@ -510,14 +392,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Campaign/NPCs/Villain.md',
                     lookupKeys: ['Villain', 'NPCs/Villain', 'Campaign/NPCs/Villain'],
                     content: '<p>Check out {{LINK:0}}</p>',
-                    links: [{
-                        obsidianTarget: 'Waterdeep',
-                        displayText: null,
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[Waterdeep]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[Waterdeep]]', obsidian: 'Waterdeep', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.villain'
                 }),
@@ -552,14 +427,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Campaign/NPCs/Villains/BigBad.md',
                     lookupKeys: ['BigBad', 'Villains/BigBad', 'NPCs/Villains/BigBad', 'Campaign/NPCs/Villains/BigBad'],
                     content: '<p>Lives in {{LINK:0}}</p>',
-                    links: [{
-                        obsidianTarget: 'Waterdeep',
-                        displayText: null,
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[Waterdeep]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[Waterdeep]]', obsidian: 'Waterdeep', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.bigbad'
                 }),
@@ -594,14 +462,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Campaign/NPCs/Villains/MiniBoss/Details.md',
                     lookupKeys: ['Details', 'MiniBoss/Details', 'Villains/MiniBoss/Details', 'NPCs/Villains/MiniBoss/Details', 'Campaign/NPCs/Villains/MiniBoss/Details'],
                     content: '<p>Check {{LINK:0}}</p>',
-                    links: [{
-                        obsidianTarget: 'Waterdeep',
-                        displayText: null,
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[Waterdeep]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[Waterdeep]]', obsidian: 'Waterdeep', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.details'
                 }),
@@ -636,14 +497,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Campaign/NPCs/Villain.md',
                     lookupKeys: ['Villain', 'NPCs/Villain', 'Campaign/NPCs/Villain'],
                     content: '<p>Check out {{LINK:0}}</p>',
-                    links: [{
-                        obsidianTarget: 'Waterdeep',
-                        displayText: null,
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[Waterdeep]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[Waterdeep]]', obsidian: 'Waterdeep', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.villain'
                 }),
@@ -678,14 +532,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Root.md',
                     lookupKeys: ['Root'],
                     content: '<p>Check {{LINK:0}}</p>',
-                    links: [{
-                        obsidianTarget: 'Other',
-                        displayText: null,
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[Other]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[Other]]', obsidian: 'Other', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.root'
                 }),
@@ -720,14 +567,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Campaign/NPCs/Villain.md',
                     lookupKeys: ['Villain', 'NPCs/Villain', 'Campaign/NPCs/Villain'],
                     content: '<p>Check {{LINK:0}}</p>',
-                    links: [{
-                        obsidianTarget: 'Waterdeep',
-                        displayText: null,
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[Waterdeep]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[Waterdeep]]', obsidian: 'Waterdeep', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.villain'
                 }),
@@ -762,14 +602,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Notes.md',
                     lookupKeys: ['Notes'],
                     content: '<p>See {{LINK:0}}</p>',
-                    links: [{
-                        obsidianTarget: 'Target',
-                        displayText: null,
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[Target]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[Target]]', obsidian: 'Target', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.xxx.JournalEntryPage.notes'
                 }),
@@ -808,11 +641,11 @@ describe('resolvePlaceholders', () => {
                     content: '<p>Image: {{ASSET:0}}</p>',
                     links: [],
                     assets: [{
-                        obsidianPath: 'images/dragon.png',
-                        originalText: '![](images/dragon.png)',
+                        obsidian: 'images/dragon.png',
+                        source: '![](images/dragon.png)',
                         placeholder: '{{ASSET:0}}',
                         isImage: true,
-                        altText: ''
+                        label: ''
                     }],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 })
@@ -840,11 +673,11 @@ describe('resolvePlaceholders', () => {
                     content: '<p>Image: {{ASSET:0}}</p>',
                     links: [],
                     assets: [{
-                        obsidianPath: 'images/missing.png',
-                        originalText: '![](images/missing.png)',
+                        obsidian: 'images/missing.png',
+                        source: '![](images/missing.png)',
                         placeholder: '{{ASSET:0}}',
                         isImage: true,
-                        altText: ''
+                        label: ''
                     }],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 })
@@ -863,11 +696,11 @@ describe('resolvePlaceholders', () => {
                     content: '<p>File: {{ASSET:0}}</p>',
                     links: [],
                     assets: [{
-                        obsidianPath: 'files/document.pdf',
-                        originalText: '[Download PDF](files/document.pdf)',
+                        obsidian: 'files/document.pdf',
+                        source: '[Download PDF](files/document.pdf)',
                         placeholder: '{{ASSET:0}}',
                         isImage: false,
-                        altText: 'Download PDF'
+                        label: 'Download PDF'
                     }],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 })
@@ -895,11 +728,11 @@ describe('resolvePlaceholders', () => {
                     content: '<p>File: {{ASSET:0}}</p>',
                     links: [],
                     assets: [{
-                        obsidianPath: 'files/document.pdf',
-                        originalText: '![[document.pdf]]',
+                        obsidian: 'files/document.pdf',
+                        source: '![[document.pdf]]',
                         placeholder: '{{ASSET:0}}',
                         isImage: true,
-                        altText: ''
+                        label: ''
                     }],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 })
@@ -919,18 +752,18 @@ describe('resolvePlaceholders', () => {
                     links: [],
                     assets: [
                         {
-                            obsidianPath: 'images/dragon.png',
-                            originalText: '![](images/dragon.png)',
+                            obsidian: 'images/dragon.png',
+                            source: '![](images/dragon.png)',
                             placeholder: '{{ASSET:0}}',
                             isImage: true,
-                            altText: ''
+                            label: ''
                         },
                         {
-                            obsidianPath: 'images/goblin.png',
-                            originalText: '![](images/goblin.png)',
+                            obsidian: 'images/goblin.png',
+                            source: '![](images/goblin.png)',
                             placeholder: '{{ASSET:1}}',
                             isImage: true,
-                            altText: ''
+                            label: ''
                         }
                     ],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
@@ -963,11 +796,11 @@ describe('resolvePlaceholders', () => {
                     content: '<p>First: {{ASSET:0}} and second: {{ASSET:0}} and third: {{ASSET:0}}</p>',
                     links: [],
                     assets: [{
-                        obsidianPath: 'images/dragon.png',
-                        originalText: '![](images/dragon.png)',
+                        obsidian: 'images/dragon.png',
+                        source: '![](images/dragon.png)',
                         placeholder: '{{ASSET:0}}',
                         isImage: true,
-                        altText: ''
+                        label: ''
                     }],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 })
@@ -995,11 +828,11 @@ describe('resolvePlaceholders', () => {
                     content: '<p>Image: {{ASSET:0}}</p>',
                     links: [],
                     assets: [{
-                        obsidianPath: 'images/dragon.png',
-                        originalText: '![](images/dragon.png)',
+                        obsidian: 'images/dragon.png',
+                        source: '![](images/dragon.png)',
                         placeholder: '{{ASSET:0}}',
                         isImage: true,
-                        altText: ''
+                        label: ''
                     }],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 })
@@ -1025,11 +858,11 @@ describe('resolvePlaceholders', () => {
                     content: '<p>Image: {{ASSET:0}}</p>',
                     links: [],
                     assets: [{
-                        obsidianPath: 'images/dragon.png',
-                        originalText: '![](images/dragon.png)',
+                        obsidian: 'images/dragon.png',
+                        source: '![](images/dragon.png)',
                         placeholder: '{{ASSET:0}}',
                         isImage: true,
-                        altText: ''
+                        label: ''
                     }],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 })
@@ -1057,11 +890,11 @@ describe('resolvePlaceholders', () => {
                     content: '<p>Image: {{ASSET:0}}</p>',
                     links: [],
                     assets: [{
-                        obsidianPath: 'dragon.png',
-                        originalText: '![](dragon.png)',
+                        obsidian: 'dragon.png',
+                        source: '![](dragon.png)',
                         placeholder: '{{ASSET:0}}',
                         isImage: true,
-                        altText: ''
+                        label: ''
                     }],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 })
@@ -1093,20 +926,13 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Document.md',
                     lookupKeys: ['Document'],
                     content: '<p>See {{LINK:0}} for {{ASSET:0}}</p>',
-                    links: [{
-                        obsidianTarget: 'Target',
-                        displayText: null,
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[Target]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[Target]]', obsidian: 'Target', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [{
-                        obsidianPath: 'images/dragon.png',
-                        originalText: '![](images/dragon.png)',
+                        obsidian: 'images/dragon.png',
+                        source: '![](images/dragon.png)',
                         placeholder: '{{ASSET:0}}',
                         isImage: true,
-                        altText: ''
+                        label: ''
                     }],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 }),
@@ -1141,37 +967,23 @@ describe('resolvePlaceholders', () => {
                     lookupKeys: ['Document'],
                     content: '<p>See {{LINK:0}} and {{LINK:1}} with {{ASSET:0}} and {{ASSET:1}}</p>',
                     links: [
-                        {
-                            obsidianTarget: 'Target',
-                            displayText: null,
-                            heading: null,
-                            isEmbed: false,
-                            originalText: '[[Target]]',
-                            placeholder: '{{LINK:0}}'
-                        },
-                        {
-                            obsidianTarget: 'Missing',
-                            displayText: null,
-                            heading: null,
-                            isEmbed: false,
-                            originalText: '[[Missing]]',
-                            placeholder: '{{LINK:1}}'
-                        }
+                        new Reference({ source: '[[Target]]', obsidian: 'Target', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } }),
+                        new Reference({ source: '[[Missing]]', obsidian: 'Missing', label: null, type: 'document', isImage: false, placeholder: '{{LINK:1}}', metadata: { heading: null, isEmbed: false } })
                     ],
                     assets: [
                         {
-                            obsidianPath: 'images/dragon.png',
-                            originalText: '![](images/dragon.png)',
+                            obsidian: 'images/dragon.png',
+                            source: '![](images/dragon.png)',
                             placeholder: '{{ASSET:0}}',
                             isImage: true,
-                            altText: ''
+                            label: ''
                         },
                         {
-                            obsidianPath: 'images/missing.png',
-                            originalText: '![](images/missing.png)',
+                            obsidian: 'images/missing.png',
+                            source: '![](images/missing.png)',
                             placeholder: '{{ASSET:1}}',
                             isImage: true,
-                            altText: ''
+                            label: ''
                         }
                     ],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
@@ -1206,14 +1018,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'File1.md',
                     lookupKeys: ['File1'],
                     content: '<p>See {{LINK:0}}</p>',
-                    links: [{
-                        obsidianTarget: 'File2',
-                        displayText: null,
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[File2]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[File2]]', obsidian: 'File2', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 }),
@@ -1221,14 +1026,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'File2.md',
                     lookupKeys: ['File2'],
                     content: '<p>See {{LINK:0}}</p>',
-                    links: [{
-                        obsidianTarget: 'File1',
-                        displayText: null,
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[File1]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[File1]]', obsidian: 'File1', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
                 })
@@ -1301,11 +1099,11 @@ describe('resolvePlaceholders', () => {
                     content: '<p>{{ASSET:0}}</p>',
                     links: [],
                     assets: [{
-                        obsidianPath: 'images/dragon.png',
-                        originalText: '![](images/dragon.png)',
+                        obsidian: 'images/dragon.png',
+                        source: '![](images/dragon.png)',
                         placeholder: '{{ASSET:0}}',
                         isImage: true,
-                        altText: ''
+                        label: ''
                     }],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 })
@@ -1339,11 +1137,11 @@ describe('resolvePlaceholders', () => {
                     content: '<p>Content with {{ASSET:0}}</p>',
                     links: [],
                     assets: [{
-                        obsidianPath: 'images/dragon.png',
-                        originalText: '![](images/dragon.png)',
+                        obsidian: 'images/dragon.png',
+                        source: '![](images/dragon.png)',
                         placeholder: '{{ASSET:0}}',
                         isImage: true,
-                        altText: ''
+                        label: ''
                     }],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 })
@@ -1368,14 +1166,7 @@ describe('resolvePlaceholders', () => {
                     filePath: 'Document.md',
                     lookupKeys: ['Document'],
                     content: '<p>See {{LINK:0}}</p>',
-                    links: [{
-                        obsidianTarget: 'Target',
-                        displayText: null,
-                        heading: null,
-                        isEmbed: false,
-                        originalText: '[[Target]]',
-                        placeholder: '{{LINK:0}}'
-                    }],
+                    links: [new Reference({ source: '[[Target]]', obsidian: 'Target', label: null, type: 'document', isImage: false, placeholder: '{{LINK:0}}', metadata: { heading: null, isEmbed: false } })],
                     assets: [],
                     foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
                 }),

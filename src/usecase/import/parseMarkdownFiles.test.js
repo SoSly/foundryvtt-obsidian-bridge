@@ -43,7 +43,7 @@ describe('parseMarkdownFiles', () => {
         expect(result[0].content).toContain('{{LINK:0}}');
         expect(result[0].content).not.toContain('[[Ancient Red Dragon]]');
         expect(result[0].links).toHaveLength(1);
-        expect(result[0].links[0].obsidianTarget).toBe('Ancient Red Dragon');
+        expect(result[0].links[0].obsidian).toBe('Ancient Red Dragon');
         expect(result[0].links[0].placeholder).toBe('{{LINK:0}}');
     });
 
@@ -58,7 +58,7 @@ describe('parseMarkdownFiles', () => {
         expect(result).toHaveLength(1);
         expect(result[0].content).toContain('{{ASSET:0}}');
         expect(result[0].assets).toHaveLength(1);
-        expect(result[0].assets[0].obsidianPath).toBe('dragon.png');
+        expect(result[0].assets[0].obsidian).toBe('dragon.png');
         expect(result[0].assets[0].placeholder).toBe('{{ASSET:0}}');
     });
 
@@ -117,9 +117,9 @@ describe('parseMarkdownFiles', () => {
         const result = await parseMarkdownFiles(converter, files);
 
         expect(result[0].links).toHaveLength(1);
-        expect(result[0].links[0].obsidianTarget).toBe('Dragon');
-        expect(result[0].links[0].displayText).toBe('dragon stats');
-        expect(result[0].links[0].heading).toBe('Abilities');
+        expect(result[0].links[0].obsidian).toBe('Dragon');
+        expect(result[0].links[0].label).toBe('dragon stats');
+        expect(result[0].links[0].metadata.heading).toBe('Abilities');
     });
 
     it('should handle embedded notes', async () => {
@@ -131,7 +131,7 @@ describe('parseMarkdownFiles', () => {
         const result = await parseMarkdownFiles(converter, files);
 
         expect(result[0].links).toHaveLength(1);
-        expect(result[0].links[0].isEmbed).toBe(true);
+        expect(result[0].links[0].metadata.isEmbed).toBe(true);
     });
 
     it('should return empty array for no files', async () => {
@@ -206,6 +206,6 @@ Also check [[Dragons/Ancient Red Dragon#Abilities|abilities]].
 
         const result = await parseMarkdownFiles(converter, files);
 
-        expect(result[0].links[0].obsidianTarget).toBe('Dragon');
+        expect(result[0].links[0].obsidian).toBe('Dragon');
     });
 });

@@ -1,4 +1,5 @@
 import extractObsidianLinks from '../../../src/usecase/import/extractObsidianLinks.js';
+import Reference from '../../../src/domain/Reference.js';
 
 describe('extractObsidianLinks', () => {
     it('should extract a basic wiki link', () => {
@@ -6,13 +7,14 @@ describe('extractObsidianLinks', () => {
         const result = extractObsidianLinks(markdown);
 
         expect(result).toHaveLength(1);
-        expect(result[0]).toEqual({
-            obsidianTarget: 'Ancient Red Dragon',
-            displayText: null,
-            heading: null,
-            isEmbed: false,
-            originalText: '[[Ancient Red Dragon]]'
-        });
+        expect(result[0]).toBeInstanceOf(Reference);
+        expect(result[0].source).toBe('[[Ancient Red Dragon]]');
+        expect(result[0].obsidian).toBe('Ancient Red Dragon');
+        expect(result[0].label).toBeNull();
+        expect(result[0].type).toBe('document');
+        expect(result[0].isImage).toBe(false);
+        expect(result[0].metadata.heading).toBeNull();
+        expect(result[0].metadata.isEmbed).toBe(false);
     });
 
     it('should extract a link with display text', () => {
@@ -20,13 +22,12 @@ describe('extractObsidianLinks', () => {
         const result = extractObsidianLinks(markdown);
 
         expect(result).toHaveLength(1);
-        expect(result[0]).toEqual({
-            obsidianTarget: 'Ancient Red Dragon',
-            displayText: 'the dragon',
-            heading: null,
-            isEmbed: false,
-            originalText: '[[Ancient Red Dragon|the dragon]]'
-        });
+        expect(result[0]).toBeInstanceOf(Reference);
+        expect(result[0].source).toBe('[[Ancient Red Dragon|the dragon]]');
+        expect(result[0].obsidian).toBe('Ancient Red Dragon');
+        expect(result[0].label).toBe('the dragon');
+        expect(result[0].metadata.heading).toBeNull();
+        expect(result[0].metadata.isEmbed).toBe(false);
     });
 
     it('should extract a link with heading', () => {
@@ -34,13 +35,12 @@ describe('extractObsidianLinks', () => {
         const result = extractObsidianLinks(markdown);
 
         expect(result).toHaveLength(1);
-        expect(result[0]).toEqual({
-            obsidianTarget: 'Ancient Red Dragon',
-            displayText: null,
-            heading: 'Abilities',
-            isEmbed: false,
-            originalText: '[[Ancient Red Dragon#Abilities]]'
-        });
+        expect(result[0]).toBeInstanceOf(Reference);
+        expect(result[0].source).toBe('[[Ancient Red Dragon#Abilities]]');
+        expect(result[0].obsidian).toBe('Ancient Red Dragon');
+        expect(result[0].label).toBeNull();
+        expect(result[0].metadata.heading).toBe('Abilities');
+        expect(result[0].metadata.isEmbed).toBe(false);
     });
 
     it('should extract a link with heading and display text', () => {
@@ -48,13 +48,12 @@ describe('extractObsidianLinks', () => {
         const result = extractObsidianLinks(markdown);
 
         expect(result).toHaveLength(1);
-        expect(result[0]).toEqual({
-            obsidianTarget: 'Ancient Red Dragon',
-            displayText: 'dragon abilities',
-            heading: 'Abilities',
-            isEmbed: false,
-            originalText: '[[Ancient Red Dragon#Abilities|dragon abilities]]'
-        });
+        expect(result[0]).toBeInstanceOf(Reference);
+        expect(result[0].source).toBe('[[Ancient Red Dragon#Abilities|dragon abilities]]');
+        expect(result[0].obsidian).toBe('Ancient Red Dragon');
+        expect(result[0].label).toBe('dragon abilities');
+        expect(result[0].metadata.heading).toBe('Abilities');
+        expect(result[0].metadata.isEmbed).toBe(false);
     });
 
     it('should extract an embedded note', () => {
@@ -62,13 +61,12 @@ describe('extractObsidianLinks', () => {
         const result = extractObsidianLinks(markdown);
 
         expect(result).toHaveLength(1);
-        expect(result[0]).toEqual({
-            obsidianTarget: 'Ancient Red Dragon',
-            displayText: null,
-            heading: null,
-            isEmbed: true,
-            originalText: '![[Ancient Red Dragon]]'
-        });
+        expect(result[0]).toBeInstanceOf(Reference);
+        expect(result[0].source).toBe('![[Ancient Red Dragon]]');
+        expect(result[0].obsidian).toBe('Ancient Red Dragon');
+        expect(result[0].label).toBeNull();
+        expect(result[0].metadata.heading).toBeNull();
+        expect(result[0].metadata.isEmbed).toBe(true);
     });
 
     it('should extract an embedded note with display text', () => {
@@ -76,13 +74,12 @@ describe('extractObsidianLinks', () => {
         const result = extractObsidianLinks(markdown);
 
         expect(result).toHaveLength(1);
-        expect(result[0]).toEqual({
-            obsidianTarget: 'Ancient Red Dragon',
-            displayText: 'Dragon Info',
-            heading: null,
-            isEmbed: true,
-            originalText: '![[Ancient Red Dragon|Dragon Info]]'
-        });
+        expect(result[0]).toBeInstanceOf(Reference);
+        expect(result[0].source).toBe('![[Ancient Red Dragon|Dragon Info]]');
+        expect(result[0].obsidian).toBe('Ancient Red Dragon');
+        expect(result[0].label).toBe('Dragon Info');
+        expect(result[0].metadata.heading).toBeNull();
+        expect(result[0].metadata.isEmbed).toBe(true);
     });
 
     it('should strip .md extension from target', () => {
@@ -90,7 +87,7 @@ describe('extractObsidianLinks', () => {
         const result = extractObsidianLinks(markdown);
 
         expect(result).toHaveLength(1);
-        expect(result[0].obsidianTarget).toBe('Ancient Red Dragon');
+        expect(result[0].obsidian).toBe('Ancient Red Dragon');
     });
 
     it('should strip .md extension from target with path', () => {
@@ -98,7 +95,7 @@ describe('extractObsidianLinks', () => {
         const result = extractObsidianLinks(markdown);
 
         expect(result).toHaveLength(1);
-        expect(result[0].obsidianTarget).toBe('Combat/Dragons/Ancient Red Dragon');
+        expect(result[0].obsidian).toBe('Combat/Dragons/Ancient Red Dragon');
     });
 
     it('should extract multiple links', () => {
@@ -106,8 +103,8 @@ describe('extractObsidianLinks', () => {
         const result = extractObsidianLinks(markdown);
 
         expect(result).toHaveLength(2);
-        expect(result[0].obsidianTarget).toBe('Dragon');
-        expect(result[1].obsidianTarget).toBe('Goblin');
+        expect(result[0].obsidian).toBe('Dragon');
+        expect(result[1].obsidian).toBe('Goblin');
     });
 
     it('should extract links with paths', () => {
@@ -115,7 +112,7 @@ describe('extractObsidianLinks', () => {
         const result = extractObsidianLinks(markdown);
 
         expect(result).toHaveLength(1);
-        expect(result[0].obsidianTarget).toBe('Combat/Dragons/Ancient Red Dragon');
+        expect(result[0].obsidian).toBe('Combat/Dragons/Ancient Red Dragon');
     });
 
     it('should return empty array for text with no links', () => {
@@ -145,7 +142,7 @@ describe('extractObsidianLinks', () => {
         const result = extractObsidianLinks(markdown);
 
         expect(result).toHaveLength(1);
-        expect(result[0].obsidianTarget).toBe('Bob\'s Tavern');
+        expect(result[0].obsidian).toBe('Bob\'s Tavern');
     });
 
     it('should handle links with spaces', () => {
@@ -153,7 +150,7 @@ describe('extractObsidianLinks', () => {
         const result = extractObsidianLinks(markdown);
 
         expect(result).toHaveLength(1);
-        expect(result[0].obsidianTarget).toBe('Ancient Red Dragon');
+        expect(result[0].obsidian).toBe('Ancient Red Dragon');
     });
 
     it('should handle headings with spaces', () => {
@@ -161,7 +158,7 @@ describe('extractObsidianLinks', () => {
         const result = extractObsidianLinks(markdown);
 
         expect(result).toHaveLength(1);
-        expect(result[0].heading).toBe('Breath Weapon');
+        expect(result[0].metadata.heading).toBe('Breath Weapon');
     });
 
     it('should extract embedded markdown notes', () => {
@@ -169,13 +166,12 @@ describe('extractObsidianLinks', () => {
         const result = extractObsidianLinks(markdown);
 
         expect(result).toHaveLength(1);
-        expect(result[0]).toEqual({
-            obsidianTarget: 'Ancient Red Dragon',
-            displayText: null,
-            heading: null,
-            isEmbed: true,
-            originalText: '![[Ancient Red Dragon.md]]'
-        });
+        expect(result[0]).toBeInstanceOf(Reference);
+        expect(result[0].source).toBe('![[Ancient Red Dragon.md]]');
+        expect(result[0].obsidian).toBe('Ancient Red Dragon');
+        expect(result[0].label).toBeNull();
+        expect(result[0].metadata.heading).toBeNull();
+        expect(result[0].metadata.isEmbed).toBe(true);
     });
 
     it('should skip embedded images and non-markdown files', () => {
@@ -190,8 +186,8 @@ describe('extractObsidianLinks', () => {
         const result = extractObsidianLinks(markdown);
 
         expect(result).toHaveLength(1);
-        expect(result[0].obsidianTarget).toBe('Ancient Red Dragon');
-        expect(result[0].isEmbed).toBe(true);
+        expect(result[0].obsidian).toBe('Ancient Red Dragon');
+        expect(result[0].metadata.isEmbed).toBe(true);
     });
 
     it('should not extract markdown links', () => {

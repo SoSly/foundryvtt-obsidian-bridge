@@ -1,3 +1,5 @@
+import Reference from '../../domain/Reference.js';
+
 /**
  * Matches standard markdown image syntax.
  *
@@ -84,12 +86,14 @@ export default function extractAssetReferences(markdownText) {
                 continue;
             }
 
-            assets.push({
-                obsidianPath,
-                originalText,
+            assets.push(new Reference({
+                source: originalText,
+                obsidian: obsidianPath,
+                label: altText || null,
+                type: 'asset',
                 isImage,
-                altText
-            });
+                metadata: {}
+            }));
         }
     }
 
