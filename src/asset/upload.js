@@ -1,6 +1,12 @@
-import NonMarkdownFile from '../../domain/NonMarkdownFile';
-import { resolveAssetFile } from '../../usecase/import/resolveAssetFile';
-import { collectRequiredDirectories } from '../../usecase/import/collectRequiredDirectories';
+import NonMarkdownFile from '../domain/NonMarkdownFile';
+import { resolveAssetFile } from '../usecase/import/resolveAssetFile';
+import { collectRequiredDirectories } from '../usecase/import/collectRequiredDirectories';
+
+/**
+ * Upload assets to Foundry data directory
+ *
+ * Dependencies: Foundry (FilePicker API)
+ */
 
 /**
  * Uploads non-markdown assets referenced in imported markdown files.
@@ -71,7 +77,7 @@ export async function uploadAssets(markdownFiles, vaultFiles, importOptions) {
  *
  * @param {string[]} uploadedPaths - Array of file paths to delete
  */
-export async function rollbackAssetUploads(uploadedPaths) {
+export async function rollbackUploads(uploadedPaths) {
     for (const path of uploadedPaths.reverse()) {
         try {
             await FilePicker.delete('data', path, { notify: false });
@@ -114,5 +120,3 @@ async function ensureDirectoriesExist(directories) {
         }
     }
 }
-
-

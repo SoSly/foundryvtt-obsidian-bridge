@@ -1,4 +1,10 @@
 /**
+ * Create journal entries and pages in Foundry
+ *
+ * Dependencies: Foundry (JournalEntry, Folder, game.folders, game.journal APIs)
+ */
+
+/**
  * Creates or retrieves all Foundry documents (folders, entries, pages) needed for import.
  * Mutates MarkdownFile objects to set foundryPageUuid.
  * Implements fail-fast with rollback of newly created documents.
@@ -8,7 +14,7 @@
  * @returns {Promise<{createdFolders: Folder[], createdEntries: JournalEntry[], createdPages: Array}>}
  * @throws {Error} If any document creation fails
  */
-export async function createJournalDocuments(plan, markdownFiles) {
+export async function createJournals(plan, markdownFiles) {
     const createdFolders = [];
     const createdEntries = [];
     const createdPages = [];
@@ -18,7 +24,7 @@ export async function createJournalDocuments(plan, markdownFiles) {
         const entryMap = await createEntries(plan.entries, folderMap, createdEntries);
         await createPages(plan.entries, entryMap, createdPages);
     } catch (error) {
-        await rollbackJournalDocuments(createdPages, createdEntries, createdFolders);
+        await rollbackJournals(createdPages, createdEntries, createdFolders);
         throw error;
     }
 
@@ -139,7 +145,7 @@ async function createPages(entries, entryMap, createdPages) {
  * @param {JournalEntry[]} createdEntries - Array of journal entries to delete
  * @param {Folder[]} createdFolders - Array of folders to delete
  */
-export async function rollbackJournalDocuments(createdPages, createdEntries, createdFolders) {
+export async function rollbackJournals(createdPages, createdEntries, createdFolders) {
     for (const { entry, page } of createdPages.reverse()) {
         try {
             await entry.deleteEmbeddedDocuments('JournalEntryPage', [page.id]);

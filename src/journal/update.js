@@ -1,4 +1,10 @@
-export default async function updatePageContent(markdownFiles) {
+/**
+ * Update journal page content in Foundry
+ *
+ * Dependencies: Foundry (fromUuidSync, page.update APIs)
+ */
+
+export async function updateContent(markdownFiles) {
     if (!Array.isArray(markdownFiles) || markdownFiles.length === 0) {
         return { updatedPages: [] };
     }
@@ -30,4 +36,22 @@ export default async function updatePageContent(markdownFiles) {
     }
 
     return { updatedPages };
+}
+
+export async function rollbackUpdates(updatedPages) {
+    if (!Array.isArray(updatedPages) || updatedPages.length === 0) {
+        return;
+    }
+
+    const reversedPages = [...updatedPages].reverse();
+
+    for (const { page, originalContent } of reversedPages) {
+        try {
+            await page.update({
+                'text.content': originalContent
+            });
+        } catch (error) {
+            console.error(`Failed to rollback page ${page.uuid}:`, error);
+        }
+    }
 }

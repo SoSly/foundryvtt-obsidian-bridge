@@ -5,10 +5,9 @@ import { filterFilesBySelection } from '../usecase/import/filterFilesBySelection
 import parseMarkdownFiles from '../usecase/import/parseMarkdownFiles';
 import planJournalStructure from '../usecase/import/planJournalStructure';
 import resolvePlaceholders from '../reference/resolve.js';
-import { createJournalDocuments, rollbackJournalDocuments } from '../interface/import/createJournalDocuments';
-import { uploadAssets, rollbackAssetUploads } from '../interface/import/uploadAssets';
-import updatePageContent from '../interface/import/updatePageContent';
-import rollbackPageUpdates from '../interface/import/rollbackPageUpdates';
+import { createJournals, rollbackJournals } from '../journal/create';
+import { uploadAssets, rollbackUploads } from '../asset/upload';
+import { updateContent, rollbackUpdates } from '../journal/update';
 
 /**
  * Creates a configured pipeline for importing an Obsidian vault into Foundry.
@@ -78,10 +77,10 @@ export default function createImportPipeline(importOptions, showdownConverter) {
         new PhaseDefinition({
             name: 'create-documents',
             execute: async ctx => {
-                return await createJournalDocuments(ctx.structurePlan, ctx.markdownFiles);
+                return await createJournals(ctx.structurePlan, ctx.markdownFiles);
             },
             rollback: async (ctx, result) => {
-                await rollbackJournalDocuments(
+                await rollbackJournals(
                     result.createdPages,
                     result.createdEntries,
                     result.createdFolders
@@ -95,7 +94,7 @@ export default function createImportPipeline(importOptions, showdownConverter) {
                 return await uploadAssets(ctx.markdownFiles, ctx.originalVaultFiles, ctx.importOptions);
             },
             rollback: async (ctx, result) => {
-                await rollbackAssetUploads(result.uploadedPaths);
+                await rollbackUploads(result.uploadedPaths);
             },
             condition: ctx => ctx.importOptions.importAssets,
         }),
@@ -113,10 +112,10 @@ export default function createImportPipeline(importOptions, showdownConverter) {
         new PhaseDefinition({
             name: 'update-content',
             execute: async ctx => {
-                return await updatePageContent(ctx.markdownFiles);
+                return await updateContent(ctx.markdownFiles);
             },
             rollback: async (ctx, result) => {
-                await rollbackPageUpdates(result.updatedPages);
+                await rollbackUpdates(result.updatedPages);
             },
         }),
     ];
