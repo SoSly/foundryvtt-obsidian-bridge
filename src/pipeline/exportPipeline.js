@@ -3,6 +3,7 @@ import PhaseDefinition from '../domain/PhaseDefinition.js';
 import prepareJournalsForExport from '../journal/prepare.js';
 import { extractLinkReferences, extractAssetReferences } from '../reference/extractFromHTML.js';
 import replaceWithPlaceholders from '../reference/replace.js';
+import convertHtmlToMarkdown from '../content/htmlToMarkdown.js';
 
 /**
  * Creates a configured pipeline for exporting Foundry journals to Obsidian format.
@@ -12,17 +13,19 @@ import replaceWithPlaceholders from '../reference/replace.js';
  * 2. prepare-documents - Transform journals into MarkdownFile objects with HTML content
  * 3. extract-references - Extract links and assets from HTML
  * 4. replace-references - Replace references with placeholders
- * 5. convert-to-markdown - Convert HTML to markdown (TODO)
+ * 5. convert-to-markdown - Convert HTML to markdown
  * 6. resolve-references - Replace placeholders with Obsidian syntax (TODO)
  * 7. identify-assets - Identify asset paths to export (TODO)
  * 8. write-vault - Write files to filesystem or ZIP (TODO)
  *
  * @param {import('../domain/ExportOptions.js').default} exportOptions - Export configuration
+ * @param {import('showdown').Converter} showdownConverter - Showdown converter instance
  * @returns {import('../domain/PipelineConfig.js').default}
  */
-export default function createExportPipeline(exportOptions) {
+export default function createExportPipeline(exportOptions, showdownConverter) {
     const context = {
         exportOptions,
+        showdownConverter,
         journalEntries: null,
         markdownFiles: null
     };
@@ -94,6 +97,23 @@ export default function createExportPipeline(exportOptions) {
                     filesProcessed: ctx.markdownFiles.length,
                     totalReplacements
                 };
+            }
+        }),
+
+        new PhaseDefinition({
+            name: 'convert-to-markdown',
+            execute: async ctx => {
+                let filesConverted = 0;
+
+                for (const markdownFile of ctx.markdownFiles) {
+                    markdownFile.content = convertHtmlToMarkdown(
+                        markdownFile.content,
+                        ctx.showdownConverter
+                    );
+                    filesConverted++;
+                }
+
+                return { filesConverted };
             }
         })
     ];
