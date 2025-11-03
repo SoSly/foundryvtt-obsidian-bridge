@@ -1,6 +1,7 @@
-import { describe, test, expect } from '@jest/globals';
-import { buildFileTree } from './build';
+import { describe, test, expect, beforeEach } from '@jest/globals';
+import { buildFileTree, buildJournalTree } from './build';
 import VaultTreeNode from '../domain/VaultTreeNode';
+import JournalTreeNode from '../domain/JournalTreeNode';
 
 function createMockFile(path, name) {
     return {
@@ -178,6 +179,178 @@ describe('buildFileTree', () => {
                 isDirectory: true,
                 isSelected: true,
                 children: []
+            });
+        }).not.toThrow();
+    });
+});
+
+describe('buildJournalTree', () => {
+    beforeEach(() => {
+        global.game = {
+            folders: new Map(),
+            journal: new Map()
+        };
+    });
+
+    test('returns null when no journals exist', () => {
+        const tree = buildJournalTree();
+
+        expect(tree).toBeNull();
+    });
+
+    test('creates tree with single journal at root', () => {
+        const mockJournal = { id: 'j1', name: 'My Journal', folder: null };
+        global.game.journal.set('j1', mockJournal);
+
+        const tree = buildJournalTree();
+
+        expect(tree).not.toBeNull();
+        expect(tree.name).toBe('Journals');
+        expect(tree.type).toBe('folder');
+        expect(tree.children).toHaveLength(1);
+        expect(tree.children[0].name).toBe('My Journal');
+        expect(tree.children[0].type).toBe('journal');
+        expect(tree.children[0].document).toBe(mockJournal);
+    });
+
+    test('creates nested folder structure', () => {
+        const parentFolder = { id: 'f1', name: 'Parent', type: 'JournalEntry', folder: null };
+        const childFolder = { id: 'f2', name: 'Child', type: 'JournalEntry', folder: parentFolder };
+        const mockJournal = { id: 'j1', name: 'My Journal', folder: childFolder };
+
+        global.game.folders.set('f1', parentFolder);
+        global.game.folders.set('f2', childFolder);
+        global.game.journal.set('j1', mockJournal);
+
+        const tree = buildJournalTree();
+
+        expect(tree.children).toHaveLength(1);
+        expect(tree.children[0].name).toBe('Parent');
+        expect(tree.children[0].children).toHaveLength(1);
+        expect(tree.children[0].children[0].name).toBe('Child');
+        expect(tree.children[0].children[0].children).toHaveLength(1);
+        expect(tree.children[0].children[0].children[0].name).toBe('My Journal');
+    });
+
+    test('groups multiple journals in same folder', () => {
+        const folder = { id: 'f1', name: 'NPCs', type: 'JournalEntry', folder: null };
+        const journal1 = { id: 'j1', name: 'Alice', folder };
+        const journal2 = { id: 'j2', name: 'Bob', folder };
+
+        global.game.folders.set('f1', folder);
+        global.game.journal.set('j1', journal1);
+        global.game.journal.set('j2', journal2);
+
+        const tree = buildJournalTree();
+
+        expect(tree.children).toHaveLength(1);
+        expect(tree.children[0].name).toBe('NPCs');
+        expect(tree.children[0].children).toHaveLength(2);
+
+        const childNames = tree.children[0].children.map(c => c.name).sort();
+        expect(childNames).toEqual(['Alice', 'Bob']);
+    });
+
+    test('sorts folders before journals', () => {
+        const folder = { id: 'f1', name: 'Folder', type: 'JournalEntry', folder: null };
+        const journal = { id: 'j1', name: 'Journal', folder: null };
+
+        global.game.folders.set('f1', folder);
+        global.game.journal.set('j1', journal);
+
+        const tree = buildJournalTree();
+
+        expect(tree.children).toHaveLength(2);
+        expect(tree.children[0].type).toBe('folder');
+        expect(tree.children[1].type).toBe('journal');
+    });
+
+    test('sorts items alphabetically within same type', () => {
+        const journal1 = { id: 'j1', name: 'Zebra', folder: null };
+        const journal2 = { id: 'j2', name: 'Alpha', folder: null };
+        const journal3 = { id: 'j3', name: 'Bravo', folder: null };
+
+        global.game.journal.set('j1', journal1);
+        global.game.journal.set('j2', journal2);
+        global.game.journal.set('j3', journal3);
+
+        const tree = buildJournalTree();
+
+        const names = tree.children.map(c => c.name);
+        expect(names).toEqual(['Alpha', 'Bravo', 'Zebra']);
+    });
+
+    test('ignores non-JournalEntry folders', () => {
+        const journalFolder = { id: 'f1', name: 'Journals', type: 'JournalEntry', folder: null };
+        const sceneFolder = { id: 'f2', name: 'Scenes', type: 'Scene', folder: null };
+
+        global.game.folders.set('f1', journalFolder);
+        global.game.folders.set('f2', sceneFolder);
+
+        const tree = buildJournalTree();
+
+        expect(tree.children).toHaveLength(1);
+        expect(tree.children[0].name).toBe('Journals');
+    });
+
+    test('marks all nodes as selected by default', () => {
+        const folder = { id: 'f1', name: 'NPCs', type: 'JournalEntry', folder: null };
+        const journal = { id: 'j1', name: 'Alice', folder };
+
+        global.game.folders.set('f1', folder);
+        global.game.journal.set('j1', journal);
+
+        const tree = buildJournalTree();
+
+        expect(tree.isSelected).toBe(true);
+        expect(tree.children[0].isSelected).toBe(true);
+        expect(tree.children[0].children[0].isSelected).toBe(true);
+    });
+
+    test('JournalTreeNode requires id', () => {
+        expect(() => {
+            new JournalTreeNode({
+                name: 'Test',
+                type: 'journal'
+            });
+        }).toThrow('JournalTreeNode requires id');
+    });
+
+    test('JournalTreeNode requires name', () => {
+        expect(() => {
+            new JournalTreeNode({
+                id: 'test',
+                type: 'journal'
+            });
+        }).toThrow('JournalTreeNode requires name');
+    });
+
+    test('JournalTreeNode requires valid type', () => {
+        expect(() => {
+            new JournalTreeNode({
+                id: 'test',
+                name: 'Test',
+                type: 'invalid'
+            });
+        }).toThrow("JournalTreeNode type must be 'journal' or 'folder'");
+    });
+
+    test('JournalTreeNode allows journal type', () => {
+        expect(() => {
+            new JournalTreeNode({
+                id: 'test',
+                name: 'Test',
+                type: 'journal'
+            });
+        }).not.toThrow();
+    });
+
+    test('JournalTreeNode allows folder type', () => {
+        expect(() => {
+            new JournalTreeNode({
+                id: 'test',
+                name: 'Test',
+                type: 'folder'
             });
         }).not.toThrow();
     });

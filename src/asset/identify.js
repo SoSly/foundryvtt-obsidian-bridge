@@ -9,17 +9,17 @@ import NonMarkdownFile from '../domain/NonMarkdownFile.js';
  * @returns {Promise<{nonMarkdownFiles: NonMarkdownFile[]}>} Object containing array of identified assets
  */
 export default async function identifyAssets(markdownFiles) {
-    const assetPaths = collectUniqueAssetPaths(markdownFiles);
+    const assetMap = collectUniqueAssetPaths(markdownFiles);
     const nonMarkdownFiles = [];
 
-    for (const assetPath of assetPaths) {
-        const foundryPath = await verifyAssetExists(assetPath);
-        if (!foundryPath) {
-            console.warn(`Asset not found in Foundry data directory: ${assetPath}`);
+    for (const [foundryPath, vaultPath] of assetMap) {
+        const exists = await verifyAssetExists(foundryPath);
+        if (!exists) {
+            console.warn(`Asset not found in Foundry data directory: ${foundryPath}`);
             continue;
         }
 
-        const nonMarkdownFile = new NonMarkdownFile({ filePath: assetPath });
+        const nonMarkdownFile = new NonMarkdownFile({ filePath: vaultPath });
         nonMarkdownFile.foundryDataPath = foundryPath;
         nonMarkdownFiles.push(nonMarkdownFile);
     }
@@ -36,32 +36,31 @@ export default async function identifyAssets(markdownFiles) {
  * @returns {Set<string>} Set of unique asset paths
  */
 function collectUniqueAssetPaths(markdownFiles) {
-    const uniquePaths = new Set();
+    const uniqueAssets = new Map();
 
     for (const markdownFile of markdownFiles) {
         for (const asset of markdownFile.assets) {
-            uniquePaths.add(asset.foundry);
+            if (!uniqueAssets.has(asset.foundry)) {
+                uniqueAssets.set(asset.foundry, asset.obsidian);
+            }
         }
     }
 
-    return uniquePaths;
+    return uniqueAssets;
 }
 
 /**
  * Verifies that an asset exists in Foundry's data directory.
  * Uses FilePicker to check if the file can be browsed, which confirms existence.
  *
- * @param {string} assetPath - Vault-relative path to the asset
- * @returns {Promise<string|null>} Full Foundry data path if exists, null if not found
+ * @param {string} assetPath - Full Foundry path to the asset
+ * @returns {Promise<boolean>} True if asset exists, false otherwise
  */
 async function verifyAssetExists(assetPath) {
     try {
         const response = await FilePicker.browse('data', assetPath);
-        if (!response || !response.target) {
-            return null;
-        }
-        return response.target;
+        return !!(response && response.target);
     } catch (error) {
-        return null;
+        return false;
     }
 }

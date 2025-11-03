@@ -44,7 +44,8 @@ async function writeToZip(markdownFiles, nonMarkdownFiles) {
 
     for (const assetFile of nonMarkdownFiles) {
         try {
-            const response = await fetch(assetFile.foundryDataPath);
+            const decodedPath = decodeURIComponent(assetFile.foundryDataPath);
+            const response = await fetch(decodedPath);
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
@@ -81,9 +82,15 @@ async function writeToFilesystem(markdownFiles, nonMarkdownFiles) {
 
     let dirHandle;
     try {
-        dirHandle = await window.showDirectoryPicker();
+        dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
     } catch (error) {
         errors.push(`Failed to open directory picker: ${error.message}`);
+        return { filesWritten, assetsWritten, errors };
+    }
+
+    const permissionStatus = await dirHandle.requestPermission({ mode: 'readwrite' });
+    if (permissionStatus !== 'granted') {
+        errors.push('Write permission not granted for selected directory');
         return { filesWritten, assetsWritten, errors };
     }
 
@@ -145,7 +152,8 @@ async function writeMarkdownFile(dirHandle, markdownFile) {
  * @returns {Promise<void>}
  */
 async function writeAssetFile(dirHandle, assetFile) {
-    const response = await fetch(assetFile.foundryDataPath);
+    const decodedPath = decodeURIComponent(assetFile.foundryDataPath);
+    const response = await fetch(decodedPath);
     if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
     }

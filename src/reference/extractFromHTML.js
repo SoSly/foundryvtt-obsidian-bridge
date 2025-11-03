@@ -143,16 +143,16 @@ export function extractAssetReferences(htmlContent, options = {}) {
 
         const strippedPath = stripPrefix(fullPath, assetPathPrefix);
 
-        if (seenPaths.has(strippedPath)) {
+        if (seenPaths.has(fullPath)) {
             continue;
         }
 
-        seenPaths.add(strippedPath);
+        seenPaths.add(fullPath);
 
         assets.push(new Reference({
             source: imgTag,
-            foundry: strippedPath,
-            obsidian: '',
+            foundry: fullPath,
+            obsidian: strippedPath,
             label: altText || null,
             type: 'asset',
             isImage: true,
@@ -171,16 +171,16 @@ export function extractAssetReferences(htmlContent, options = {}) {
 
         const strippedPath = stripPrefix(fullPath, assetPathPrefix);
 
-        if (seenPaths.has(strippedPath)) {
+        if (seenPaths.has(fullPath)) {
             continue;
         }
 
-        seenPaths.add(strippedPath);
+        seenPaths.add(fullPath);
 
         assets.push(new Reference({
             source: match[0],
-            foundry: strippedPath,
-            obsidian: '',
+            foundry: fullPath,
+            obsidian: strippedPath,
             label: linkText || null,
             type: 'asset',
             isImage: false,

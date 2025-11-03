@@ -30,7 +30,8 @@ beforeEach(() => {
         getDirectoryHandle: jest.fn(function(name, options) {
             return Promise.resolve(this);
         }),
-        getFileHandle: jest.fn(() => Promise.resolve(mockFileHandle))
+        getFileHandle: jest.fn(() => Promise.resolve(mockFileHandle)),
+        requestPermission: jest.fn(() => Promise.resolve('granted'))
     };
 
     mockWindow = {

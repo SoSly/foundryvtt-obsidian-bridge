@@ -2,8 +2,8 @@ obsidian-bridge:
   name: Obsidian Bridge
 
   import:
-    button: Import Obsidian Vault
-    dialog-title: Import Obsidian Vault
+    button: Obsidian Import
+    dialog-title: Import from Obsidian
 
     vault-path-label: Vault Path
     vault-path-hint: Select the root directory of your Obsidian vault
@@ -26,3 +26,24 @@ obsidian-bridge:
 
     import-button: Import
     cancel-button: Cancel
+
+  export:
+    button: Obsidian Export
+    dialog-title: Export to Obsidian
+
+    journal-selection-label: Select Journals and Folders to Export
+    journal-selection-hint: Choose which journals and folders to export to Obsidian markdown format
+
+    merge-label: Merge pages into single files
+    merge-hint: When enabled, multi-page journals will be merged into a single markdown file. When disabled, each page becomes a separate file.
+
+    export-assets-label: Export referenced assets
+    export-assets-hint: Export images and other assets referenced in journal content
+
+    asset-path-prefix-label: Asset path prefix to strip
+    asset-path-prefix-hint: Path prefix to remove from Foundry asset URLs
+
+    export-button: Export
+    cancel-button: Cancel
+
+    no-journals-selected: Please select at least one journal to export

@@ -26,3 +26,32 @@ export function findNodeByPath(node, targetPath) {
 
     return null;
 }
+
+/**
+ * Finds a node in a journal tree by its ID.
+ * Recursively searches through the tree structure.
+ *
+ * @param {Object} node - Root node to search from
+ * @param {string} targetId - ID to find
+ * @returns {Object|null} The found node or null
+ */
+export function findNodeById(node, targetId) {
+    if (!node) {
+        return null;
+    }
+
+    if (node.id === targetId) {
+        return node;
+    }
+
+    if (node.type === 'folder' && node.children) {
+        for (const child of node.children) {
+            const found = findNodeById(child, targetId);
+            if (found) {
+                return found;
+            }
+        }
+    }
+
+    return null;
+}

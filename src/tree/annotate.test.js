@@ -1,4 +1,4 @@
-import { annotateTreeForDisplay } from './annotate';
+import { annotateTreeForDisplay, annotateJournalTreeForDisplay } from './annotate';
 
 describe('annotateTreeForDisplay', () => {
     test('returns null when node is null', () => {
@@ -184,5 +184,176 @@ describe('annotateTreeForDisplay', () => {
 
         expect(result.children[0].name).toBe('file.md');
         expect(result.children[0].children).toBeUndefined();
+    });
+});
+
+describe('annotateJournalTreeForDisplay', () => {
+    test('returns null when node is null', () => {
+        const result = annotateJournalTreeForDisplay(null);
+
+        expect(result).toBeNull();
+    });
+
+    test('returns null when node is undefined', () => {
+        const result = annotateJournalTreeForDisplay(undefined);
+
+        expect(result).toBeNull();
+    });
+
+    test('annotates root node with empty tree char', () => {
+        const tree = {
+            id: 'root',
+            name: 'Journals',
+            type: 'folder',
+            children: []
+        };
+
+        const result = annotateJournalTreeForDisplay(tree);
+
+        expect(result.isRoot).toBe(true);
+        expect(result.treeChar).toBe('');
+        expect(result.id).toBe('root');
+        expect(result.name).toBe('Journals');
+    });
+
+    test('annotates last child with └─ character', () => {
+        const child = {
+            id: 'j1',
+            name: 'Journal',
+            type: 'journal'
+        };
+        const tree = {
+            id: 'root',
+            name: 'Journals',
+            type: 'folder',
+            children: [child]
+        };
+
+        const result = annotateJournalTreeForDisplay(tree);
+
+        expect(result.children[0].isRoot).toBe(false);
+        expect(result.children[0].treeChar).toBe('└─ ');
+    });
+
+    test('annotates non-last child with ├─ character', () => {
+        const child1 = {
+            id: 'j1',
+            name: 'Journal 1',
+            type: 'journal'
+        };
+        const child2 = {
+            id: 'j2',
+            name: 'Journal 2',
+            type: 'journal'
+        };
+        const tree = {
+            id: 'root',
+            name: 'Journals',
+            type: 'folder',
+            children: [child1, child2]
+        };
+
+        const result = annotateJournalTreeForDisplay(tree);
+
+        expect(result.children[0].treeChar).toBe('├─ ');
+        expect(result.children[1].treeChar).toBe('└─ ');
+    });
+
+    test('does not filter children (includes all journals and folders)', () => {
+        const folder = { id: 'f1', name: 'Folder', type: 'folder', children: [] };
+        const journal = { id: 'j1', name: 'Journal', type: 'journal' };
+        const tree = {
+            id: 'root',
+            name: 'Journals',
+            type: 'folder',
+            children: [folder, journal]
+        };
+
+        const result = annotateJournalTreeForDisplay(tree);
+
+        expect(result.children.length).toBe(2);
+        expect(result.children[0].name).toBe('Folder');
+        expect(result.children[1].name).toBe('Journal');
+    });
+
+    test('recursively annotates nested structure', () => {
+        const journal = { id: 'j1', name: 'Journal', type: 'journal' };
+        const midFolder = {
+            id: 'f2',
+            name: 'Subfolder',
+            type: 'folder',
+            children: [journal]
+        };
+        const tree = {
+            id: 'root',
+            name: 'Journals',
+            type: 'folder',
+            children: [midFolder]
+        };
+
+        const result = annotateJournalTreeForDisplay(tree);
+
+        expect(result.children[0].treeChar).toBe('└─ ');
+        expect(result.children[0].children[0].treeChar).toBe('└─ ');
+        expect(result.children[0].children[0].name).toBe('Journal');
+    });
+
+    test('preserves original node properties', () => {
+        const tree = {
+            id: 'root',
+            name: 'Journals',
+            type: 'folder',
+            isSelected: true,
+            isIndeterminate: false,
+            children: []
+        };
+
+        const result = annotateJournalTreeForDisplay(tree);
+
+        expect(result.id).toBe('root');
+        expect(result.name).toBe('Journals');
+        expect(result.type).toBe('folder');
+        expect(result.isSelected).toBe(true);
+        expect(result.isIndeterminate).toBe(false);
+    });
+
+    test('handles journal nodes without children property', () => {
+        const journalNode = {
+            id: 'j1',
+            name: 'Journal',
+            type: 'journal'
+        };
+        const tree = {
+            id: 'root',
+            name: 'Journals',
+            type: 'folder',
+            children: [journalNode]
+        };
+
+        const result = annotateJournalTreeForDisplay(tree);
+
+        expect(result.children[0].name).toBe('Journal');
+        expect(result.children[0].children).toBeUndefined();
+    });
+
+    test('handles mixed folder and journal children', () => {
+        const folder1 = { id: 'f1', name: 'NPCs', type: 'folder', children: [] };
+        const folder2 = { id: 'f2', name: 'Locations', type: 'folder', children: [] };
+        const journal1 = { id: 'j1', name: 'Plot', type: 'journal' };
+        const journal2 = { id: 'j2', name: 'Rules', type: 'journal' };
+        const tree = {
+            id: 'root',
+            name: 'Journals',
+            type: 'folder',
+            children: [folder1, folder2, journal1, journal2]
+        };
+
+        const result = annotateJournalTreeForDisplay(tree);
+
+        expect(result.children.length).toBe(4);
+        expect(result.children[0].treeChar).toBe('├─ ');
+        expect(result.children[1].treeChar).toBe('├─ ');
+        expect(result.children[2].treeChar).toBe('├─ ');
+        expect(result.children[3].treeChar).toBe('└─ ');
     });
 });

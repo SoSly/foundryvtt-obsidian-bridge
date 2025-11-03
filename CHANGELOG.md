@@ -14,3 +14,11 @@
 - Upload and link non-markdown assets (images, PDFs, etc.) from vault to Foundry data directory
 - Automatic rollback of created documents and uploaded files when import fails
 - Support for three import modes: separate entries per file, combined entries per folder, or combined with skip-folder-combine option
+- Export to Obsidian button in Journal Directory sidebar
+- Export dialog with journal tree selector, merge options, and asset export settings
+- Export Foundry journals to Obsidian-compatible markdown files
+- Convert Foundry HTML content to markdown with proper heading, list, and formatting preservation
+- Convert Foundry UUIDs back to Obsidian `[[wikilink]]` syntax
+- Export referenced assets (images, PDFs, etc.) from Foundry data directory to vault
+- Support for direct filesystem writes using File System Access API or ZIP download fallback
+- Configurable asset path prefix for organizing exported assets in vault structure

@@ -1,5 +1,5 @@
-{{#if isDirectory}}
-    <div class="tree-item folder {{#if isRoot}}root {{/if}}collapsed" data-path="{{path}}">
+{{#if (or isDirectory (eq type "folder"))}}
+    <div class="tree-item folder {{#if isRoot}}root {{/if}}collapsed" {{#if id}}data-id="{{id}}"{{else}}data-path="{{path}}"{{/if}}>
         <div class="tree-header">
             {{#unless isRoot}}<span class="tree-char">{{treeChar}}</span>{{/unless}}
             <button type="button" class="tree-toggle">
@@ -18,13 +18,17 @@
         </div>
     </div>
 {{else}}
-    {{#if (endsWith name ".md")}}
-    <div class="tree-item file" data-path="{{path}}">
+    {{#if (or (endsWith name ".md") (eq type "journal"))}}
+    <div class="tree-item {{#if (eq type "journal")}}journal{{else}}file{{/if}}" {{#if id}}data-id="{{id}}"{{else}}data-path="{{path}}"{{/if}}>
         <div class="tree-header">
             <span class="tree-char">{{treeChar}}</span>
             <label>
                 <input type="checkbox" {{checked isSelected}} />
-                <i class="fas fa-file"></i>
+                {{#if (eq type "journal")}}
+                    <i class="fas fa-book"></i>
+                {{else}}
+                    <i class="fas fa-file"></i>
+                {{/if}}
                 <span>{{name}}</span>
             </label>
         </div>

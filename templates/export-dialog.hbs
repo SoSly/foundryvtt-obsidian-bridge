@@ -1,0 +1,45 @@
+<div class="export-dialog-content">
+    {{#if journalTree}}
+    <div class="form-group file-tree-group">
+        <label>{{localize "obsidian-bridge.export.journal-selection-label"}}</label>
+        <div class="file-tree" data-tree-root="true">
+            <div id="journal-tree"></div>
+        </div>
+        <p class="hint">{{localize "obsidian-bridge.export.journal-selection-hint"}}</p>
+    </div>
+
+    <div class="form-group">
+        <label>
+            <input type="checkbox" name="merge" {{checked merge}} />
+            {{localize "obsidian-bridge.export.merge-label"}}
+        </label>
+        <p class="hint">{{localize "obsidian-bridge.export.merge-hint"}}</p>
+    </div>
+
+    <div class="form-group">
+        <label>
+            <input type="checkbox" name="exportAssets" {{checked exportAssets}} data-toggle-visibility="assetPathPrefix" />
+            {{localize "obsidian-bridge.export.export-assets-label"}}
+        </label>
+        <p class="hint">{{localize "obsidian-bridge.export.export-assets-hint"}}</p>
+    </div>
+
+    {{#if exportAssets}}
+    <div class="form-group" data-visibility-target="assetPathPrefix">
+        <label for="obsidian-asset-path-prefix">{{localize "obsidian-bridge.export.asset-path-prefix-label"}}</label>
+        <input type="text" id="obsidian-asset-path-prefix" name="assetPathPrefix" value="{{assetPathPrefix}}"
+               placeholder="worlds/my-world/" />
+        <p class="hint">{{localize "obsidian-bridge.export.asset-path-prefix-hint"}}</p>
+    </div>
+    {{/if}}
+    {{/if}}
+
+    <footer class="form-footer flexrow">
+        <button type="submit" class="primary">
+            <i class="fas fa-file-export"></i> {{localize "obsidian-bridge.export.export-button"}}
+        </button>
+        <button type="button" data-action="close">
+            <i class="fas fa-times"></i> {{localize "obsidian-bridge.export.cancel-button"}}
+        </button>
+    </footer>
+</div>

@@ -111,7 +111,7 @@ describe('extractAssetReferences', () => {
         expect(result).toHaveLength(1);
         expect(result[0]).toBeInstanceOf(Reference);
         expect(result[0].foundry).toBe('worlds/my-world/maps/dungeon.png');
-        expect(result[0].obsidian).toBe('');
+        expect(result[0].obsidian).toBe('worlds/my-world/maps/dungeon.png');
         expect(result[0].label).toBe('Dungeon Map');
         expect(result[0].type).toBe('asset');
         expect(result[0].isImage).toBe(true);
@@ -186,7 +186,8 @@ describe('extractAssetReferences', () => {
         const result = extractAssetReferences(html, options);
 
         expect(result).toHaveLength(1);
-        expect(result[0].foundry).toBe('maps/dungeon.png');
+        expect(result[0].foundry).toBe('worlds/my-world/obsidian/maps/dungeon.png');
+        expect(result[0].obsidian).toBe('maps/dungeon.png');
     });
 
     it('should strip asset path prefix with trailing slash', () => {
@@ -195,7 +196,8 @@ describe('extractAssetReferences', () => {
         const result = extractAssetReferences(html, options);
 
         expect(result).toHaveLength(1);
-        expect(result[0].foundry).toBe('maps/dungeon.png');
+        expect(result[0].foundry).toBe('worlds/my-world/obsidian/maps/dungeon.png');
+        expect(result[0].obsidian).toBe('maps/dungeon.png');
     });
 
     it('should handle Windows-style backslashes in prefix', () => {
@@ -204,7 +206,8 @@ describe('extractAssetReferences', () => {
         const result = extractAssetReferences(html, options);
 
         expect(result).toHaveLength(1);
-        expect(result[0].foundry).toBe('image.png');
+        expect(result[0].foundry).toBe('worlds/my-world/obsidian/image.png');
+        expect(result[0].obsidian).toBe('image.png');
     });
 
     it('should not strip prefix if path does not match', () => {

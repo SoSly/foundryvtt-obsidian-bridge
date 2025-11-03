@@ -24,8 +24,8 @@ describe('identifyAssets', () => {
                     filePath: 'test.md',
                     content: 'content',
                     assets: [
-                        new Reference({ source: '<img src="assets/image1.png">', obsidian: '', foundry: 'assets/image1.png', type: 'asset', isImage: true }),
-                        new Reference({ source: '<img src="assets/image2.png">', obsidian: '', foundry: 'assets/image2.png', type: 'asset', isImage: true })
+                        new Reference({ source: '<img src="assets/image1.png">', obsidian: 'assets/image1.png', foundry: 'assets/image1.png', type: 'asset', isImage: true }),
+                        new Reference({ source: '<img src="assets/image2.png">', obsidian: 'assets/image2.png', foundry: 'assets/image2.png', type: 'asset', isImage: true })
                     ]
                 })
             ];
@@ -49,14 +49,14 @@ describe('identifyAssets', () => {
                     filePath: 'test1.md',
                     content: 'content',
                     assets: [
-                        new Reference({ source: '<img src="assets/image.png">', obsidian: '', foundry: 'assets/image.png', type: 'asset', isImage: true })
+                        new Reference({ source: '<img src="assets/image.png">', obsidian: 'assets/image.png', foundry: 'assets/image.png', type: 'asset', isImage: true })
                     ]
                 }),
                 new MarkdownFile({
                     filePath: 'test2.md',
                     content: 'content',
                     assets: [
-                        new Reference({ source: '<img src="assets/image.png">', obsidian: '', foundry: 'assets/image.png', type: 'asset', isImage: true })
+                        new Reference({ source: '<img src="assets/image.png">', obsidian: 'assets/image.png', foundry: 'assets/image.png', type: 'asset', isImage: true })
                     ]
                 })
             ];
@@ -93,7 +93,7 @@ describe('identifyAssets', () => {
                     filePath: 'test.md',
                     content: 'content',
                     assets: [
-                        new Reference({ source: '<img src="assets/image.png">', obsidian: '', foundry: 'assets/image.png', type: 'asset', isImage: true })
+                        new Reference({ source: '<img src="assets/image.png">', obsidian: 'assets/image.png', foundry: 'assets/image.png', type: 'asset', isImage: true })
                     ]
                 })
             ];
@@ -117,7 +117,7 @@ describe('identifyAssets', () => {
                     filePath: 'test.md',
                     content: 'content',
                     assets: [
-                        new Reference({ source: '<img src="assets/missing.png">', obsidian: '', foundry: 'assets/missing.png', type: 'asset', isImage: true })
+                        new Reference({ source: '<img src="assets/missing.png">', obsidian: 'assets/missing.png', foundry: 'assets/missing.png', type: 'asset', isImage: true })
                     ]
                 })
             ];
@@ -140,7 +140,7 @@ describe('identifyAssets', () => {
                     filePath: 'test.md',
                     content: 'content',
                     assets: [
-                        new Reference({ source: '<img src="assets/image.png">', obsidian: '', foundry: 'assets/image.png', type: 'asset', isImage: true })
+                        new Reference({ source: '<img src="assets/image.png">', obsidian: 'assets/image.png', foundry: 'assets/image.png', type: 'asset', isImage: true })
                     ]
                 })
             ];
@@ -163,9 +163,9 @@ describe('identifyAssets', () => {
                     filePath: 'test.md',
                     content: 'content',
                     assets: [
-                        new Reference({ source: '<img src="assets/exists.png">', obsidian: '', foundry: 'assets/exists.png', type: 'asset', isImage: true }),
-                        new Reference({ source: '<img src="assets/missing.png">', obsidian: '', foundry: 'assets/missing.png', type: 'asset', isImage: true }),
-                        new Reference({ source: '<img src="assets/also-exists.png">', obsidian: '', foundry: 'assets/also-exists.png', type: 'asset', isImage: true })
+                        new Reference({ source: '<img src="assets/exists.png">', obsidian: 'assets/exists.png', foundry: 'assets/exists.png', type: 'asset', isImage: true }),
+                        new Reference({ source: '<img src="assets/missing.png">', obsidian: 'assets/missing.png', foundry: 'assets/missing.png', type: 'asset', isImage: true }),
+                        new Reference({ source: '<img src="assets/also-exists.png">', obsidian: 'assets/also-exists.png', foundry: 'assets/also-exists.png', type: 'asset', isImage: true })
                     ]
                 })
             ];
@@ -196,7 +196,7 @@ describe('identifyAssets', () => {
                     filePath: 'test.md',
                     content: 'content',
                     assets: [
-                        new Reference({ source: '<img src="assets/images/image.png">', obsidian: '', foundry: 'assets/images/image.png', type: 'asset', isImage: true })
+                        new Reference({ source: '<img src="assets/images/image.png">', obsidian: 'assets/images/image.png', foundry: 'assets/images/image.png', type: 'asset', isImage: true })
                     ]
                 })
             ];
@@ -208,7 +208,7 @@ describe('identifyAssets', () => {
             const result = await identifyAssets(markdownFiles);
 
             expect(result.nonMarkdownFiles[0].filePath).toBe('assets/images/image.png');
-            expect(result.nonMarkdownFiles[0].foundryDataPath).toBe('full/path/to/assets/images/image.png');
+            expect(result.nonMarkdownFiles[0].foundryDataPath).toBe('assets/images/image.png');
         });
 
         it('should return result object with nonMarkdownFiles array', async () => {

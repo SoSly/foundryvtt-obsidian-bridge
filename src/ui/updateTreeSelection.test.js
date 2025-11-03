@@ -1,4 +1,4 @@
-import { updateTreeSelection, updateChildrenSelection, updateParentSelection } from './updateTreeSelection';
+import { updateTreeSelection, updateChildrenSelection, updateParentSelection, updateTreeSelectionById } from './updateTreeSelection';
 
 describe('updateTreeSelection', () => {
     test('returns false when node is null', () => {
@@ -309,5 +309,167 @@ describe('updateParentSelection', () => {
 
         expect(tree.isSelected).toBe(false);
         expect(tree.isIndeterminate).toBe(true);
+    });
+});
+
+describe('updateTreeSelectionById', () => {
+    test('returns false when node is null', () => {
+        const result = updateTreeSelectionById(null, 'any-id', true);
+
+        expect(result).toBe(false);
+    });
+
+    test('updates root node selection', () => {
+        const tree = {
+            id: 'root-id',
+            name: 'root',
+            type: 'folder',
+            isSelected: false,
+            isIndeterminate: false,
+            children: []
+        };
+
+        const result = updateTreeSelectionById(tree, 'root-id', true);
+
+        expect(result).toBe(true);
+        expect(tree.isSelected).toBe(true);
+        expect(tree.isIndeterminate).toBe(false);
+    });
+
+    test('updates child node and propagates to parent', () => {
+        const child = {
+            id: 'child-id',
+            name: 'child',
+            type: 'journal',
+            isSelected: false,
+            isIndeterminate: false
+        };
+        const tree = {
+            id: 'root-id',
+            name: 'root',
+            type: 'folder',
+            isSelected: false,
+            isIndeterminate: false,
+            children: [child]
+        };
+
+        updateTreeSelectionById(tree, 'child-id', true);
+
+        expect(child.isSelected).toBe(true);
+        expect(tree.isSelected).toBe(true);
+        expect(tree.isIndeterminate).toBe(false);
+    });
+
+    test('propagates selection to all children', () => {
+        const child1 = { id: 'child1-id', name: 'child1', type: 'journal', isSelected: false, isIndeterminate: false };
+        const child2 = { id: 'child2-id', name: 'child2', type: 'journal', isSelected: false, isIndeterminate: false };
+        const tree = {
+            id: 'root-id',
+            name: 'root',
+            type: 'folder',
+            isSelected: false,
+            isIndeterminate: false,
+            children: [child1, child2]
+        };
+
+        updateTreeSelectionById(tree, 'root-id', true);
+
+        expect(tree.isSelected).toBe(true);
+        expect(child1.isSelected).toBe(true);
+        expect(child2.isSelected).toBe(true);
+    });
+
+    test('clears indeterminate state when selecting node', () => {
+        const tree = {
+            id: 'root-id',
+            name: 'root',
+            type: 'folder',
+            isSelected: false,
+            isIndeterminate: true,
+            children: []
+        };
+
+        updateTreeSelectionById(tree, 'root-id', true);
+
+        expect(tree.isIndeterminate).toBe(false);
+    });
+
+    test('returns false when target id not found', () => {
+        const tree = {
+            id: 'root-id',
+            name: 'root',
+            type: 'folder',
+            isSelected: false,
+            children: []
+        };
+
+        const result = updateTreeSelectionById(tree, 'nonexistent-id', true);
+
+        expect(result).toBe(false);
+    });
+
+    test('handles nested folder structures', () => {
+        const deepChild = { id: 'deep-id', name: 'deep', type: 'journal', isSelected: false, isIndeterminate: false };
+        const midFolder = {
+            id: 'mid-id',
+            name: 'mid',
+            type: 'folder',
+            isSelected: false,
+            isIndeterminate: false,
+            children: [deepChild]
+        };
+        const tree = {
+            id: 'root-id',
+            name: 'root',
+            type: 'folder',
+            isSelected: false,
+            isIndeterminate: false,
+            children: [midFolder]
+        };
+
+        updateTreeSelectionById(tree, 'deep-id', true);
+
+        expect(deepChild.isSelected).toBe(true);
+        expect(midFolder.isSelected).toBe(true);
+        expect(tree.isSelected).toBe(true);
+    });
+
+    test('sets parent to indeterminate when only some children selected', () => {
+        const child1 = { id: 'child1-id', name: 'child1', type: 'journal', isSelected: false, isIndeterminate: false };
+        const child2 = { id: 'child2-id', name: 'child2', type: 'journal', isSelected: false, isIndeterminate: false };
+        const tree = {
+            id: 'root-id',
+            name: 'root',
+            type: 'folder',
+            isSelected: true,
+            isIndeterminate: false,
+            children: [child1, child2]
+        };
+
+        updateTreeSelectionById(tree, 'child1-id', true);
+
+        expect(child1.isSelected).toBe(true);
+        expect(child2.isSelected).toBe(false);
+        expect(tree.isSelected).toBe(false);
+        expect(tree.isIndeterminate).toBe(true);
+    });
+
+    test('deselecting all children updates parent to unselected', () => {
+        const child1 = { id: 'child1-id', name: 'child1', type: 'journal', isSelected: true, isIndeterminate: false };
+        const child2 = { id: 'child2-id', name: 'child2', type: 'journal', isSelected: true, isIndeterminate: false };
+        const tree = {
+            id: 'root-id',
+            name: 'root',
+            type: 'folder',
+            isSelected: true,
+            isIndeterminate: false,
+            children: [child1, child2]
+        };
+
+        updateTreeSelectionById(tree, 'child1-id', false);
+        updateTreeSelectionById(tree, 'child2-id', false);
+
+        expect(tree.isSelected).toBe(false);
+        expect(tree.isIndeterminate).toBe(false);
     });
 });

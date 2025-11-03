@@ -23,3 +23,30 @@ export function collectSelectedPaths(tree) {
     traverse(tree, selectedPaths);
     return selectedPaths;
 }
+
+/**
+ * Collects all selected journal documents from a journal tree.
+ * Recursively traverses the tree and collects journal nodes that are selected.
+ *
+ * @param {Object} node - Root node to collect from
+ * @returns {Object[]} Array of journal documents
+ */
+export function collectSelectedJournals(node) {
+    if (!node) {
+        return [];
+    }
+
+    const journals = [];
+
+    if (node.type === 'journal' && node.isSelected && node.document) {
+        journals.push(node.document);
+    }
+
+    if (node.type === 'folder' && node.children) {
+        for (const child of node.children) {
+            journals.push(...collectSelectedJournals(child));
+        }
+    }
+
+    return journals;
+}

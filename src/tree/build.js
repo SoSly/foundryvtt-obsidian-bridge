@@ -1,4 +1,89 @@
 import VaultTreeNode from '../domain/VaultTreeNode.js';
+import JournalTreeNode from '../domain/JournalTreeNode.js';
+
+export function buildJournalTree() {
+    const root = createJournalFolderNode('root', 'Journals', null);
+    const folderMap = new Map();
+    folderMap.set(null, root);
+
+    for (const folder of game.folders.values()) {
+        if (folder.type !== 'JournalEntry') {
+            continue;
+        }
+
+        const node = createJournalFolderNode(folder.id, folder.name, folder.folder?.id || null);
+        folderMap.set(folder.id, node);
+    }
+
+    for (const [folderId, node] of folderMap) {
+        if (folderId === null) {
+            continue;
+        }
+
+        const folder = game.folders.get(folderId);
+        const parentId = folder?.folder?.id || null;
+        const parentNode = folderMap.get(parentId);
+
+        if (parentNode) {
+            parentNode.children.push(node);
+        }
+    }
+
+    for (const journal of game.journal.values()) {
+        const node = createJournalNode(journal.id, journal.name, journal);
+        const folderId = journal.folder?.id || null;
+        const parentNode = folderMap.get(folderId);
+
+        if (parentNode) {
+            parentNode.children.push(node);
+        }
+    }
+
+    sortJournalTree(root);
+
+    if (root.children.length === 0) {
+        return null;
+    }
+
+    return root;
+}
+
+function createJournalFolderNode(id, name) {
+    return new JournalTreeNode({
+        id,
+        name,
+        type: 'folder',
+        isSelected: true,
+        children: []
+    });
+}
+
+function createJournalNode(id, name, document) {
+    return new JournalTreeNode({
+        id,
+        name,
+        type: 'journal',
+        isSelected: true,
+        document
+    });
+}
+
+function sortJournalTree(node) {
+    if (node.type !== 'folder') {
+        return;
+    }
+
+    node.children.sort((a, b) => {
+        if (a.type !== b.type) {
+            return a.type === 'folder' ? -1 : 1;
+        }
+        return a.name.localeCompare(b.name);
+    });
+
+    for (const child of node.children) {
+        sortJournalTree(child);
+    }
+}
 
 export function buildFileTree(fileList) {
     if (!fileList || fileList.length === 0) {

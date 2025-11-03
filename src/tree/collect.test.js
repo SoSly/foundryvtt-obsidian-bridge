@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { collectSelectedPaths } from './collect.js';
+import { collectSelectedPaths, collectSelectedJournals } from './collect.js';
 
 describe('collectSelectedPaths', () => {
     test('returns empty Set for null tree', () => {
@@ -222,5 +222,275 @@ describe('collectSelectedPaths', () => {
         expect(result.has('file1.md')).toBe(true);
         expect(result.has('file2.md')).toBe(true);
         expect(result.has('file3.md')).toBe(true);
+    });
+});
+
+describe('collectSelectedJournals', () => {
+    test('returns empty array for null tree', () => {
+        const result = collectSelectedJournals(null);
+
+        expect(result).toEqual([]);
+    });
+
+    test('returns empty array for undefined tree', () => {
+        const result = collectSelectedJournals(undefined);
+
+        expect(result).toEqual([]);
+    });
+
+    test('returns document of single selected journal', () => {
+        const mockDoc = { id: 'j1', name: 'Journal' };
+        const tree = {
+            id: 'root',
+            name: 'Journals',
+            type: 'folder',
+            isSelected: true,
+            children: [
+                {
+                    id: 'j1',
+                    name: 'Journal',
+                    type: 'journal',
+                    isSelected: true,
+                    document: mockDoc
+                }
+            ]
+        };
+
+        const result = collectSelectedJournals(tree);
+
+        expect(result.length).toBe(1);
+        expect(result[0]).toBe(mockDoc);
+    });
+
+    test('excludes unselected journals', () => {
+        const selectedDoc = { id: 'j1', name: 'Selected' };
+        const unselectedDoc = { id: 'j2', name: 'Unselected' };
+        const tree = {
+            id: 'root',
+            name: 'Journals',
+            type: 'folder',
+            isSelected: false,
+            children: [
+                {
+                    id: 'j1',
+                    name: 'Selected',
+                    type: 'journal',
+                    isSelected: true,
+                    document: selectedDoc
+                },
+                {
+                    id: 'j2',
+                    name: 'Unselected',
+                    type: 'journal',
+                    isSelected: false,
+                    document: unselectedDoc
+                }
+            ]
+        };
+
+        const result = collectSelectedJournals(tree);
+
+        expect(result.length).toBe(1);
+        expect(result[0]).toBe(selectedDoc);
+    });
+
+    test('collects journals from nested folders', () => {
+        const deepDoc = { id: 'j1', name: 'Deep Journal' };
+        const tree = {
+            id: 'root',
+            name: 'Journals',
+            type: 'folder',
+            isSelected: true,
+            children: [
+                {
+                    id: 'f1',
+                    name: 'Folder',
+                    type: 'folder',
+                    isSelected: true,
+                    children: [
+                        {
+                            id: 'f2',
+                            name: 'Subfolder',
+                            type: 'folder',
+                            isSelected: true,
+                            children: [
+                                {
+                                    id: 'j1',
+                                    name: 'Deep Journal',
+                                    type: 'journal',
+                                    isSelected: true,
+                                    document: deepDoc
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        const result = collectSelectedJournals(tree);
+
+        expect(result.length).toBe(1);
+        expect(result[0]).toBe(deepDoc);
+    });
+
+    test('does not include folder nodes, only journal documents', () => {
+        const journalDoc = { id: 'j1', name: 'Journal' };
+        const tree = {
+            id: 'root',
+            name: 'Journals',
+            type: 'folder',
+            isSelected: true,
+            children: [
+                {
+                    id: 'f1',
+                    name: 'Folder',
+                    type: 'folder',
+                    isSelected: true,
+                    children: [
+                        {
+                            id: 'j1',
+                            name: 'Journal',
+                            type: 'journal',
+                            isSelected: true,
+                            document: journalDoc
+                        }
+                    ]
+                }
+            ]
+        };
+
+        const result = collectSelectedJournals(tree);
+
+        expect(result.length).toBe(1);
+        expect(result[0]).toBe(journalDoc);
+    });
+
+    test('handles mixed selection in multiple folders', () => {
+        const doc1 = { id: 'j1', name: 'Journal 1' };
+        const doc3 = { id: 'j3', name: 'Journal 3' };
+        const tree = {
+            id: 'root',
+            name: 'Journals',
+            type: 'folder',
+            isSelected: false,
+            children: [
+                {
+                    id: 'f1',
+                    name: 'Folder1',
+                    type: 'folder',
+                    isSelected: true,
+                    children: [
+                        {
+                            id: 'j1',
+                            name: 'Journal 1',
+                            type: 'journal',
+                            isSelected: true,
+                            document: doc1
+                        },
+                        {
+                            id: 'j2',
+                            name: 'Journal 2',
+                            type: 'journal',
+                            isSelected: false,
+                            document: { id: 'j2', name: 'Journal 2' }
+                        }
+                    ]
+                },
+                {
+                    id: 'f2',
+                    name: 'Folder2',
+                    type: 'folder',
+                    isSelected: true,
+                    children: [
+                        {
+                            id: 'j3',
+                            name: 'Journal 3',
+                            type: 'journal',
+                            isSelected: true,
+                            document: doc3
+                        }
+                    ]
+                }
+            ]
+        };
+
+        const result = collectSelectedJournals(tree);
+
+        expect(result.length).toBe(2);
+        expect(result).toContain(doc1);
+        expect(result).toContain(doc3);
+    });
+
+    test('returns all documents when everything is selected', () => {
+        const doc1 = { id: 'j1', name: 'Journal 1' };
+        const doc2 = { id: 'j2', name: 'Journal 2' };
+        const doc3 = { id: 'j3', name: 'Journal 3' };
+        const tree = {
+            id: 'root',
+            name: 'Journals',
+            type: 'folder',
+            isSelected: true,
+            children: [
+                {
+                    id: 'j1',
+                    name: 'Journal 1',
+                    type: 'journal',
+                    isSelected: true,
+                    document: doc1
+                },
+                {
+                    id: 'j2',
+                    name: 'Journal 2',
+                    type: 'journal',
+                    isSelected: true,
+                    document: doc2
+                },
+                {
+                    id: 'j3',
+                    name: 'Journal 3',
+                    type: 'journal',
+                    isSelected: true,
+                    document: doc3
+                }
+            ]
+        };
+
+        const result = collectSelectedJournals(tree);
+
+        expect(result.length).toBe(3);
+        expect(result).toContain(doc1);
+        expect(result).toContain(doc2);
+        expect(result).toContain(doc3);
+    });
+
+    test('skips journal nodes without document property', () => {
+        const doc1 = { id: 'j1', name: 'Journal 1' };
+        const tree = {
+            id: 'root',
+            name: 'Journals',
+            type: 'folder',
+            isSelected: true,
+            children: [
+                {
+                    id: 'j1',
+                    name: 'Journal 1',
+                    type: 'journal',
+                    isSelected: true,
+                    document: doc1
+                },
+                {
+                    id: 'j2',
+                    name: 'Journal 2',
+                    type: 'journal',
+                    isSelected: true
+                }
+            ]
+        };
+
+        const result = collectSelectedJournals(tree);
+
+        expect(result.length).toBe(1);
+        expect(result[0]).toBe(doc1);
     });
 });

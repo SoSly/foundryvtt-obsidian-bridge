@@ -27,3 +27,32 @@ export function annotateTreeForDisplay(node, isRoot = true, isLast = true) {
 
     return annotated;
 }
+
+/**
+ * Annotates a journal tree with display metadata for UI rendering.
+ * Adds tree characters (├─, └─) for visual hierarchy.
+ *
+ * @param {Object} node - Tree node to annotate
+ * @param {boolean} isRoot - Whether this is the root node
+ * @param {boolean} isLast - Whether this is the last child in its parent's children array
+ * @returns {Object|null} Annotated tree node with display properties
+ */
+export function annotateJournalTreeForDisplay(node, isRoot = true, isLast = true) {
+    if (!node) {
+        return null;
+    }
+
+    const annotated = {
+        ...node,
+        isRoot,
+        treeChar: isRoot ? '' : (isLast ? '└─ ' : '├─ ')
+    };
+
+    if (node.type === 'folder' && node.children) {
+        annotated.children = node.children.map((child, index) =>
+            annotateJournalTreeForDisplay(child, false, index === node.children.length - 1)
+        );
+    }
+
+    return annotated;
+}

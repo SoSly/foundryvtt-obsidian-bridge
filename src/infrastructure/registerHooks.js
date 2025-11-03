@@ -1,20 +1,25 @@
 import ImportDialog from '../ui/ImportDialog.js';
+import ExportDialog from '../ui/ExportDialog.js';
 import { registerHandlebarsHelpers } from './registerHandlebarsHelpers.js';
 
 let importDialogInstance = null;
+let exportDialogInstance = null;
 
 async function onRenderJournalDirectory(app, html, data) {
-    const header = html.find('.directory-header');
-    if (!header.length) {
-        return;
+    let footer = html.find('.directory-footer');
+    if (!footer.length) {
+        footer = $('<footer class="directory-footer action-buttons flexrow"></footer>');
+        html.append(footer);
     }
 
-    const templatePath = 'modules/obsidian-bridge/templates/import-button.hbs';
-    const template = await getTemplate(templatePath);
-    const buttonHtml = template({});
+    const container = $('<div class="header-actions action-buttons flexrow"></div>');
 
-    const button = $(buttonHtml);
-    button.on('click', () => {
+    const importTemplatePath = 'modules/obsidian-bridge/templates/import-button.hbs';
+    const importTemplate = await getTemplate(importTemplatePath);
+    const importButtonHtml = importTemplate({});
+
+    const importButton = $(importButtonHtml);
+    importButton.on('click', () => {
         if (importDialogInstance && importDialogInstance.rendered) {
             importDialogInstance.bringToFront();
             return;
@@ -24,7 +29,25 @@ async function onRenderJournalDirectory(app, html, data) {
         importDialogInstance.render({ force: true });
     });
 
-    header.append(button);
+    container.append(importButton);
+
+    const exportTemplatePath = 'modules/obsidian-bridge/templates/export-button.hbs';
+    const exportTemplate = await getTemplate(exportTemplatePath);
+    const exportButtonHtml = exportTemplate({});
+
+    const exportButton = $(exportButtonHtml);
+    exportButton.on('click', () => {
+        if (exportDialogInstance && exportDialogInstance.rendered) {
+            exportDialogInstance.bringToFront();
+            return;
+        }
+
+        exportDialogInstance = new ExportDialog();
+        exportDialogInstance.render({ force: true });
+    });
+
+    container.append(exportButton);
+    footer.append(container);
 }
 
 export async function registerImportHooks() {
