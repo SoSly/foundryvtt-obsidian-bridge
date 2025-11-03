@@ -4,6 +4,7 @@ import prepareJournalsForExport from '../journal/prepare.js';
 import { extractLinkReferences, extractAssetReferences } from '../reference/extractFromHTML.js';
 import replaceWithPlaceholders from '../reference/replace.js';
 import convertHtmlToMarkdown from '../content/htmlToMarkdown.js';
+import { resolveForExport } from '../reference/resolve.js';
 
 /**
  * Creates a configured pipeline for exporting Foundry journals to Obsidian format.
@@ -14,7 +15,7 @@ import convertHtmlToMarkdown from '../content/htmlToMarkdown.js';
  * 3. extract-references - Extract links and assets from HTML
  * 4. replace-references - Replace references with placeholders
  * 5. convert-to-markdown - Convert HTML to markdown
- * 6. resolve-references - Replace placeholders with Obsidian syntax (TODO)
+ * 6. resolve-references - Replace placeholders with Obsidian syntax
  * 7. identify-assets - Identify asset paths to export (TODO)
  * 8. write-vault - Write files to filesystem or ZIP (TODO)
  *
@@ -114,6 +115,14 @@ export default function createExportPipeline(exportOptions, showdownConverter) {
                 }
 
                 return { filesConverted };
+            }
+        }),
+
+        new PhaseDefinition({
+            name: 'resolve-references',
+            execute: async ctx => {
+                resolveForExport(ctx.markdownFiles);
+                return { filesResolved: ctx.markdownFiles.length };
             }
         })
     ];

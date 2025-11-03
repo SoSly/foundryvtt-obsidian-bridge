@@ -211,3 +211,115 @@ function resolveAssets(content, assets, assetFiles) {
 
     return content;
 }
+
+export function resolveForExport(markdownFiles) {
+    if (!Array.isArray(markdownFiles) || markdownFiles.length === 0) {
+        return markdownFiles || [];
+    }
+
+    const linkMap = buildLinkMap(markdownFiles);
+    const uuidMap = buildUuidMap(markdownFiles);
+
+    for (const markdownFile of markdownFiles) {
+        let content = markdownFile.content;
+
+        content = resolveLinksForExport(content, markdownFile.links, linkMap, uuidMap, markdownFile.filePath);
+        content = resolveAssetsForExport(content, markdownFile.assets);
+
+        markdownFile.content = content;
+    }
+
+    return markdownFiles;
+}
+
+function buildUuidMap(markdownFiles) {
+    const uuidMap = new Map();
+
+    for (const markdownFile of markdownFiles) {
+        if (!markdownFile.foundryPageUuid) {
+            continue;
+        }
+        uuidMap.set(markdownFile.foundryPageUuid, markdownFile);
+    }
+
+    return uuidMap;
+}
+
+function resolveLinksForExport(content, links, linkMap, uuidMap, sourceFilePath) {
+    if (!Array.isArray(links) || links.length === 0) {
+        return content;
+    }
+
+    for (const link of links) {
+        if (!link.foundry) {
+            console.warn(`Link missing Foundry UUID: ${link.source}`);
+            content = content.replaceAll(link.placeholder, link.source);
+            continue;
+        }
+
+        const isJournalReference = link.metadata?.isJournalReference === true;
+
+        if (isJournalReference) {
+            const targetFile = uuidMap.get(link.foundry);
+
+            if (targetFile) {
+                const obsidianLink = formatObsidianLink(targetFile, sourceFilePath);
+                link.obsidian = obsidianLink;
+                content = content.replaceAll(link.placeholder, `[[${obsidianLink}]]`);
+            } else {
+                console.warn(`Unresolved journal reference: ${link.foundry}`);
+                const displayText = link.label || link.foundry;
+                content = content.replaceAll(link.placeholder, `[[@UUID[${link.foundry}]|${displayText}]]`);
+            }
+        } else {
+            const displayText = link.label || link.foundry;
+            content = content.replaceAll(link.placeholder, `[[@UUID[${link.foundry}]|${displayText}]]`);
+        }
+    }
+
+    return content;
+}
+
+function formatObsidianLink(targetFile, sourceFilePath) {
+    const sourceFolderPath = extractFolderPath(sourceFilePath);
+    const targetFolderPath = extractFolderPath(targetFile.filePath);
+
+    if (sourceFolderPath === targetFolderPath) {
+        return getFileNameWithoutExtension(targetFile.filePath);
+    }
+
+    return targetFile.filePath.replace(/\.md$/, '');
+}
+
+function getFileNameWithoutExtension(filePath) {
+    const lastSlash = filePath.lastIndexOf('/');
+    const fileName = lastSlash === -1 ? filePath : filePath.substring(lastSlash + 1);
+    return fileName.replace(/\.md$/, '');
+}
+
+function resolveAssetsForExport(content, assets) {
+    if (!Array.isArray(assets) || assets.length === 0) {
+        return content;
+    }
+
+    for (const asset of assets) {
+        if (!asset.foundry) {
+            console.warn(`Asset missing Foundry path: ${asset.source}`);
+            content = content.replaceAll(asset.placeholder, asset.source);
+            continue;
+        }
+
+        let replacement;
+        if (asset.isImage) {
+            const alt = asset.label || '';
+            replacement = `![${alt}](${asset.foundry})`;
+        } else {
+            const text = asset.label || asset.foundry;
+            replacement = `[${text}](${asset.foundry})`;
+        }
+
+        content = content.replaceAll(asset.placeholder, replacement);
+    }
+
+    return content;
+}

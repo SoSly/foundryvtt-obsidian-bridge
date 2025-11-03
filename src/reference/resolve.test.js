@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import resolvePlaceholders from './resolve.js';
+import resolvePlaceholders, { resolveForExport } from './resolve.js';
 import MarkdownFile from '../domain/MarkdownFile.js';
 import NonMarkdownFile from '../domain/NonMarkdownFile.js';
 import Reference from '../domain/Reference.js';
@@ -1194,6 +1194,370 @@ describe('resolvePlaceholders', () => {
             expect(result[0].content).toBe(
                 '<p>See @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Target}</p>'
             );
+        });
+    });
+});
+
+describe('resolveForExport', () => {
+    let consoleWarnSpy;
+
+    beforeEach(() => {
+        consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    });
+
+    afterEach(() => {
+        consoleWarnSpy.mockRestore();
+    });
+
+    describe('journal link resolution', () => {
+        it('should resolve journal reference to Obsidian link in same folder', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Source.md',
+                    lookupKeys: ['Source'],
+                    content: 'See {{LINK:0}} for details.',
+                    links: [new Reference({
+                        source: '@UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Target}',
+                        foundry: 'JournalEntry.def456.JournalEntryPage.uvw012',
+                        label: null,
+                        type: 'document',
+                        isImage: false,
+                        placeholder: '{{LINK:0}}',
+                        metadata: { isJournalReference: true }
+                    })],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+                }),
+                new MarkdownFile({
+                    filePath: 'Target.md',
+                    lookupKeys: ['Target'],
+                    content: 'Target content',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
+                })
+            ];
+
+            const result = resolveForExport(markdownFiles);
+
+            expect(result[0].content).toBe('See [[Target]] for details.');
+        });
+
+        it('should resolve journal reference with full path in different folder', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Source.md',
+                    lookupKeys: ['Source'],
+                    content: 'See {{LINK:0}} for details.',
+                    links: [new Reference({
+                        source: '@UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Target}',
+                        foundry: 'JournalEntry.def456.JournalEntryPage.uvw012',
+                        label: null,
+                        type: 'document',
+                        isImage: false,
+                        placeholder: '{{LINK:0}}',
+                        metadata: { isJournalReference: true }
+                    })],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+                }),
+                new MarkdownFile({
+                    filePath: 'Folder/Target.md',
+                    lookupKeys: ['Target', 'Folder/Target'],
+                    content: 'Target content',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
+                })
+            ];
+
+            const result = resolveForExport(markdownFiles);
+
+            expect(result[0].content).toBe('See [[Folder/Target]] for details.');
+        });
+
+        it('should keep journal reference UUID when target not found', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Source.md',
+                    lookupKeys: ['Source'],
+                    content: 'See {{LINK:0}} for details.',
+                    links: [new Reference({
+                        source: '@UUID[JournalEntry.missing.JournalEntryPage.xyz]{Missing}',
+                        foundry: 'JournalEntry.missing.JournalEntryPage.xyz',
+                        label: 'Missing',
+                        type: 'document',
+                        isImage: false,
+                        placeholder: '{{LINK:0}}',
+                        metadata: { isJournalReference: true }
+                    })],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+                })
+            ];
+
+            const result = resolveForExport(markdownFiles);
+
+            expect(result[0].content).toBe('See [[@UUID[JournalEntry.missing.JournalEntryPage.xyz]|Missing]] for details.');
+        });
+    });
+
+    describe('non-journal reference resolution', () => {
+        it('should format non-journal reference as Obsidian link with UUID', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Document.md',
+                    lookupKeys: ['Document'],
+                    content: 'Check out {{LINK:0}}.',
+                    links: [new Reference({
+                        source: '@UUID[Actor.abc123]{Strahd}',
+                        foundry: 'Actor.abc123',
+                        label: 'Strahd',
+                        type: 'document',
+                        isImage: false,
+                        placeholder: '{{LINK:0}}',
+                        metadata: { isJournalReference: false }
+                    })],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+                })
+            ];
+
+            const result = resolveForExport(markdownFiles);
+
+            expect(result[0].content).toBe('Check out [[@UUID[Actor.abc123]|Strahd]].');
+        });
+
+        it('should format non-journal reference without label using UUID as display', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Document.md',
+                    lookupKeys: ['Document'],
+                    content: 'Item: {{LINK:0}}',
+                    links: [new Reference({
+                        source: '@UUID[Item.xyz789]',
+                        foundry: 'Item.xyz789',
+                        label: null,
+                        type: 'document',
+                        isImage: false,
+                        placeholder: '{{LINK:0}}',
+                        metadata: { isJournalReference: false }
+                    })],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+                })
+            ];
+
+            const result = resolveForExport(markdownFiles);
+
+            expect(result[0].content).toBe('Item: [[@UUID[Item.xyz789]|Item.xyz789]]');
+        });
+    });
+
+    describe('asset resolution', () => {
+        it('should resolve image asset to markdown format', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Document.md',
+                    lookupKeys: ['Document'],
+                    content: 'Image: {{ASSET:0}}',
+                    links: [],
+                    assets: [new Reference({
+                        source: '<img src="modules/obsidian-bridge/imported/dragon.png" />',
+                        foundry: 'modules/obsidian-bridge/imported/dragon.png',
+                        label: 'Dragon',
+                        type: 'asset',
+                        isImage: true,
+                        placeholder: '{{ASSET:0}}'
+                    })],
+                    foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+                })
+            ];
+
+            const result = resolveForExport(markdownFiles);
+
+            expect(result[0].content).toBe('Image: ![Dragon](modules/obsidian-bridge/imported/dragon.png)');
+        });
+
+        it('should resolve non-image asset to markdown link format', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Document.md',
+                    lookupKeys: ['Document'],
+                    content: 'File: {{ASSET:0}}',
+                    links: [],
+                    assets: [new Reference({
+                        source: '<a href="modules/obsidian-bridge/imported/doc.pdf">Document</a>',
+                        foundry: 'modules/obsidian-bridge/imported/doc.pdf',
+                        label: 'Document',
+                        type: 'asset',
+                        isImage: false,
+                        placeholder: '{{ASSET:0}}'
+                    })],
+                    foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+                })
+            ];
+
+            const result = resolveForExport(markdownFiles);
+
+            expect(result[0].content).toBe('File: [Document](modules/obsidian-bridge/imported/doc.pdf)');
+        });
+
+        it('should use foundry path as label when label is empty', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Document.md',
+                    lookupKeys: ['Document'],
+                    content: 'File: {{ASSET:0}}',
+                    links: [],
+                    assets: [new Reference({
+                        source: '<a href="path/to/file.pdf"></a>',
+                        foundry: 'path/to/file.pdf',
+                        label: '',
+                        type: 'asset',
+                        isImage: false,
+                        placeholder: '{{ASSET:0}}'
+                    })],
+                    foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+                })
+            ];
+
+            const result = resolveForExport(markdownFiles);
+
+            expect(result[0].content).toBe('File: [path/to/file.pdf](path/to/file.pdf)');
+        });
+    });
+
+    describe('mixed references', () => {
+        it('should resolve journal links, non-journal links, and assets together', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Document.md',
+                    lookupKeys: ['Document'],
+                    content: 'See {{LINK:0}} and {{LINK:1}} with {{ASSET:0}}',
+                    links: [
+                        new Reference({
+                            source: '@UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Target}',
+                            foundry: 'JournalEntry.def456.JournalEntryPage.uvw012',
+                            label: null,
+                            type: 'document',
+                            isImage: false,
+                            placeholder: '{{LINK:0}}',
+                            metadata: { isJournalReference: true }
+                        }),
+                        new Reference({
+                            source: '@UUID[Actor.abc123]{Strahd}',
+                            foundry: 'Actor.abc123',
+                            label: 'Strahd',
+                            type: 'document',
+                            isImage: false,
+                            placeholder: '{{LINK:1}}',
+                            metadata: { isJournalReference: false }
+                        })
+                    ],
+                    assets: [new Reference({
+                        source: '<img src="modules/obsidian-bridge/imported/dragon.png" />',
+                        foundry: 'modules/obsidian-bridge/imported/dragon.png',
+                        label: '',
+                        type: 'asset',
+                        isImage: true,
+                        placeholder: '{{ASSET:0}}'
+                    })],
+                    foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+                }),
+                new MarkdownFile({
+                    filePath: 'Target.md',
+                    lookupKeys: ['Target'],
+                    content: 'Target content',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
+                })
+            ];
+
+            const result = resolveForExport(markdownFiles);
+
+            expect(result[0].content).toBe('See [[Target]] and [[@UUID[Actor.abc123]|Strahd]] with ![](modules/obsidian-bridge/imported/dragon.png)');
+        });
+    });
+
+    describe('edge cases', () => {
+        it('should return empty array for empty markdownFiles', () => {
+            const result = resolveForExport([]);
+            expect(result).toEqual([]);
+        });
+
+        it('should return empty array for null markdownFiles', () => {
+            const result = resolveForExport(null);
+            expect(result).toEqual([]);
+        });
+
+        it('should return empty array for undefined markdownFiles', () => {
+            const result = resolveForExport(undefined);
+            expect(result).toEqual([]);
+        });
+
+        it('should handle file with no links or assets', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Document.md',
+                    lookupKeys: ['Document'],
+                    content: 'Just plain content',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+                })
+            ];
+
+            const result = resolveForExport(markdownFiles);
+            expect(result[0].content).toBe('Just plain content');
+        });
+
+        it('should handle link without foundry UUID', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Document.md',
+                    lookupKeys: ['Document'],
+                    content: 'See {{LINK:0}}',
+                    links: [new Reference({
+                        source: '[[Target]]',
+                        obsidian: 'Target',
+                        label: null,
+                        type: 'document',
+                        isImage: false,
+                        placeholder: '{{LINK:0}}',
+                        metadata: { isJournalReference: true }
+                    })],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+                })
+            ];
+
+            const result = resolveForExport(markdownFiles);
+            expect(result[0].content).toBe('See [[Target]]');
+        });
+
+        it('should handle asset without foundry path', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Document.md',
+                    lookupKeys: ['Document'],
+                    content: 'Image: {{ASSET:0}}',
+                    links: [],
+                    assets: [new Reference({
+                        source: '![](dragon.png)',
+                        obsidian: 'dragon.png',
+                        label: '',
+                        type: 'asset',
+                        isImage: true,
+                        placeholder: '{{ASSET:0}}'
+                    })],
+                    foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+                })
+            ];
+
+            const result = resolveForExport(markdownFiles);
+            expect(result[0].content).toBe('Image: ![](dragon.png)');
         });
     });
 });
