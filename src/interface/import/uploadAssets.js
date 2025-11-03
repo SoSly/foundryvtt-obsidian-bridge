@@ -1,6 +1,5 @@
 import NonMarkdownFile from '../../domain/NonMarkdownFile';
 import { resolveAssetFile } from '../../usecase/import/resolveAssetFile';
-import { collectUniqueAssetPaths } from '../../usecase/import/collectUniqueAssetPaths';
 import { collectRequiredDirectories } from '../../usecase/import/collectRequiredDirectories';
 
 /**
@@ -82,6 +81,25 @@ export async function rollbackAssetUploads(uploadedPaths) {
     }
 }
 
+
+/**
+ * Collects unique asset paths from markdown files.
+ * Aggregates all asset references and removes duplicates.
+ *
+ * @param {MarkdownFile[]} markdownFiles - Array of markdown files containing asset references
+ * @returns {Set<string>} Set of unique asset paths
+ */
+function collectUniqueAssetPaths(markdownFiles) {
+    const uniquePaths = new Set();
+
+    for (const markdownFile of markdownFiles) {
+        for (const asset of markdownFile.assets) {
+            uniquePaths.add(asset.obsidian);
+        }
+    }
+
+    return uniquePaths;
+}
 
 async function ensureDirectoriesExist(directories) {
     for (const directory of directories) {

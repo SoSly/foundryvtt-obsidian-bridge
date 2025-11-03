@@ -1,7 +1,7 @@
-import resolvePlaceholders from '../../../src/usecase/import/resolvePlaceholders.js';
-import MarkdownFile from '../../../src/domain/MarkdownFile.js';
-import NonMarkdownFile from '../../../src/domain/NonMarkdownFile.js';
-import Reference from '../../../src/domain/Reference.js';
+import resolvePlaceholders from './resolve.js';
+import MarkdownFile from '../domain/MarkdownFile.js';
+import NonMarkdownFile from '../domain/NonMarkdownFile.js';
+import Reference from '../domain/Reference.js';
 
 describe('resolvePlaceholders', () => {
     describe('link resolution', () => {

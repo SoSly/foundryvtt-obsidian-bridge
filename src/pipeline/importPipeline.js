@@ -4,7 +4,7 @@ import { collectSelectedPaths } from '../usecase/import/collectSelectedPaths';
 import { filterFilesBySelection } from '../usecase/import/filterFilesBySelection';
 import parseMarkdownFiles from '../usecase/import/parseMarkdownFiles';
 import planJournalStructure from '../usecase/import/planJournalStructure';
-import resolvePlaceholders from '../usecase/import/resolvePlaceholders';
+import resolvePlaceholders from '../reference/resolve.js';
 import { createJournalDocuments, rollbackJournalDocuments } from '../interface/import/createJournalDocuments';
 import { uploadAssets, rollbackAssetUploads } from '../interface/import/uploadAssets';
 import updatePageContent from '../interface/import/updatePageContent';

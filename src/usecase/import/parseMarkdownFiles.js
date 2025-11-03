@@ -1,8 +1,7 @@
 import MarkdownFile from '../../domain/MarkdownFile.js';
-import extractAssetReferences from './extractAssetReferences.js';
-import extractObsidianLinks from './extractObsidianLinks.js';
+import { extractLinkReferences, extractAssetReferences } from '../../reference/extractFromMarkdown.js';
 import generateLookupKeys from './generateLookupKeys.js';
-import replaceWithPlaceholders from './replaceWithPlaceholders.js';
+import replaceWithPlaceholders from '../../reference/replace.js';
 
 export default async function parseMarkdownFiles(converter, files) {
     if (!converter || !files || files.length === 0) {
@@ -13,7 +12,7 @@ export default async function parseMarkdownFiles(converter, files) {
 
     for (const file of files) {
         const markdownText = await file.text();
-        const links = extractObsidianLinks(markdownText);
+        const links = extractLinkReferences(markdownText);
         const assets = extractAssetReferences(markdownText);
         const {
             text: textWithPlaceholders,

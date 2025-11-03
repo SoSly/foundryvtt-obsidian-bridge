@@ -1,5 +1,5 @@
-import replaceWithPlaceholders from '../../../src/usecase/import/replaceWithPlaceholders.js';
-import Reference from '../../../src/domain/Reference.js';
+import replaceWithPlaceholders from './replace.js';
+import Reference from '../domain/Reference.js';
 
 describe('replaceWithPlaceholders', () => {
     it('should replace links with placeholders', () => {
