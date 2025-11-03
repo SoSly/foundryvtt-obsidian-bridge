@@ -17,13 +17,15 @@ import { updateContent, rollbackUpdates } from '../journal/update';
  *
  * Pipeline phases:
  * 1. Filter files - Select files based on tree selection
- * 2. Extract references - Extract links and assets, replace with placeholders
- * 3. Convert markdown - Convert markdown text to HTML
- * 4. Plan structure - Determine folder and journal entry structure
- * 5. Create documents - Create Foundry folders, journal entries, and pages
- * 6. Upload assets - Upload non-markdown files to data path (conditional)
- * 7. Resolve placeholders - Replace placeholders with actual UUIDs and paths
- * 8. Update content - Write final HTML content to journal pages
+ * 2. Prepare documents - Read file content and create MarkdownFile objects
+ * 3. Extract references - Extract links and assets from markdown
+ * 4. Replace references - Replace references with placeholders
+ * 5. Convert markdown - Convert markdown text to HTML
+ * 6. Plan structure - Determine folder and journal entry structure
+ * 7. Create documents - Create Foundry folders, journal entries, and pages
+ * 8. Upload assets - Upload non-markdown files to data path (conditional)
+ * 9. Resolve placeholders - Replace placeholders with actual UUIDs and paths
+ * 10. Update content - Write final HTML content to journal pages
  *
  * @param {import('../domain/ImportOptions').default} importOptions - Import configuration
  * @param {import('showdown').Converter} showdownConverter - Markdown to HTML converter
@@ -61,7 +63,7 @@ export default function createImportPipeline(importOptions, showdownConverter) {
         }),
 
         new PhaseDefinition({
-            name: 'extract-references',
+            name: 'prepare-documents',
             execute: async ctx => {
                 if (!ctx.filesToParse || ctx.filesToParse.length === 0) {
                     ctx.markdownFiles = [];
@@ -72,21 +74,14 @@ export default function createImportPipeline(importOptions, showdownConverter) {
 
                 for (const file of ctx.filesToParse) {
                     const markdownText = await file.text();
-                    const links = extractLinkReferences(markdownText);
-                    const assets = extractAssetReferences(markdownText);
-                    const {
-                        text: textWithPlaceholders,
-                        links: linksWithPlaceholders,
-                        assets: assetsWithPlaceholders
-                    } = replaceWithPlaceholders(markdownText, links, assets);
                     const lookupKeys = generateLookupKeys(file.webkitRelativePath);
 
                     const markdownFile = new MarkdownFile({
                         filePath: file.webkitRelativePath,
                         lookupKeys,
-                        content: textWithPlaceholders,
-                        links: linksWithPlaceholders,
-                        assets: assetsWithPlaceholders,
+                        content: markdownText,
+                        links: [],
+                        assets: [],
                         foundryPageUuid: null
                     });
 
@@ -95,6 +90,41 @@ export default function createImportPipeline(importOptions, showdownConverter) {
 
                 ctx.markdownFiles = markdownFiles;
                 return { markdownFiles };
+            },
+        }),
+
+        new PhaseDefinition({
+            name: 'extract-references',
+            execute: async ctx => {
+                for (const markdownFile of ctx.markdownFiles) {
+                    const links = extractLinkReferences(markdownFile.content);
+                    const assets = extractAssetReferences(markdownFile.content);
+
+                    markdownFile.links = links;
+                    markdownFile.assets = assets;
+                }
+
+                return {
+                    linksExtracted: ctx.markdownFiles.reduce((sum, f) => sum + f.links.length, 0),
+                    assetsExtracted: ctx.markdownFiles.reduce((sum, f) => sum + f.assets.length, 0)
+                };
+            },
+        }),
+
+        new PhaseDefinition({
+            name: 'replace-references',
+            execute: async ctx => {
+                for (const markdownFile of ctx.markdownFiles) {
+                    const result = replaceWithPlaceholders(
+                        markdownFile.content,
+                        markdownFile.links,
+                        markdownFile.assets
+                    );
+
+                    markdownFile.content = result.text;
+                }
+
+                return { filesTransformed: ctx.markdownFiles.length };
             },
         }),
 
