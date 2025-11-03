@@ -5,11 +5,15 @@
  * @property {JournalEntry[]} journals - Array of Foundry JournalEntry documents to export
  * @property {boolean} merge - If true, merge all pages into one file per journal;
  *                               if false, create separate files per page
+ * @property {string} assetPathPrefix - Path prefix to strip from Foundry asset URLs
+ *                                      (e.g., 'worlds/my-world/obsidian-exports')
+ *                                      Empty string means no stripping
  */
 export default class ExportOptions {
     static DEFAULTS = {
         journals: [],
-        merge: false
+        merge: false,
+        assetPathPrefix: ''
     };
 
     constructor(options = {}) {

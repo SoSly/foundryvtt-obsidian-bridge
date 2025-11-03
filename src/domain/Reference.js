@@ -25,8 +25,9 @@ export default class Reference {
         if (!this.source || typeof this.source !== 'string') {
             throw new Error('Reference requires a valid source string');
         }
-        if (!this.obsidian || typeof this.obsidian !== 'string') {
-            throw new Error('Reference requires a valid obsidian string');
+        if ((!this.obsidian || typeof this.obsidian !== 'string')
+            && (!this.foundry || typeof this.foundry !== 'string')) {
+            throw new Error('Reference requires either obsidian or foundry to be a valid string');
         }
         if (!['document', 'asset'].includes(this.type)) {
             throw new Error('Reference type must be "document" or "asset"');
