@@ -5,6 +5,7 @@ import { extractLinkReferences, extractAssetReferences } from '../reference/extr
 import replaceWithPlaceholders from '../reference/replace.js';
 import convertHtmlToMarkdown from '../content/htmlToMarkdown.js';
 import { resolveForExport } from '../reference/resolve.js';
+import identifyAssets from '../asset/identify.js';
 
 /**
  * Creates a configured pipeline for exporting Foundry journals to Obsidian format.
@@ -16,7 +17,7 @@ import { resolveForExport } from '../reference/resolve.js';
  * 4. replace-references - Replace references with placeholders
  * 5. convert-to-markdown - Convert HTML to markdown
  * 6. resolve-references - Replace placeholders with Obsidian syntax
- * 7. identify-assets - Identify asset paths to export (TODO)
+ * 7. identify-assets - Identify asset paths to export (conditional on exportAssets)
  * 8. write-vault - Write files to filesystem or ZIP (TODO)
  *
  * @param {import('../domain/ExportOptions.js').default} exportOptions - Export configuration
@@ -28,7 +29,8 @@ export default function createExportPipeline(exportOptions, showdownConverter) {
         exportOptions,
         showdownConverter,
         journalEntries: null,
-        markdownFiles: null
+        markdownFiles: null,
+        nonMarkdownFiles: null
     };
 
     const phases = [
@@ -124,6 +126,16 @@ export default function createExportPipeline(exportOptions, showdownConverter) {
                 resolveForExport(ctx.markdownFiles);
                 return { filesResolved: ctx.markdownFiles.length };
             }
+        }),
+
+        new PhaseDefinition({
+            name: 'identify-assets',
+            execute: async ctx => {
+                const result = await identifyAssets(ctx.markdownFiles);
+                ctx.nonMarkdownFiles = result.nonMarkdownFiles;
+                return { assetsIdentified: result.nonMarkdownFiles.length };
+            },
+            condition: ctx => ctx.exportOptions.exportAssets
         })
     ];
 

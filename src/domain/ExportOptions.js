@@ -8,12 +8,15 @@
  * @property {string} assetPathPrefix - Path prefix to strip from Foundry asset URLs
  *                                      (e.g., 'worlds/my-world/obsidian-exports')
  *                                      Empty string means no stripping
+ * @property {boolean} exportAssets - If true, identify and export referenced assets;
+ *                                     if false, skip asset identification and export
  */
 export default class ExportOptions {
     static DEFAULTS = {
         journals: [],
         merge: false,
-        assetPathPrefix: ''
+        assetPathPrefix: '',
+        exportAssets: false
     };
 
     constructor(options = {}) {
