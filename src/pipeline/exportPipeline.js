@@ -2,6 +2,7 @@ import PipelineConfig from '../domain/PipelineConfig.js';
 import PhaseDefinition from '../domain/PhaseDefinition.js';
 import prepareJournalsForExport from '../journal/prepare.js';
 import { extractLinkReferences, extractAssetReferences } from '../reference/extractFromHTML.js';
+import replaceWithPlaceholders from '../reference/replace.js';
 
 /**
  * Creates a configured pipeline for exporting Foundry journals to Obsidian format.
@@ -10,7 +11,7 @@ import { extractLinkReferences, extractAssetReferences } from '../reference/extr
  * 1. collect-journals - Validate selected journal documents
  * 2. prepare-documents - Transform journals into MarkdownFile objects with HTML content
  * 3. extract-references - Extract links and assets from HTML
- * 4. replace-references - Replace references with placeholders (TODO)
+ * 4. replace-references - Replace references with placeholders
  * 5. convert-to-markdown - Convert HTML to markdown (TODO)
  * 6. resolve-references - Replace placeholders with Obsidian syntax (TODO)
  * 7. identify-assets - Identify asset paths to export (TODO)
@@ -69,6 +70,29 @@ export default function createExportPipeline(exportOptions) {
                 return {
                     linksExtracted: ctx.markdownFiles.reduce((sum, f) => sum + f.links.length, 0),
                     assetsExtracted: ctx.markdownFiles.reduce((sum, f) => sum + f.assets.length, 0)
+                };
+            }
+        }),
+
+        new PhaseDefinition({
+            name: 'replace-references',
+            execute: async ctx => {
+                let totalReplacements = 0;
+
+                for (const markdownFile of ctx.markdownFiles) {
+                    const result = replaceWithPlaceholders(
+                        markdownFile.content,
+                        markdownFile.links,
+                        markdownFile.assets
+                    );
+
+                    markdownFile.content = result.text;
+                    totalReplacements += markdownFile.links.length + markdownFile.assets.length;
+                }
+
+                return {
+                    filesProcessed: ctx.markdownFiles.length,
+                    totalReplacements
                 };
             }
         })
