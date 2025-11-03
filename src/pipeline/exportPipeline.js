@@ -6,6 +6,7 @@ import replaceWithPlaceholders from '../reference/replace.js';
 import convertHtmlToMarkdown from '../content/htmlToMarkdown.js';
 import { resolveForExport } from '../reference/resolve.js';
 import identifyAssets from '../asset/identify.js';
+import writeVault from '../vault/write.js';
 
 /**
  * Creates a configured pipeline for exporting Foundry journals to Obsidian format.
@@ -18,7 +19,7 @@ import identifyAssets from '../asset/identify.js';
  * 5. convert-to-markdown - Convert HTML to markdown
  * 6. resolve-references - Replace placeholders with Obsidian syntax
  * 7. identify-assets - Identify asset paths to export (conditional on exportAssets)
- * 8. write-vault - Write files to filesystem or ZIP (TODO)
+ * 8. write-vault - Write files to filesystem or ZIP
  *
  * @param {import('../domain/ExportOptions.js').default} exportOptions - Export configuration
  * @param {import('showdown').Converter} showdownConverter - Showdown converter instance
@@ -136,6 +137,23 @@ export default function createExportPipeline(exportOptions, showdownConverter) {
                 return { assetsIdentified: result.nonMarkdownFiles.length };
             },
             condition: ctx => ctx.exportOptions.exportAssets
+        }),
+
+        new PhaseDefinition({
+            name: 'write-vault',
+            execute: async ctx => {
+                const result = await writeVault(
+                    ctx.markdownFiles,
+                    ctx.nonMarkdownFiles || [],
+                    ctx.exportOptions
+                );
+
+                if (result.errors.length > 0) {
+                    console.warn('Vault write completed with errors:', result.errors);
+                }
+
+                return result;
+            }
         })
     ];
 
