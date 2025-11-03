@@ -1,9 +1,19 @@
+import { jest } from '@jest/globals';
 import resolvePlaceholders from './resolve.js';
 import MarkdownFile from '../domain/MarkdownFile.js';
 import NonMarkdownFile from '../domain/NonMarkdownFile.js';
 import Reference from '../domain/Reference.js';
 
 describe('resolvePlaceholders', () => {
+    let consoleWarnSpy;
+
+    beforeEach(() => {
+        consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    });
+
+    afterEach(() => {
+        consoleWarnSpy.mockRestore();
+    });
     describe('link resolution', () => {
         it('should resolve a basic link using basename lookup', () => {
             const markdownFiles = [

@@ -1,6 +1,17 @@
+import { jest } from '@jest/globals';
 import { resolveAssetFile } from './find';
 
 describe('resolveAssetFile', () => {
+    let consoleWarnSpy;
+
+    beforeEach(() => {
+        consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    });
+
+    afterEach(() => {
+        consoleWarnSpy.mockRestore();
+    });
+
     function createMockFile(webkitRelativePath) {
         return {
             webkitRelativePath,

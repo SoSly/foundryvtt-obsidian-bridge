@@ -11,6 +11,7 @@
     "lint": "npm run lint:code",
     "lint:code": "npx eslint -c .eslintrc.json src/**/*.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "watch": "npm-run-all --parallel watch:*",
     "watch:code": "npm-watch build:code",
