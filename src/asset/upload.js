@@ -1,6 +1,6 @@
 import NonMarkdownFile from '../domain/NonMarkdownFile';
-import { resolveAssetFile } from '../usecase/import/resolveAssetFile';
-import { collectRequiredDirectories } from '../usecase/import/collectRequiredDirectories';
+import { resolveAssetFile } from '../vault/find';
+import { collectRequiredDirectories } from '../journal/collect';
 
 /**
  * Upload assets to Foundry data directory

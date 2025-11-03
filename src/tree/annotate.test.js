@@ -1,4 +1,4 @@
-import { annotateTreeForDisplay } from './annotateTreeForDisplay';
+import { annotateTreeForDisplay } from './annotate';
 
 describe('annotateTreeForDisplay', () => {
     test('returns null when node is null', () => {

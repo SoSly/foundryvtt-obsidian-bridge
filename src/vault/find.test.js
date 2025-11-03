@@ -1,4 +1,4 @@
-import { resolveAssetFile } from './resolveAssetFile';
+import { resolveAssetFile } from './find';
 
 describe('resolveAssetFile', () => {
     function createMockFile(webkitRelativePath) {

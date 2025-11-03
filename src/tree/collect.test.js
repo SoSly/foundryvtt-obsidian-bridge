@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { collectSelectedPaths } from './collectSelectedPaths.js';
+import { collectSelectedPaths } from './collect.js';
 
 describe('collectSelectedPaths', () => {
     test('returns empty Set for null tree', () => {

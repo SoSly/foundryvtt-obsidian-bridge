@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { filterFilesBySelection } from './filterFilesBySelection.js';
+import { filterFilesBySelection } from './filter.js';
 
 function createMockFile(path, name) {
     return {

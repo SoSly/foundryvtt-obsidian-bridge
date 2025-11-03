@@ -1,4 +1,4 @@
-import VaultTreeNode from '../../domain/VaultTreeNode.js';
+import VaultTreeNode from '../domain/VaultTreeNode.js';
 
 export function buildFileTree(fileList) {
     if (!fileList || fileList.length === 0) {

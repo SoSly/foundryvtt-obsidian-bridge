@@ -1,6 +1,6 @@
 import { describe, test, expect } from '@jest/globals';
-import { buildFileTree } from './buildFileTree.js';
-import VaultTreeNode from '../../domain/VaultTreeNode.js';
+import { buildFileTree } from './build';
+import VaultTreeNode from '../domain/VaultTreeNode';
 
 function createMockFile(path, name) {
     return {

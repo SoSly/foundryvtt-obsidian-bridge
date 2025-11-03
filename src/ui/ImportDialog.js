@@ -1,7 +1,7 @@
 import ImportOptions from '../domain/ImportOptions';
-import { buildFileTree } from '../usecase/import/buildFileTree';
-import { annotateTreeForDisplay } from '../usecase/import/annotateTreeForDisplay';
-import { findNodeByPath } from '../usecase/import/findNodeByPath';
+import { buildFileTree } from '../tree/build';
+import { annotateTreeForDisplay } from '../tree/annotate';
+import { findNodeByPath } from '../tree/find';
 import { updateTreeSelection } from './updateTreeSelection';
 import executePipeline from '../pipeline/executePipeline';
 import createImportPipeline from '../pipeline/importPipeline';

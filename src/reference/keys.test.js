@@ -1,4 +1,4 @@
-import generateLookupKeys from '../../../src/usecase/import/generateLookupKeys.js';
+import generateLookupKeys from './keys.js';
 
 describe('generateLookupKeys', () => {
     it('should generate lookup keys for a deeply nested file', () => {

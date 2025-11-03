@@ -1,4 +1,4 @@
-import JournalStructurePlan from '../../domain/JournalStructurePlan.js';
+import JournalStructurePlan from '../domain/JournalStructurePlan.js';
 
 export default function planJournalStructure(markdownFiles, options) {
     if (!markdownFiles || !Array.isArray(markdownFiles)) {

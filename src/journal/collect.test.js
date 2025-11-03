@@ -1,4 +1,4 @@
-import { collectRequiredDirectories } from './collectRequiredDirectories';
+import { collectRequiredDirectories } from './collect';
 
 describe('collectRequiredDirectories', () => {
     test('returns base path only when asset paths are empty', () => {

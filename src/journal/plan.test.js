@@ -1,6 +1,6 @@
-import planJournalStructure from './planJournalStructure.js';
-import MarkdownFile from '../../domain/MarkdownFile.js';
-import ImportOptions from '../../domain/ImportOptions.js';
+import planJournalStructure from './plan';
+import MarkdownFile from '../domain/MarkdownFile';
+import ImportOptions from '../domain/ImportOptions';
 
 function createMarkdownFile(filePath) {
     return new MarkdownFile({

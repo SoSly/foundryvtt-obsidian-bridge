@@ -1,4 +1,4 @@
-import { findNodeByPath } from './findNodeByPath';
+import { findNodeByPath } from './find';
 
 describe('findNodeByPath', () => {
     test('returns null when node is null', () => {
