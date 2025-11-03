@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npm run lint:code && npm run test && npm run build:code && npm run build:styles",
     "build:code": "npx rollup --config rollup.config.mjs",
-    "build:styles": "sass src/styles/obsidian-bridge.scss:dist/obsidian-bridge.css --style compressed",
+    "build:styles": "sass src/style/obsidian-bridge.scss:dist/obsidian-bridge.css --style compressed",
     "clean": "del-cli dist",
     "lint": "npm run lint:code",
     "lint:code": "npx eslint -c .eslintrc.json src/**/*.js",
@@ -34,7 +34,7 @@
     },
     "build:styles": {
       "patterns": [
-        "src/styles/"
+        "src/style/"
       ],
       "extensions": [
         "scss"

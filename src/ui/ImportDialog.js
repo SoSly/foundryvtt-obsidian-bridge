@@ -1,10 +1,10 @@
-import ImportOptions from '../../domain/ImportOptions';
-import { buildFileTree } from '../../usecase/import/buildFileTree';
-import { annotateTreeForDisplay } from '../../usecase/import/annotateTreeForDisplay';
-import { findNodeByPath } from '../../usecase/import/findNodeByPath';
+import ImportOptions from '../domain/ImportOptions';
+import { buildFileTree } from '../usecase/import/buildFileTree';
+import { annotateTreeForDisplay } from '../usecase/import/annotateTreeForDisplay';
+import { findNodeByPath } from '../usecase/import/findNodeByPath';
 import { updateTreeSelection } from './updateTreeSelection';
-import executePipeline from '../../usecase/executePipeline';
-import createImportPipeline from './createImportPipeline';
+import executePipeline from '../pipeline/executePipeline';
+import createImportPipeline from '../pipeline/importPipeline';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 

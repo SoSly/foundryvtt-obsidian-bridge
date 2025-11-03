@@ -1,4 +1,4 @@
-import ImportDialog from './ImportDialog.js';
+import ImportDialog from '../../ui/ImportDialog.js';
 import { registerHandlebarsHelpers } from './registerHandlebarsHelpers.js';
 
 let importDialogInstance = null;

@@ -1,14 +1,14 @@
-import PipelineConfig from '../../domain/PipelineConfig';
-import PhaseDefinition from '../../domain/PhaseDefinition';
-import { collectSelectedPaths } from '../../usecase/import/collectSelectedPaths';
-import { filterFilesBySelection } from '../../usecase/import/filterFilesBySelection';
-import parseMarkdownFiles from '../../usecase/import/parseMarkdownFiles';
-import planJournalStructure from '../../usecase/import/planJournalStructure';
-import resolvePlaceholders from '../../usecase/import/resolvePlaceholders';
-import { createJournalDocuments, rollbackJournalDocuments } from './createJournalDocuments';
-import { uploadAssets, rollbackAssetUploads } from './uploadAssets';
-import updatePageContent from './updatePageContent';
-import rollbackPageUpdates from './rollbackPageUpdates';
+import PipelineConfig from '../domain/PipelineConfig';
+import PhaseDefinition from '../domain/PhaseDefinition';
+import { collectSelectedPaths } from '../usecase/import/collectSelectedPaths';
+import { filterFilesBySelection } from '../usecase/import/filterFilesBySelection';
+import parseMarkdownFiles from '../usecase/import/parseMarkdownFiles';
+import planJournalStructure from '../usecase/import/planJournalStructure';
+import resolvePlaceholders from '../usecase/import/resolvePlaceholders';
+import { createJournalDocuments, rollbackJournalDocuments } from '../interface/import/createJournalDocuments';
+import { uploadAssets, rollbackAssetUploads } from '../interface/import/uploadAssets';
+import updatePageContent from '../interface/import/updatePageContent';
+import rollbackPageUpdates from '../interface/import/rollbackPageUpdates';
 
 /**
  * Creates a configured pipeline for importing an Obsidian vault into Foundry.
@@ -22,9 +22,9 @@ import rollbackPageUpdates from './rollbackPageUpdates';
  * 6. Resolve placeholders - Replace placeholders with actual UUIDs and paths
  * 7. Update content - Write final HTML content to journal pages
  *
- * @param {import('../../domain/ImportOptions').default} importOptions - Import configuration
+ * @param {import('../domain/ImportOptions').default} importOptions - Import configuration
  * @param {import('showdown').Converter} showdownConverter - Markdown to HTML converter
- * @returns {import('../../domain/PipelineConfig').default}
+ * @returns {import('../domain/PipelineConfig').default}
  */
 export default function createImportPipeline(importOptions, showdownConverter) {
     const context = {
