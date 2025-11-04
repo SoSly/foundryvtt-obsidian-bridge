@@ -1,0 +1,63 @@
+name: release
+
+on:
+  release:
+    types: [published]
+
+env:
+  node_version: '20'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.node_version }}
+
+      # cache deps
+      - name: Cache Node.js modules
+        uses: actions/cache@v4
+        with:
+          path: .npm
+          key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-
+            ${{ runner.OS }}-
+
+      # install deps
+      - run: npm ci --cache .npm --prefer-offline
+
+      # build sass and run rollup
+      - run: NODE_ENV=production npm run build
+
+      # Substitute the Manifest and Download URLs in the module.json
+      - name: Substitute Manifest and Download Links For Versioned Ones
+        id: sub_manifest_link_version
+        uses: im-open/variable-substitution@v2
+        with:
+          files: "module.json"
+        env:
+          version: ${{github.event.release.tag_name}}
+          url: https://github.com/${{github.repository}}
+          manifest: https://github.com/${{github.repository}}/releases/latest/download/module.json
+          download: https://github.com/${{github.repository}}/releases/download/${{github.event.release.tag_name}}/module.zip
+
+      # Create a zip file with all files required by the module to add to the release
+      - run: zip -r ./module.zip module.json LICENSE README.md ./dist ./templates
+
+      # Create a release for this specific version
+      - name: Update Release with Files
+        id: create_version_release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true # Set this to false if you want to prevent updating existing releases
+          name: ${{ github.event.release.name }}
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: "./module.json, ./module.zip, ./CHANGELOG.md"
+          tag: ${{ github.event.release.tag_name }}
+          body: ${{ github.event.release.body }}

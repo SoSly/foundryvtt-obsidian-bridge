@@ -21,7 +21,7 @@ A FoundryVTT module for bidirectional synchronization between Obsidian MD vaults
 
 | Obsidian Bridge Version | Foundry Version |
 | -- | -- |
-| v1.* | v12+ |
+| v1.* | v12-v14 |
 
 ## Installation
 
