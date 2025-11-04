@@ -3,3 +3,7 @@
 @use "import";
 @use "export";
 @use "progress";
+
+.directory .directory-footer .action-buttons {
+    gap: 8px;
+}

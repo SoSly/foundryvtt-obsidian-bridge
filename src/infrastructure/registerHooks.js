@@ -5,21 +5,27 @@ import { registerHandlebarsHelpers } from './registerHandlebarsHelpers.js';
 let importDialogInstance = null;
 let exportDialogInstance = null;
 
-async function onRenderJournalDirectory(app, html, data) {
-    let footer = html.find('.directory-footer');
-    if (!footer.length) {
-        footer = $('<footer class="directory-footer action-buttons flexrow"></footer>');
-        html.append(footer);
+async function onRenderJournalDirectory(app, htmlOrElement, data) {
+    const html = htmlOrElement instanceof HTMLElement ? htmlOrElement : htmlOrElement[0];
+
+    let footer = html.querySelector('.directory-footer');
+    if (!footer) {
+        footer = document.createElement('footer');
+        footer.className = 'directory-footer action-buttons flexrow';
+        html.appendChild(footer);
     }
 
-    const container = $('<div class="header-actions action-buttons flexrow"></div>');
+    const container = document.createElement('div');
+    container.className = 'header-actions action-buttons flexrow';
 
     const importTemplatePath = 'modules/obsidian-bridge/templates/import-button.hbs';
     const importTemplate = await getTemplate(importTemplatePath);
     const importButtonHtml = importTemplate({});
 
-    const importButton = $(importButtonHtml);
-    importButton.on('click', () => {
+    const tempImport = document.createElement('div');
+    tempImport.innerHTML = importButtonHtml;
+    const importButton = tempImport.firstElementChild;
+    importButton.addEventListener('click', () => {
         if (importDialogInstance && importDialogInstance.rendered) {
             importDialogInstance.bringToFront();
             return;
@@ -29,14 +35,16 @@ async function onRenderJournalDirectory(app, html, data) {
         importDialogInstance.render({ force: true });
     });
 
-    container.append(importButton);
+    container.appendChild(importButton);
 
     const exportTemplatePath = 'modules/obsidian-bridge/templates/export-button.hbs';
     const exportTemplate = await getTemplate(exportTemplatePath);
     const exportButtonHtml = exportTemplate({});
 
-    const exportButton = $(exportButtonHtml);
-    exportButton.on('click', () => {
+    const tempExport = document.createElement('div');
+    tempExport.innerHTML = exportButtonHtml;
+    const exportButton = tempExport.firstElementChild;
+    exportButton.addEventListener('click', () => {
         if (exportDialogInstance && exportDialogInstance.rendered) {
             exportDialogInstance.bringToFront();
             return;
@@ -46,8 +54,8 @@ async function onRenderJournalDirectory(app, html, data) {
         exportDialogInstance.render({ force: true });
     });
 
-    container.append(exportButton);
-    footer.append(container);
+    container.appendChild(exportButton);
+    footer.appendChild(container);
 }
 
 export async function registerImportHooks() {
