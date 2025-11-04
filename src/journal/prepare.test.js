@@ -39,7 +39,7 @@ describe('prepareJournalsForExport', () => {
             expect(result[1].foundryPageUuid).toBe('JournalEntry.abc123.JournalEntryPage.page2');
         });
 
-        it('should include folder in file path when journal has folder', () => {
+        it('should export single-page journal as single file not folder', () => {
             const journals = [
                 {
                     name: 'Session Notes',
@@ -60,10 +60,96 @@ describe('prepareJournalsForExport', () => {
             const result = prepareJournalsForExport(journals, { merge: false });
 
             expect(result).toHaveLength(1);
-            expect(result[0].filePath).toBe('Campaign/Session Notes/Session 1.md');
+            expect(result[0].filePath).toBe('Campaign/Session Notes.md');
+            expect(result[0].content).toBe('<p>Session 1 notes</p>');
         });
 
-        it('should generate correct lookup keys for pages', () => {
+        it('should export multi-page combined folder correctly when journal name matches folder name', () => {
+            const journals = [
+                {
+                    name: 'Lore',
+                    uuid: 'JournalEntry.lore',
+                    folder: { name: 'Lore' },
+                    pages: {
+                        contents: [
+                            {
+                                name: 'History',
+                                uuid: 'JournalEntry.lore.JournalEntryPage.p1',
+                                text: { content: '<p>History content</p>' }
+                            },
+                            {
+                                name: 'Culture',
+                                uuid: 'JournalEntry.lore.JournalEntryPage.p2',
+                                text: { content: '<p>Culture content</p>' }
+                            }
+                        ]
+                    }
+                }
+            ];
+
+            const result = prepareJournalsForExport(journals, { merge: false });
+
+            expect(result).toHaveLength(2);
+            expect(result[0].filePath).toBe('Lore/History.md');
+            expect(result[1].filePath).toBe('Lore/Culture.md');
+        });
+
+        it('should export multi-page journal as folder when names differ', () => {
+            const journals = [
+                {
+                    name: 'City',
+                    uuid: 'JournalEntry.city',
+                    folder: { name: 'Lore' },
+                    pages: {
+                        contents: [
+                            {
+                                name: 'District A',
+                                uuid: 'JournalEntry.city.JournalEntryPage.p1',
+                                text: { content: '<p>District A content</p>' }
+                            },
+                            {
+                                name: 'District B',
+                                uuid: 'JournalEntry.city.JournalEntryPage.p2',
+                                text: { content: '<p>District B content</p>' }
+                            }
+                        ]
+                    }
+                }
+            ];
+
+            const result = prepareJournalsForExport(journals, { merge: false });
+
+            expect(result).toHaveLength(2);
+            expect(result[0].filePath).toBe('Lore/City/District A.md');
+            expect(result[1].filePath).toBe('Lore/City/District B.md');
+        });
+
+        it('should export single-page journal as single file even when names differ', () => {
+            const journals = [
+                {
+                    name: 'City',
+                    uuid: 'JournalEntry.city',
+                    folder: { name: 'Lore' },
+                    pages: {
+                        contents: [
+                            {
+                                name: 'District A',
+                                uuid: 'JournalEntry.city.JournalEntryPage.p1',
+                                text: { content: '<p>District A content</p>' }
+                            }
+                        ]
+                    }
+                }
+            ];
+
+            const result = prepareJournalsForExport(journals, { merge: false });
+
+            expect(result).toHaveLength(1);
+            expect(result[0].filePath).toBe('Lore/City.md');
+            expect(result[0].content).toBe('<p>District A content</p>');
+        });
+
+        it('should generate correct lookup keys for single-page journal', () => {
             const journals = [
                 {
                     name: 'Journal',
@@ -84,9 +170,8 @@ describe('prepareJournalsForExport', () => {
             const result = prepareJournalsForExport(journals, { merge: false });
 
             expect(result[0].lookupKeys).toEqual([
-                'Page',
-                'Journal/Page',
-                'Folder/Journal/Page'
+                'Journal',
+                'Folder/Journal'
             ]);
         });
 
@@ -321,7 +406,7 @@ describe('prepareJournalsForExport', () => {
     });
 
     describe('with multiple journals', () => {
-        it('should process all journals with merge=false', () => {
+        it('should process all single-page journals as single files', () => {
             const journals = [
                 {
                     name: 'Journal 1',
@@ -356,8 +441,8 @@ describe('prepareJournalsForExport', () => {
             const result = prepareJournalsForExport(journals, { merge: false });
 
             expect(result).toHaveLength(2);
-            expect(result[0].filePath).toBe('Journal 1/Page 1.md');
-            expect(result[1].filePath).toBe('Journal 2/Page 1.md');
+            expect(result[0].filePath).toBe('Journal 1.md');
+            expect(result[1].filePath).toBe('Journal 2.md');
         });
 
         it('should process all journals with merge=true', () => {

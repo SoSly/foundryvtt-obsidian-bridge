@@ -20,7 +20,7 @@ export default function prepareJournalsForExport(journals, options = {}) {
     for (const journal of journals) {
         const pages = journal.pages?.contents || [];
 
-        if (merge) {
+        if (merge || pages.length === 1) {
             markdownFiles.push(createMergedFile(journal, pages));
         } else {
             for (const page of pages) {
@@ -67,8 +67,12 @@ function createPageFile(journal, page) {
 
 function buildFilePath(folder, journalName, pageName = null) {
     const folderPath = folder?.name || '';
+    const isCombinedFolder = folderPath && journalName === folderPath.split('/').pop();
 
     if (pageName) {
+        if (isCombinedFolder) {
+            return `${folderPath}/${pageName}.md`;
+        }
         if (folderPath) {
             return `${folderPath}/${journalName}/${pageName}.md`;
         }

@@ -13,8 +13,8 @@ export default function planJournalStructure(markdownFiles, options) {
         files: markdownFiles
     };
 
-    const folders = buildFolderHierarchy(context);
     const entries = buildJournalEntries(context, options);
+    const folders = buildFolderHierarchy(context, entries, options);
 
     return new JournalStructurePlan({ folders, entries });
 }
@@ -29,7 +29,7 @@ function getRelativePath(context, file) {
     return file.filePath;
 }
 
-function buildFolderHierarchy(context) {
+function buildFolderHierarchy(context, entries, options) {
     const folderPaths = new Set();
 
     for (const file of context.files) {
@@ -43,8 +43,22 @@ function buildFolderHierarchy(context) {
         }
     }
 
+    const replacedFolders = new Set();
+    if (options.combineNotes) {
+        for (const entry of entries) {
+            if (entry.pages.length > 1) {
+                const entryFolder = entry.folderPath ? `${entry.folderPath}/${entry.name}` : entry.name;
+                replacedFolders.add(entryFolder);
+            }
+        }
+    }
+
     const folders = [];
     for (const path of folderPaths) {
+        if (replacedFolders.has(path)) {
+            continue;
+        }
+
         const parts = path.split('/');
         const name = parts[parts.length - 1];
         const parentPath = parts.length > 1 ? parts.slice(0, -1).join('/') : null;
@@ -90,6 +104,7 @@ function buildSeparateEntries(context) {
 
 function buildCombinedEntries(context) {
     const filesByFolder = groupFilesByFolder(context);
+    const foldersWithSubfolders = findFoldersWithSubfolders(context);
     const entries = [];
 
     for (const [folderPath, files] of Object.entries(filesByFolder)) {
@@ -106,11 +121,24 @@ function buildCombinedEntries(context) {
                     }]
                 });
             }
+        } else if (files.length === 1) {
+            const file = files[0];
+            const relativePath = getRelativePath(context, file);
+            const name = getFileBasename(relativePath);
+            entries.push({
+                name,
+                folderPath,
+                pages: [{
+                    name,
+                    markdownFile: file
+                }]
+            });
         } else {
             const folderName = folderPath.split('/').pop();
+            const hasSubfolders = foldersWithSubfolders.has(folderPath);
             entries.push({
                 name: folderName,
-                folderPath,
+                folderPath: hasSubfolders ? folderPath : getParentPath(folderPath),
                 pages: files.map(file => {
                     const relativePath = getRelativePath(context, file);
                     return {
@@ -144,7 +172,7 @@ function buildEntriesWithSkipFolderCombine(context) {
                     }]
                 });
             }
-        } else if (foldersWithSubfolders.has(folderPath)) {
+        } else if (foldersWithSubfolders.has(folderPath) || files.length === 1) {
             for (const file of files) {
                 const relativePath = getRelativePath(context, file);
                 const name = getFileBasename(relativePath);
@@ -161,7 +189,7 @@ function buildEntriesWithSkipFolderCombine(context) {
             const folderName = folderPath.split('/').pop();
             entries.push({
                 name: folderName,
-                folderPath,
+                folderPath: getParentPath(folderPath),
                 pages: files.map(file => {
                     const relativePath = getRelativePath(context, file);
                     return {
@@ -222,6 +250,17 @@ function findFoldersWithSubfolders(context) {
 
 function getFolderPath(relativePath) {
     const parts = relativePath.split('/');
+    if (parts.length === 1) {
+        return null;
+    }
+    return parts.slice(0, -1).join('/');
+}
+
+function getParentPath(folderPath) {
+    if (!folderPath) {
+        return null;
+    }
+    const parts = folderPath.split('/');
     if (parts.length === 1) {
         return null;
     }
