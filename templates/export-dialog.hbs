@@ -1,4 +1,16 @@
 <div class="export-dialog-content">
+    <div class="form-group">
+        <label for="obsidian-export-path">{{localize "obsidian-bridge.export.export-path-label"}}</label>
+        <div class="form-fields">
+            <input type="text" id="obsidian-export-path" class="export-path" name="exportPath" value="{{exportPath}}"
+                   readonly placeholder="No directory selected" />
+            <button type="button" data-action="selectDirectory" class="select-folder-button">
+                <i class="fas fa-folder-open"></i> {{localize "obsidian-bridge.export.select-directory-button"}}
+            </button>
+        </div>
+        <p class="hint">{{localize "obsidian-bridge.export.export-path-hint"}}</p>
+    </div>
+
     {{#if journalTree}}
     <div class="form-group file-tree-group">
         <label>{{localize "obsidian-bridge.export.journal-selection-label"}}</label>

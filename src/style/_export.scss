@@ -1,5 +1,10 @@
 .obsidian-bridge {
     &.export-dialog {
+        .select-folder-button {
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
         input[name="assetPathPrefix"] {
             flex-grow: 1;
         }

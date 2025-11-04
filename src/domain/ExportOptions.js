@@ -10,13 +10,17 @@
  *                                      Empty string means no stripping
  * @property {boolean} exportAssets - If true, identify and export referenced assets;
  *                                     if false, skip asset identification and export
+ * @property {string} exportPath - Name of the selected export directory
+ * @property {FileSystemDirectoryHandle} directoryHandle - Browser directory handle for export destination
  */
 export default class ExportOptions {
     static DEFAULTS = {
         journals: [],
         merge: false,
         assetPathPrefix: '',
-        exportAssets: false
+        exportAssets: false,
+        exportPath: '',
+        directoryHandle: null
     };
 
     constructor(options = {}) {

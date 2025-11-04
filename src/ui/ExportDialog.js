@@ -16,6 +16,8 @@ export default class ExportDialog extends HandlebarsApplicationMixin(Application
         this.merge = false;
         this.exportAssets = false;
         this.assetPathPrefix = `worlds/${game.world.id}/obsidian-assets`;
+        this.exportPath = '';
+        this.directoryHandle = null;
     }
 
     static DEFAULT_OPTIONS = {
@@ -29,6 +31,9 @@ export default class ExportDialog extends HandlebarsApplicationMixin(Application
             icon: 'fas fa-file-export',
             minimizable: false,
             resizable: false
+        },
+        actions: {
+            selectDirectory: ExportDialog._onSelectDirectory
         },
         form: {
             handler: ExportDialog._onSubmit,
@@ -52,12 +57,14 @@ export default class ExportDialog extends HandlebarsApplicationMixin(Application
             journalTree: this.journalTree,
             merge: this.merge,
             exportAssets: this.exportAssets,
-            assetPathPrefix: this.assetPathPrefix
+            assetPathPrefix: this.assetPathPrefix,
+            exportPath: this.exportPath
         };
     }
 
     _onRender(context, options) {
         super._onRender(context, options);
+
 
         const mergeCheckbox = this.element.querySelector('input[name="merge"]');
         if (mergeCheckbox) {
@@ -170,12 +177,34 @@ export default class ExportDialog extends HandlebarsApplicationMixin(Application
         });
     }
 
+    static async _onSelectDirectory(event, target) {
+        event.preventDefault();
+
+        try {
+            this.directoryHandle = await window.showDirectoryPicker();
+            this.exportPath = this.directoryHandle.name;
+        } catch (error) {
+            if (error.name !== 'AbortError') {
+                console.error('Failed to get directory handle:', error);
+                ui.notifications.error('Failed to access directory');
+            }
+            return;
+        }
+
+        await this.render();
+    }
+
     static async _onSubmit(event, form, formData) {
         const data = formData.object;
 
         this.merge = data.merge || false;
         this.exportAssets = data.exportAssets || false;
         this.assetPathPrefix = data.assetPathPrefix || '';
+
+        if (!this.directoryHandle) {
+            ui.notifications.warn(game.i18n.localize('obsidian-bridge.export.no-directory-selected'));
+            return;
+        }
 
         const journals = collectSelectedJournals(this.journalTree);
 
@@ -188,7 +217,9 @@ export default class ExportDialog extends HandlebarsApplicationMixin(Application
             journals,
             merge: this.merge,
             exportAssets: this.exportAssets,
-            assetPathPrefix: this.assetPathPrefix
+            assetPathPrefix: this.assetPathPrefix,
+            exportPath: this.exportPath,
+            directoryHandle: this.directoryHandle
         });
 
         const showdownConverter = new showdown.Converter();

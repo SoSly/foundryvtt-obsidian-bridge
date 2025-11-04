@@ -31,6 +31,10 @@ obsidian-bridge:
     button: Obsidian Export
     dialog-title: Export to Obsidian
 
+    export-path-label: Export Directory
+    export-path-hint: Choose where to save exported files
+    select-directory-button: Select Export Directory
+
     journal-selection-label: Select Journals and Folders to Export
     journal-selection-hint: Choose which journals and folders to export to Obsidian markdown format
 
@@ -46,4 +50,5 @@ obsidian-bridge:
     export-button: Export
     cancel-button: Cancel
 
+    no-directory-selected: Please select a directory for export
     no-journals-selected: Please select at least one journal to export

@@ -8,8 +8,8 @@
  * @returns {Promise<{filesWritten: number, assetsWritten: number, errors: string[]}>}
  */
 export default async function writeVault(markdownFiles, nonMarkdownFiles, exportOptions) {
-    if ('showDirectoryPicker' in window) {
-        return await writeToFilesystem(markdownFiles, nonMarkdownFiles);
+    if (exportOptions.directoryHandle) {
+        return await writeToFilesystem(markdownFiles, nonMarkdownFiles, exportOptions.directoryHandle);
     }
 
     return await writeToZip(markdownFiles, nonMarkdownFiles);
@@ -73,20 +73,13 @@ async function writeToZip(markdownFiles, nonMarkdownFiles) {
  *
  * @param {MarkdownFile[]} markdownFiles - Array of markdown files
  * @param {NonMarkdownFile[]} nonMarkdownFiles - Array of asset files
+ * @param {FileSystemDirectoryHandle} dirHandle - Pre-selected directory handle
  * @returns {Promise<{filesWritten: number, assetsWritten: number, errors: string[]}>}
  */
-async function writeToFilesystem(markdownFiles, nonMarkdownFiles) {
+async function writeToFilesystem(markdownFiles, nonMarkdownFiles, dirHandle) {
     const errors = [];
     let filesWritten = 0;
     let assetsWritten = 0;
-
-    let dirHandle;
-    try {
-        dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
-    } catch (error) {
-        errors.push(`Failed to open directory picker: ${error.message}`);
-        return { filesWritten, assetsWritten, errors };
-    }
 
     const permissionStatus = await dirHandle.requestPermission({ mode: 'readwrite' });
     if (permissionStatus !== 'granted') {

@@ -89,21 +89,22 @@ beforeEach(() => {
 
 describe('writeVault', () => {
     describe('detection and routing', () => {
-        it('should use filesystem API when showDirectoryPicker is available', async () => {
+        it('should use filesystem API when directoryHandle is provided', async () => {
             const mockJournalEntry = { name: 'Test', pages: [] };
-            const exportOptions = new ExportOptions({ journals: [mockJournalEntry] });
+            const exportOptions = new ExportOptions({
+                journals: [mockJournalEntry],
+                directoryHandle: mockDirectoryHandle
+            });
             const markdownFiles = [
                 new MarkdownFile({ filePath: 'test.md', content: 'content' })
             ];
 
             await writeVault(markdownFiles, [], exportOptions);
 
-            expect(mockWindow.showDirectoryPicker).toHaveBeenCalled();
+            expect(mockDirectoryHandle.requestPermission).toHaveBeenCalled();
         });
 
-        it('should use ZIP fallback when showDirectoryPicker is not available', async () => {
-            delete global.window.showDirectoryPicker;
-
+        it('should use ZIP fallback when directoryHandle is not provided', async () => {
             const mockJournalEntry = { name: 'Test', pages: [] };
             const exportOptions = new ExportOptions({ journals: [mockJournalEntry] });
             const markdownFiles = [
@@ -113,6 +114,7 @@ describe('writeVault', () => {
             const result = await writeVault(markdownFiles, [], exportOptions);
 
             expect(result.filesWritten).toBe(1);
+            expect(mockJSZip).toHaveBeenCalled();
         });
     });
 
@@ -217,21 +219,27 @@ describe('writeVault', () => {
     });
 
     describe('writeToFilesystem', () => {
-        it('should prompt user for directory', async () => {
+        it('should request write permission for directory', async () => {
             const mockJournalEntry = { name: 'Test', pages: [] };
-            const exportOptions = new ExportOptions({ journals: [mockJournalEntry] });
+            const exportOptions = new ExportOptions({
+                journals: [mockJournalEntry],
+                directoryHandle: mockDirectoryHandle
+            });
             const markdownFiles = [
                 new MarkdownFile({ filePath: 'test.md', content: 'content' })
             ];
 
             await writeVault(markdownFiles, [], exportOptions);
 
-            expect(mockWindow.showDirectoryPicker).toHaveBeenCalled();
+            expect(mockDirectoryHandle.requestPermission).toHaveBeenCalledWith({ mode: 'readwrite' });
         });
 
         it('should write markdown file to filesystem', async () => {
             const mockJournalEntry = { name: 'Test', pages: [] };
-            const exportOptions = new ExportOptions({ journals: [mockJournalEntry] });
+            const exportOptions = new ExportOptions({
+                journals: [mockJournalEntry],
+                directoryHandle: mockDirectoryHandle
+            });
             const markdownFiles = [
                 new MarkdownFile({ filePath: 'test.md', content: 'test content' })
             ];
@@ -246,7 +254,10 @@ describe('writeVault', () => {
 
         it('should create nested directories for markdown files', async () => {
             const mockJournalEntry = { name: 'Test', pages: [] };
-            const exportOptions = new ExportOptions({ journals: [mockJournalEntry] });
+            const exportOptions = new ExportOptions({
+                journals: [mockJournalEntry],
+                directoryHandle: mockDirectoryHandle
+            });
             const markdownFiles = [
                 new MarkdownFile({ filePath: 'folder/subfolder/test.md', content: 'content' })
             ];
@@ -260,7 +271,10 @@ describe('writeVault', () => {
 
         it('should write asset files by fetching and streaming', async () => {
             const mockJournalEntry = { name: 'Test', pages: [] };
-            const exportOptions = new ExportOptions({ journals: [mockJournalEntry] });
+            const exportOptions = new ExportOptions({
+                journals: [mockJournalEntry],
+                directoryHandle: mockDirectoryHandle
+            });
             const markdownFiles = [
                 new MarkdownFile({ filePath: 'test.md', content: 'content' })
             ];
@@ -276,11 +290,14 @@ describe('writeVault', () => {
             expect(result.assetsWritten).toBe(1);
         });
 
-        it('should handle directory picker cancellation', async () => {
-            mockWindow.showDirectoryPicker.mockRejectedValue(new Error('User cancelled'));
+        it('should handle permission denial', async () => {
+            mockDirectoryHandle.requestPermission.mockResolvedValue('denied');
 
             const mockJournalEntry = { name: 'Test', pages: [] };
-            const exportOptions = new ExportOptions({ journals: [mockJournalEntry] });
+            const exportOptions = new ExportOptions({
+                journals: [mockJournalEntry],
+                directoryHandle: mockDirectoryHandle
+            });
             const markdownFiles = [
                 new MarkdownFile({ filePath: 'test.md', content: 'content' })
             ];
@@ -289,7 +306,7 @@ describe('writeVault', () => {
 
             expect(result.filesWritten).toBe(0);
             expect(result.errors).toHaveLength(1);
-            expect(result.errors[0]).toContain('User cancelled');
+            expect(result.errors[0]).toContain('Write permission not granted');
         });
 
         it('should handle file write errors and continue', async () => {
@@ -298,7 +315,10 @@ describe('writeVault', () => {
             });
 
             const mockJournalEntry = { name: 'Test', pages: [] };
-            const exportOptions = new ExportOptions({ journals: [mockJournalEntry] });
+            const exportOptions = new ExportOptions({
+                journals: [mockJournalEntry],
+                directoryHandle: mockDirectoryHandle
+            });
             const markdownFiles = [
                 new MarkdownFile({ filePath: 'test1.md', content: 'content 1' }),
                 new MarkdownFile({ filePath: 'test2.md', content: 'content 2' })
@@ -312,7 +332,10 @@ describe('writeVault', () => {
 
         it('should handle empty path parts gracefully', async () => {
             const mockJournalEntry = { name: 'Test', pages: [] };
-            const exportOptions = new ExportOptions({ journals: [mockJournalEntry] });
+            const exportOptions = new ExportOptions({
+                journals: [mockJournalEntry],
+                directoryHandle: mockDirectoryHandle
+            });
             const markdownFiles = [
                 new MarkdownFile({ filePath: '/test.md', content: 'content' })
             ];
@@ -325,7 +348,10 @@ describe('writeVault', () => {
 
         it('should handle empty string content', async () => {
             const mockJournalEntry = { name: 'Test', pages: [] };
-            const exportOptions = new ExportOptions({ journals: [mockJournalEntry] });
+            const exportOptions = new ExportOptions({
+                journals: [mockJournalEntry],
+                directoryHandle: mockDirectoryHandle
+            });
             const markdownFiles = [
                 new MarkdownFile({ filePath: 'test.md', content: '' })
             ];
@@ -343,7 +369,10 @@ describe('writeVault', () => {
             });
 
             const mockJournalEntry = { name: 'Test', pages: [] };
-            const exportOptions = new ExportOptions({ journals: [mockJournalEntry] });
+            const exportOptions = new ExportOptions({
+                journals: [mockJournalEntry],
+                directoryHandle: mockDirectoryHandle
+            });
             const markdownFiles = [
                 new MarkdownFile({ filePath: 'test.md', content: 'content' })
             ];
@@ -368,7 +397,10 @@ describe('writeVault', () => {
             });
 
             const mockJournalEntry = { name: 'Test', pages: [] };
-            const exportOptions = new ExportOptions({ journals: [mockJournalEntry] });
+            const exportOptions = new ExportOptions({
+                journals: [mockJournalEntry],
+                directoryHandle: mockDirectoryHandle
+            });
             const markdownFiles = [
                 new MarkdownFile({ filePath: 'success.md', content: 'success content' }),
                 new MarkdownFile({ filePath: 'fail.md', content: 'fail content' })
