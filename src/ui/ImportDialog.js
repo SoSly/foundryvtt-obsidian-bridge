@@ -5,6 +5,7 @@ import { findNodeByPath } from '../tree/find';
 import { updateTreeSelection } from './updateTreeSelection';
 import executePipeline from '../pipeline/executePipeline';
 import createImportPipeline from '../pipeline/importPipeline';
+import ProgressModal from './ProgressModal.js';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -229,25 +230,34 @@ export default class ImportDialog extends HandlebarsApplicationMixin(Application
             showdownConverter.setOption(k, v);
         });
 
+        const progressModal = new ProgressModal();
+        await progressModal.render(true);
+
         const pipeline = createImportPipeline(this.importOptions, showdownConverter);
-        const result = await executePipeline(pipeline);
+        pipeline.onProgress = state => progressModal.updateProgress(state);
 
-        if (!result.success) {
-            console.error('Import failed:', result.error);
-            ui.notifications.error(`Import failed: ${result.error.message}`);
-            return;
+        try {
+            const result = await executePipeline(pipeline);
+
+            if (!result.success) {
+                console.error('Import failed:', result.error);
+                ui.notifications.error(`Import failed: ${result.error.message}`);
+                return;
+            }
+
+            const parseResult = result.getPhaseResult('parse-markdown');
+            const uploadResult = result.getPhaseResult('upload-assets');
+            const updateResult = result.getPhaseResult('update-content');
+
+            const assetCount = uploadResult?.uploadedPaths?.length || 0;
+            const pageCount = updateResult?.updatedPages?.length || 0;
+            const fileCount = parseResult?.markdownFiles?.length || 0;
+
+            ui.notifications.info(`Import complete: ${pageCount} pages updated from ${fileCount} files, ${assetCount} assets`);
+
+            this.close();
+        } finally {
+            await progressModal.close();
         }
-
-        const parseResult = result.getPhaseResult('parse-markdown');
-        const uploadResult = result.getPhaseResult('upload-assets');
-        const updateResult = result.getPhaseResult('update-content');
-
-        const assetCount = uploadResult?.uploadedPaths?.length || 0;
-        const pageCount = updateResult?.updatedPages?.length || 0;
-        const fileCount = parseResult?.markdownFiles?.length || 0;
-
-        ui.notifications.info(`Import complete: ${pageCount} pages updated from ${fileCount} files, ${assetCount} assets`);
-
-        this.close();
     }
 }

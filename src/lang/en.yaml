@@ -52,3 +52,25 @@ obsidian-bridge:
 
     no-directory-selected: Please select a directory for export
     no-journals-selected: Please select at least one journal to export
+
+  progress:
+    title: Processing...
+    starting: Starting...
+    complete: Complete
+
+    filter-files: Filtering selected files
+    prepare-documents: Preparing documents
+    extract-references: Extracting references
+    replace-references: Replacing references
+    convert-markdown: Converting markdown to HTML
+    plan-structure: Planning journal structure
+    create-documents: Creating journal documents
+    upload-assets: Uploading assets
+    resolve-placeholders: Resolving references
+    update-content: Updating content
+
+    collect-journals: Collecting journals
+    convert-to-markdown: Converting HTML to markdown
+    resolve-references: Resolving references
+    identify-assets: Identifying assets
+    write-vault: Writing vault files

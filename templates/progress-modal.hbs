@@ -1,0 +1,12 @@
+<div class="progress-modal-content">
+    <div class="progress-info">
+        <div class="phase-label">{{phaseLabel}}</div>
+        {{#if showItemCount}}
+        <div class="item-count">{{completedPhases}}/{{totalPhases}}</div>
+        {{/if}}
+    </div>
+    <div class="progress-bar-container">
+        <div class="progress-bar" style="width: {{percentage}}%"></div>
+    </div>
+    <div class="progress-percentage">{{percentage}}%</div>
+</div>

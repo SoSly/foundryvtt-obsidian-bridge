@@ -239,4 +239,118 @@ describe('executePipeline', () => {
         expect(result.hasPhaseResult('phase2')).toBe(true);
         expect(result.hasPhaseResult('phase3')).toBe(false);
     });
+
+    test('calls onProgress callback before each phase with correct state', async () => {
+        const progressStates = [];
+        const context = {};
+
+        const phases = [
+            new PhaseDefinition({
+                name: 'phase1',
+                execute: async () => ({ value: 1 }),
+            }),
+            new PhaseDefinition({
+                name: 'phase2',
+                execute: async () => ({ value: 2 }),
+            }),
+            new PhaseDefinition({
+                name: 'phase3',
+                execute: async () => ({ value: 3 }),
+            }),
+        ];
+
+        const config = new PipelineConfig({
+            phases,
+            context,
+            onProgress: state => progressStates.push({ ...state })
+        });
+
+        const result = await executePipeline(config);
+
+        expect(result.success).toBe(true);
+        expect(progressStates).toHaveLength(4);
+
+        expect(progressStates[0]).toEqual({
+            currentPhase: 0,
+            phaseLabel: 'obsidian-bridge.progress.phase1',
+            completedPhases: 0,
+            totalPhases: 3,
+            percentage: 0
+        });
+
+        expect(progressStates[1]).toEqual({
+            currentPhase: 1,
+            phaseLabel: 'obsidian-bridge.progress.phase2',
+            completedPhases: 1,
+            totalPhases: 3,
+            percentage: 33
+        });
+
+        expect(progressStates[2]).toEqual({
+            currentPhase: 2,
+            phaseLabel: 'obsidian-bridge.progress.phase3',
+            completedPhases: 2,
+            totalPhases: 3,
+            percentage: 67
+        });
+
+        expect(progressStates[3]).toEqual({
+            currentPhase: 3,
+            phaseLabel: 'obsidian-bridge.progress.complete',
+            completedPhases: 3,
+            totalPhases: 3,
+            percentage: 100
+        });
+    });
+
+    test('does not call onProgress when callback not provided', async () => {
+        const context = {};
+
+        const phases = [
+            new PhaseDefinition({
+                name: 'phase1',
+                execute: async () => ({ value: 1 }),
+            }),
+        ];
+
+        const config = new PipelineConfig({ phases, context });
+        const result = await executePipeline(config);
+
+        expect(result.success).toBe(true);
+    });
+
+    test('calculates correct total phases when some are skipped', async () => {
+        const progressStates = [];
+        const context = { skipPhase2: true };
+
+        const phases = [
+            new PhaseDefinition({
+                name: 'phase1',
+                execute: async () => ({ value: 1 }),
+            }),
+            new PhaseDefinition({
+                name: 'phase2',
+                execute: async () => ({ value: 2 }),
+                condition: ctx => !ctx.skipPhase2,
+            }),
+            new PhaseDefinition({
+                name: 'phase3',
+                execute: async () => ({ value: 3 }),
+            }),
+        ];
+
+        const config = new PipelineConfig({
+            phases,
+            context,
+            onProgress: state => progressStates.push({ ...state })
+        });
+
+        const result = await executePipeline(config);
+
+        expect(result.success).toBe(true);
+        expect(progressStates).toHaveLength(3);
+        expect(progressStates[0].totalPhases).toBe(2);
+        expect(progressStates[1].totalPhases).toBe(2);
+        expect(progressStates[2].totalPhases).toBe(2);
+    });
 });

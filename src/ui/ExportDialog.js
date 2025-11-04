@@ -6,6 +6,7 @@ import { collectSelectedJournals } from '../tree/collect.js';
 import { updateTreeSelectionById } from './updateTreeSelection.js';
 import executePipeline from '../pipeline/executePipeline.js';
 import createExportPipeline from '../pipeline/exportPipeline.js';
+import ProgressModal from './ProgressModal.js';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -227,21 +228,30 @@ export default class ExportDialog extends HandlebarsApplicationMixin(Application
             showdownConverter.setOption(k, v);
         });
 
+        const progressModal = new ProgressModal();
+        await progressModal.render(true);
+
         const pipeline = createExportPipeline(exportOptions, showdownConverter);
-        const result = await executePipeline(pipeline);
+        pipeline.onProgress = state => progressModal.updateProgress(state);
 
-        if (!result.success) {
-            console.error('Export failed:', result.error);
-            ui.notifications.error(`Export failed: ${result.error.message}`);
-            return;
+        try {
+            const result = await executePipeline(pipeline);
+
+            if (!result.success) {
+                console.error('Export failed:', result.error);
+                ui.notifications.error(`Export failed: ${result.error.message}`);
+                return;
+            }
+
+            const writeResult = result.getPhaseResult('write-vault');
+            const fileCount = writeResult?.filesWritten || 0;
+            const assetCount = writeResult?.assetsWritten || 0;
+
+            ui.notifications.info(`Export complete: ${fileCount} files, ${assetCount} assets`);
+
+            this.close();
+        } finally {
+            await progressModal.close();
         }
-
-        const writeResult = result.getPhaseResult('write-vault');
-        const fileCount = writeResult?.filesWritten || 0;
-        const assetCount = writeResult?.assetsWritten || 0;
-
-        ui.notifications.info(`Export complete: ${fileCount} files, ${assetCount} assets`);
-
-        this.close();
     }
 }
