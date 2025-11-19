@@ -1,4 +1,4 @@
-const { getTemplate } = foundry.applications.handlebars;
+const getTemplate = foundry.applications?.handlebars?.getTemplate ?? globalThis.getTemplate;
 
 export async function registerHandlebarsHelpers() {
     Handlebars.registerHelper('endsWith', function(str, suffix) {

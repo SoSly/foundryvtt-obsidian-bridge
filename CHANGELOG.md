@@ -2,6 +2,9 @@
 
 ## [Unreleased](https://github.com/SoSly/foundryvtt-obsidian-bridge)
 
+### Fixed
+- Fix `getTemplate` backwards compatibility between Foundry v12 and v13+
+
 ## [1.0.1] - 2025-11-19
 
 ### Changed
