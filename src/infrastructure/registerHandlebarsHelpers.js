@@ -1,3 +1,5 @@
+const { getTemplate } = foundry.applications.handlebars;
+
 export async function registerHandlebarsHelpers() {
     Handlebars.registerHelper('endsWith', function(str, suffix) {
         if (!str || !suffix) {

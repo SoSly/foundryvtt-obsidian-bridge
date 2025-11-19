@@ -1,6 +1,7 @@
 import ImportDialog from '../ui/ImportDialog.js';
 import ExportDialog from '../ui/ExportDialog.js';
 import { registerHandlebarsHelpers } from './registerHandlebarsHelpers.js';
+const { getTemplate } = foundry.applications.handlebars;
 
 let importDialogInstance = null;
 let exportDialogInstance = null;
