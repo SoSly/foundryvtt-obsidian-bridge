@@ -2,6 +2,8 @@
 
 ## [Unreleased](https://github.com/SoSly/foundryvtt-obsidian-bridge)
 
+## [1.0.1] - 2025-11-19
+
 ### Changed
 - Add explicit imports for Foundry's `getTemplate` function instead of relying on global scope
 

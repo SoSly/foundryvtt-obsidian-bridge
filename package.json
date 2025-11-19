@@ -1,6 +1,6 @@
 {
   "name": "obsidian-bridge",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "description": "A FoundryVTT module for importing Obsidian MD vaults and exporting Foundry journals",
   "type": "module",
   "scripts": {

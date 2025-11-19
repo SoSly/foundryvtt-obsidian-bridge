@@ -2,7 +2,7 @@
   "id": "obsidian-bridge",
   "title": "Obsidian Bridge",
   "description": "Import Obsidian MD vaults into Foundry journals and export Foundry journals back to Obsidian format",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "authors": [
     {
       "name": "nivthefox",
