@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/SoSly/foundryvtt-obsidian-bridge)
 
+### Added
+- ZIP download fallback for browsers without File System Access API (Firefox, Safari, remote connections)
+- "Strict line breaks" import option to preserve single line breaks through round-trips
+
+### Fixed
+- YAML frontmatter is now preserved during import/export instead of being corrupted
+- Nested folder structures export correctly instead of flattening to a single level
+- Non-journal UUID references (Actors, Scenes, Items) no longer corrupt during round-trips
+- Empty HTML comments no longer litter exported markdown files
+
 ## [1.0.2] - 2025-11-19
 
 ### Fixed
