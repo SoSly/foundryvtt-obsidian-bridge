@@ -76,15 +76,14 @@ export function mergeFrontmatter(frontmatterStrings) {
     }
 
     const merged = {};
-    for (let i = 0; i < parsedObjects.length; i++) {
-        const obj = parsedObjects[i];
+    for (const obj of parsedObjects) {
         for (const key of Object.keys(obj)) {
-            if (key in merged) {
-                if (JSON.stringify(merged[key]) !== JSON.stringify(obj[key])) {
-                    warnings.push(`Conflict on key "${key}": using value from first occurrence`);
-                }
-            } else {
+            if (!(key in merged)) {
                 merged[key] = obj[key];
+                continue;
+            }
+            if (JSON.stringify(merged[key]) !== JSON.stringify(obj[key])) {
+                warnings.push(`Conflict on key "${key}": using value from first occurrence`);
             }
         }
     }
@@ -110,71 +109,100 @@ export function parseYamlLite(yamlString) {
     }
 
     try {
-        const result = {};
-        const lines = trimmed.split(/\r?\n/);
-        let i = 0;
-
-        while (i < lines.length) {
-            const line = lines[i];
-
-            if (!line.trim()) {
-                i++;
-                continue;
-            }
-
-            const colonIndex = line.indexOf(':');
-            if (colonIndex === -1) {
-                return null;
-            }
-
-            const key = line.slice(0, colonIndex).trim();
-            let value = line.slice(colonIndex + 1).trim();
-
-            if (value.startsWith('[')) {
-                const arrayValue = parseInlineArray(value);
-                if (arrayValue === null) {
-                    return null;
-                }
-                result[key] = arrayValue;
-                i++;
-            } else if (value === '' && i + 1 < lines.length) {
-                const nextLine = lines[i + 1];
-                if (nextLine.startsWith('  - ')) {
-                    const arrayItems = [];
-                    i++;
-                    while (i < lines.length && lines[i].startsWith('  - ')) {
-                        arrayItems.push(parseScalarValue(lines[i].slice(4).trim()));
-                        i++;
-                    }
-                    result[key] = arrayItems;
-                } else if (nextLine.startsWith('  ') && !nextLine.startsWith('  - ')) {
-                    const nestedObj = {};
-                    i++;
-                    while (i < lines.length && lines[i].startsWith('  ') && !lines[i].startsWith('  - ')) {
-                        const nestedLine = lines[i].slice(2);
-                        const nestedColonIndex = nestedLine.indexOf(':');
-                        if (nestedColonIndex !== -1) {
-                            const nestedKey = nestedLine.slice(0, nestedColonIndex).trim();
-                            const nestedValue = nestedLine.slice(nestedColonIndex + 1).trim();
-                            nestedObj[nestedKey] = parseScalarValue(nestedValue);
-                        }
-                        i++;
-                    }
-                    result[key] = nestedObj;
-                } else {
-                    result[key] = '';
-                    i++;
-                }
-            } else {
-                result[key] = parseScalarValue(value);
-                i++;
-            }
-        }
-
-        return result;
+        return parseYamlLines(trimmed.split(/\r?\n/));
     } catch {
         return null;
     }
+}
+
+function parseYamlLines(lines) {
+    const result = {};
+    let i = 0;
+
+    while (i < lines.length) {
+        const line = lines[i];
+
+        if (!line.trim()) {
+            i++;
+            continue;
+        }
+
+        const colonIndex = line.indexOf(':');
+        if (colonIndex === -1) {
+            return null;
+        }
+
+        const key = line.slice(0, colonIndex).trim();
+        const value = line.slice(colonIndex + 1).trim();
+        const parseResult = parseValue(value, lines, i);
+
+        if (parseResult === null) {
+            return null;
+        }
+
+        result[key] = parseResult.value;
+        i = parseResult.nextIndex;
+    }
+
+    return result;
+}
+
+function parseValue(value, lines, currentIndex) {
+    if (value.startsWith('[')) {
+        const arrayValue = parseInlineArray(value);
+        if (arrayValue === null) {
+            return null;
+        }
+        return { value: arrayValue, nextIndex: currentIndex + 1 };
+    }
+
+    if (value !== '' || currentIndex + 1 >= lines.length) {
+        return { value: parseScalarValue(value), nextIndex: currentIndex + 1 };
+    }
+
+    const nextLine = lines[currentIndex + 1];
+
+    if (nextLine.startsWith('  - ')) {
+        return parseMultiLineArray(lines, currentIndex + 1);
+    }
+
+    if (nextLine.startsWith('  ')) {
+        return parseNestedObject(lines, currentIndex + 1);
+    }
+
+    return { value: '', nextIndex: currentIndex + 1 };
+}
+
+function parseMultiLineArray(lines, startIndex) {
+    const items = [];
+    let i = startIndex;
+
+    while (i < lines.length && lines[i].startsWith('  - ')) {
+        items.push(parseScalarValue(lines[i].slice(4).trim()));
+        i++;
+    }
+
+    return { value: items, nextIndex: i };
+}
+
+function parseNestedObject(lines, startIndex) {
+    const obj = {};
+    let i = startIndex;
+
+    while (i < lines.length && lines[i].startsWith('  ') && !lines[i].startsWith('  - ')) {
+        const nestedLine = lines[i].slice(2);
+        const colonIndex = nestedLine.indexOf(':');
+
+        if (colonIndex !== -1) {
+            const key = nestedLine.slice(0, colonIndex).trim();
+            const value = nestedLine.slice(colonIndex + 1).trim();
+            obj[key] = parseScalarValue(value);
+        }
+
+        i++;
+    }
+
+    return { value: obj, nextIndex: i };
 }
 
 function parseInlineArray(value) {
@@ -269,23 +297,24 @@ export function serializeYamlLite(obj) {
 
 function serializeValue(key, value, indent) {
     const prefix = '  '.repeat(indent);
-    const lines = [];
 
     if (Array.isArray(value)) {
-        lines.push(`${prefix}${key}:`);
+        const lines = [`${prefix}${key}:`];
         for (const item of value) {
             lines.push(`${prefix}  - ${formatScalar(item)}`);
         }
-    } else if (value !== null && typeof value === 'object') {
-        lines.push(`${prefix}${key}:`);
+        return lines;
+    }
+
+    if (value !== null && typeof value === 'object') {
+        const lines = [`${prefix}${key}:`];
         for (const nestedKey of Object.keys(value)) {
             lines.push(...serializeValue(nestedKey, value[nestedKey], indent + 1));
         }
-    } else {
-        lines.push(`${prefix}${key}: ${formatScalar(value)}`);
+        return lines;
     }
 
-    return lines;
+    return [`${prefix}${key}: ${formatScalar(value)}`];
 }
 
 function formatScalar(value) {
