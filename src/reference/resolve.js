@@ -166,6 +166,12 @@ function resolveLinks(content, links, linkMap, sourceFilePath) {
     }
 
     for (const link of links) {
+        if (link.metadata?.isFoundryProtocol) {
+            const resolvedLink = `@UUID[${link.foundry}]{${link.label}}`;
+            content = content.replaceAll(link.placeholder, resolvedLink);
+            continue;
+        }
+
         const lowercaseTarget = link.obsidian.toLowerCase();
         const candidates = linkMap.get(lowercaseTarget) || [];
         const targetFile = selectBestMatch(candidates, sourceFilePath);
@@ -273,7 +279,7 @@ function resolveLinksForExport(content, links, linkMap, uuidMap, sourceFilePath)
             }
         } else {
             const displayText = link.label || link.foundry;
-            content = content.replaceAll(link.placeholder, `[[@UUID[${link.foundry}]|${displayText}]]`);
+            content = content.replaceAll(link.placeholder, `[${displayText}](foundry://${link.foundry})`);
         }
     }
 

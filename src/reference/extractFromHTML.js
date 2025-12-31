@@ -1,21 +1,23 @@
 import Reference from '../domain/Reference.js';
 
 /**
- * Matches Foundry UUID link syntax.
+ * Matches Foundry UUID link syntax with optional label.
  *
  * Examples:
- *   @UUID[Actor.abc123]{Bob the NPC}                                - Actor link
- *   @UUID[JournalEntry.xyz789]{Quest Log}                           - Journal entry link
- *   @UUID[JournalEntry.abc.JournalEntryPage.def]{Page}             - Journal page link
- *   @UUID[Compendium.dnd5e.monsters.Actor.xyz]{Monster}            - Compendium link
+ *   @UUID[Actor.abc123]{Bob the NPC}                                - Actor link with label
+ *   @UUID[JournalEntry.xyz789]{Quest Log}                           - Journal entry link with label
+ *   @UUID[JournalEntry.abc.JournalEntryPage.def]{Page}             - Journal page link with label
+ *   @UUID[Compendium.dnd5e.monsters.Actor.xyz]{Monster}            - Compendium link with label
+ *   @UUID[Actor.abc123]                                             - Actor link without label
+ *   @UUID[Actor.abc123]{}                                           - Actor link with empty braces
  *
  * Capture groups:
  *   1: UUID (required)
- *   2: Display label (required)
+ *   2: Display label (optional, may be empty or undefined)
  *
  * Reference: https://foundryvtt.com/article/uuids/
  */
-const UUID_PATTERN = /@UUID\[([^\]]+)\]\{([^}]+)\}/g;
+const UUID_PATTERN = /@UUID\[([^\]]+)\](?:\{([^}]*)\})?/g;
 
 /**
  * Matches HTML img tags.
@@ -68,13 +70,28 @@ const IMG_ALT_PATTERN = /alt=["']([^"']*)["']/i;
 const ANCHOR_TAG_PATTERN = /<a\s+[^>]*href=["']([^"']+)["'][^>]*>([^<]+)<\/a>/gi;
 
 /**
+ * Looks up a document name from a Foundry UUID.
+ *
+ * @param {string} uuid - The Foundry UUID to look up
+ * @returns {Promise<string>} The document name, or the UUID if lookup fails
+ */
+async function lookupDocumentName(uuid) {
+    try {
+        const doc = await fromUuid(uuid);
+        return doc?.name || uuid;
+    } catch {
+        return uuid;
+    }
+}
+
+/**
  * Extracts Foundry UUID references from HTML content.
  *
  * @param {string} htmlContent - HTML content containing @UUID[...]{...} patterns
  * @param {object} [options={}] - Extraction options (currently unused)
- * @returns {Reference[]} Array of Reference objects with foundry UUIDs
+ * @returns {Promise<Reference[]>} Array of Reference objects with foundry UUIDs
  */
-export function extractLinkReferences(htmlContent, options = {}) {
+export async function extractLinkReferences(htmlContent, options = {}) {
     if (!htmlContent) {
         return [];
     }
@@ -84,8 +101,12 @@ export function extractLinkReferences(htmlContent, options = {}) {
 
     while ((match = UUID_PATTERN.exec(htmlContent)) !== null) {
         const uuid = match[1].trim();
-        const label = match[2].trim();
+        let label = match[2] !== undefined ? match[2].trim() : '';
         const source = match[0];
+
+        if (!label) {
+            label = await lookupDocumentName(uuid);
+        }
 
         const isJournalReference = uuid.startsWith('JournalEntry.')
                                    || uuid.includes('.JournalEntry.');

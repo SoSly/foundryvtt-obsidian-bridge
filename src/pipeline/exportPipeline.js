@@ -66,7 +66,7 @@ export default function createExportPipeline(exportOptions, showdownConverter) {
             name: 'extract-references',
             execute: async ctx => {
                 for (const markdownFile of ctx.markdownFiles) {
-                    const links = extractLinkReferences(markdownFile.content);
+                    const links = await extractLinkReferences(markdownFile.content);
                     const assets = extractAssetReferences(
                         markdownFile.content,
                         { assetPathPrefix: ctx.exportOptions.assetPathPrefix }
