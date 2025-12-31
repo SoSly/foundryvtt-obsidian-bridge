@@ -27,3 +27,18 @@ export function stripEmptyHtmlComments(markdown) {
 
     return markdown.replace(/<!--\s*-->\n?/g, '');
 }
+
+/**
+ * Converts <br> tags back to newlines during export.
+ * Handles all variants: <br>, <br/>, <br />, with optional trailing newline.
+ *
+ * @param {string} markdown - Markdown content potentially containing br tags
+ * @returns {string} Markdown with br tags converted to newlines
+ */
+export function convertBrToNewline(markdown) {
+    if (!markdown) {
+        return '';
+    }
+
+    return markdown.replace(/<br\s*\/?>\r?\n?/gi, '\n');
+}

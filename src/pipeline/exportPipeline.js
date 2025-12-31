@@ -3,7 +3,7 @@ import PhaseDefinition from '../domain/PhaseDefinition.js';
 import prepareJournalsForExport from '../journal/prepare.js';
 import { extractLinkReferences, extractAssetReferences } from '../reference/extractFromHTML.js';
 import replaceWithPlaceholders from '../reference/replace.js';
-import convertHtmlToMarkdown, { stripEmptyHtmlComments } from '../content/htmlToMarkdown.js';
+import convertHtmlToMarkdown, { stripEmptyHtmlComments, convertBrToNewline } from '../content/htmlToMarkdown.js';
 import { resolveForExport } from '../reference/resolve.js';
 import identifyAssets from '../asset/identify.js';
 import writeVault from '../vault/write.js';
@@ -117,6 +117,7 @@ export default function createExportPipeline(exportOptions, showdownConverter) {
                         ctx.showdownConverter
                     );
                     markdownFile.content = stripEmptyHtmlComments(markdownFile.content);
+                    markdownFile.content = convertBrToNewline(markdownFile.content);
                     filesConverted++;
                 }
 

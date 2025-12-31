@@ -10,6 +10,7 @@ export default class ImportOptions {
         combineNotes: false,
         skipFolderCombine: false,
         importAssets: false,
+        strictLineBreaks: false,
         dataPath: ''
     };
 

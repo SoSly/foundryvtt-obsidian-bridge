@@ -56,6 +56,7 @@ export default class ImportDialog extends HandlebarsApplicationMixin(Application
             combineNotes: this.importOptions.combineNotes,
             skipFolderCombine: this.importOptions.skipFolderCombine,
             importAssets: this.importOptions.importAssets,
+            strictLineBreaks: this.importOptions.strictLineBreaks,
             dataPath: this.importOptions.dataPath
         };
     }
@@ -96,6 +97,13 @@ export default class ImportDialog extends HandlebarsApplicationMixin(Application
             importAssetsCheckbox.addEventListener('change', async event => {
                 this.importOptions.importAssets = event.target.checked;
                 await this.render();
+            });
+        }
+
+        const strictLineBreaksCheckbox = this.element.querySelector('input[name="strictLineBreaks"]');
+        if (strictLineBreaksCheckbox) {
+            strictLineBreaksCheckbox.addEventListener('change', event => {
+                this.importOptions.strictLineBreaks = event.target.checked;
             });
         }
 
@@ -218,6 +226,7 @@ export default class ImportDialog extends HandlebarsApplicationMixin(Application
         this.importOptions.combineNotes = data.combineNotes || false;
         this.importOptions.skipFolderCombine = data.skipFolderCombine || false;
         this.importOptions.importAssets = data.importAssets || false;
+        this.importOptions.strictLineBreaks = data.strictLineBreaks || false;
         this.importOptions.dataPath = data.dataPath || '';
 
         if (!this.importOptions.isValid()) {

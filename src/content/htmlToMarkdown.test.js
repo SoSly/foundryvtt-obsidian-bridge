@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
-import convertHtmlToMarkdown, { stripEmptyHtmlComments } from './htmlToMarkdown.js';
+import convertHtmlToMarkdown, { stripEmptyHtmlComments, convertBrToNewline } from './htmlToMarkdown.js';
 
 describe('convertHtmlToMarkdown', () => {
     let converter;
@@ -118,5 +118,52 @@ describe('stripEmptyHtmlComments', () => {
         expect(stripEmptyHtmlComments('')).toBe('');
         expect(stripEmptyHtmlComments(null)).toBe('');
         expect(stripEmptyHtmlComments(undefined)).toBe('');
+    });
+});
+
+describe('convertBrToNewline', () => {
+    it('should convert <br /> to newline', () => {
+        expect(convertBrToNewline('line1<br />line2')).toBe('line1\nline2');
+    });
+
+    it('should convert <br> (no slash) to newline', () => {
+        expect(convertBrToNewline('line1<br>line2')).toBe('line1\nline2');
+    });
+
+    it('should convert <br/> (no space) to newline', () => {
+        expect(convertBrToNewline('line1<br/>line2')).toBe('line1\nline2');
+    });
+
+    it('should pass through content with no br tags unchanged', () => {
+        const input = '# Title\n\nSome paragraph text.';
+        expect(convertBrToNewline(input)).toBe(input);
+    });
+
+    it('should consume trailing newline after br tag', () => {
+        expect(convertBrToNewline('line1<br />\nline2')).toBe('line1\nline2');
+    });
+
+    it('should consume Windows line ending after br tag', () => {
+        expect(convertBrToNewline('line1<br />\r\nline2')).toBe('line1\nline2');
+    });
+
+    it('should handle multiple br tags', () => {
+        expect(convertBrToNewline('a<br />b<br/>c<br>d')).toBe('a\nb\nc\nd');
+    });
+
+    it('should handle br with extra whitespace', () => {
+        expect(convertBrToNewline('line1<br   />line2')).toBe('line1\nline2');
+        expect(convertBrToNewline('line1<br   >line2')).toBe('line1\nline2');
+    });
+
+    it('should be case insensitive', () => {
+        expect(convertBrToNewline('line1<BR />line2')).toBe('line1\nline2');
+        expect(convertBrToNewline('line1<Br/>line2')).toBe('line1\nline2');
+    });
+
+    it('should return empty string for falsy input', () => {
+        expect(convertBrToNewline('')).toBe('');
+        expect(convertBrToNewline(null)).toBe('');
+        expect(convertBrToNewline(undefined)).toBe('');
     });
 });

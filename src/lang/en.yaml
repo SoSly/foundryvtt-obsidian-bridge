@@ -21,6 +21,9 @@ obsidian-bridge:
     import-assets-label: Import non-markdown files
     import-assets-hint: Import images and other asset files alongside markdown content
 
+    strict-line-breaks-label: Strict line breaks
+    strict-line-breaks-hint: When enabled, single line breaks follow standard markdown rules (collapsed to spaces). When disabled, single line breaks are preserved. Matches Obsidian's setting of the same name.
+
     data-path-label: Data path for non-markdown files
     data-path-hint: Directory where imported assets will be stored
 
@@ -60,6 +63,7 @@ obsidian-bridge:
 
     filter-files: Filtering selected files
     prepare-documents: Preparing documents
+    convert-line-breaks: Converting line breaks
     extract-references: Extracting references
     replace-references: Replacing references
     convert-markdown: Converting markdown to HTML

@@ -41,6 +41,14 @@
 
     <div class="form-group">
         <label>
+            <input type="checkbox" name="strictLineBreaks" {{checked strictLineBreaks}} />
+            {{localize "obsidian-bridge.import.strict-line-breaks-label"}}
+        </label>
+        <p class="hint">{{localize "obsidian-bridge.import.strict-line-breaks-hint"}}</p>
+    </div>
+
+    <div class="form-group">
+        <label>
             <input type="checkbox" name="importAssets" {{checked importAssets}} data-toggle-visibility="dataPath" />
             {{localize "obsidian-bridge.import.import-assets-label"}}
         </label>
