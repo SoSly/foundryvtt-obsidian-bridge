@@ -19,6 +19,7 @@ export default class ExportDialog extends HandlebarsApplicationMixin(Application
         this.assetPathPrefix = `worlds/${game.world.id}/obsidian-assets`;
         this.exportPath = '';
         this.directoryHandle = null;
+        this.hasFilesystemAccess = typeof window.showDirectoryPicker === 'function';
     }
 
     static DEFAULT_OPTIONS = {
@@ -59,7 +60,8 @@ export default class ExportDialog extends HandlebarsApplicationMixin(Application
             merge: this.merge,
             exportAssets: this.exportAssets,
             assetPathPrefix: this.assetPathPrefix,
-            exportPath: this.exportPath
+            exportPath: this.exportPath,
+            hasFilesystemAccess: this.hasFilesystemAccess
         };
     }
 
@@ -202,7 +204,7 @@ export default class ExportDialog extends HandlebarsApplicationMixin(Application
         this.exportAssets = data.exportAssets || false;
         this.assetPathPrefix = data.assetPathPrefix || '';
 
-        if (!this.directoryHandle) {
+        if (this.hasFilesystemAccess && !this.directoryHandle) {
             ui.notifications.warn(game.i18n.localize('obsidian-bridge.export.no-directory-selected'));
             return;
         }

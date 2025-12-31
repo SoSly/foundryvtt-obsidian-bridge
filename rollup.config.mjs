@@ -85,6 +85,10 @@ const main = {
                         }
                     },
                     rename: (name) => `${name}.json`
+                },
+                {
+                    src: './node_modules/jszip/dist/jszip.min.js',
+                    dest: './dist/lib'
                 }
             ],
             hookTimeout: 30000

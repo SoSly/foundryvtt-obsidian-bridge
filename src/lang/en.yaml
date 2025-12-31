@@ -51,6 +51,7 @@ obsidian-bridge:
     asset-path-prefix-hint: Path prefix to remove from Foundry asset URLs
 
     export-button: Export
+    download-zip-button: Download ZIP
     cancel-button: Cancel
 
     no-directory-selected: Please select a directory for export

@@ -84,7 +84,7 @@ beforeEach(() => {
             this.type = 'application/octet-stream';
         }
     };
-    global.JSZip = mockJSZip;
+    globalThis.JSZip = mockJSZip;
 });
 
 describe('writeVault', () => {

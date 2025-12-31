@@ -14,6 +14,9 @@
     "minimum": "12",
     "verified": "14"
   },
+  "scripts": [
+    "dist/lib/jszip.min.js"
+  ],
   "esmodules": [
     "dist/obsidian-bridge.js"
   ],

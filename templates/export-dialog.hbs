@@ -1,4 +1,5 @@
 <div class="export-dialog-content">
+    {{#if hasFilesystemAccess}}
     <div class="form-group">
         <label for="obsidian-export-path">{{localize "obsidian-bridge.export.export-path-label"}}</label>
         <div class="form-fields">
@@ -10,6 +11,7 @@
         </div>
         <p class="hint">{{localize "obsidian-bridge.export.export-path-hint"}}</p>
     </div>
+    {{/if}}
 
     {{#if journalTree}}
     <div class="form-group file-tree-group">
@@ -48,7 +50,11 @@
 
     <footer class="form-footer flexrow">
         <button type="submit" class="primary">
+            {{#if hasFilesystemAccess}}
             <i class="fas fa-file-export"></i> {{localize "obsidian-bridge.export.export-button"}}
+            {{else}}
+            <i class="fas fa-download"></i> {{localize "obsidian-bridge.export.download-zip-button"}}
+            {{/if}}
         </button>
         <button type="button" data-action="close">
             <i class="fas fa-times"></i> {{localize "obsidian-bridge.export.cancel-button"}}
