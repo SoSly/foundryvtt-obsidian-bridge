@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { updateContent, rollbackUpdates } from './update';
 import MarkdownFile from '../domain/MarkdownFile';
 
@@ -37,7 +37,8 @@ describe('journal/update', () => {
 
             expect(mockFromUuidSync).toHaveBeenCalledWith(mockPage.uuid);
             expect(mockPage.update).toHaveBeenCalledWith({
-                'text.content': '<p>New content</p>'
+                'text.content': '<p>New content</p>',
+                'flags.obsidian-bridge.frontmatter': null
             });
 
             expect(result.updatedPages).toHaveLength(1);
@@ -77,10 +78,12 @@ describe('journal/update', () => {
             const result = await updateContent([markdownFile1, markdownFile2]);
 
             expect(mockPage1.update).toHaveBeenCalledWith({
-                'text.content': '<p>New 1</p>'
+                'text.content': '<p>New 1</p>',
+                'flags.obsidian-bridge.frontmatter': null
             });
             expect(mockPage2.update).toHaveBeenCalledWith({
-                'text.content': '<p>New 2</p>'
+                'text.content': '<p>New 2</p>',
+                'flags.obsidian-bridge.frontmatter': null
             });
 
             expect(result.updatedPages).toHaveLength(2);
@@ -199,6 +202,99 @@ describe('journal/update', () => {
             expect(mockPage.update).toHaveBeenCalled();
             expect(result.updatedPages).toHaveLength(1);
         });
+
+        it('stores frontmatter flag alongside content', async () => {
+            const mockPage = {
+                uuid: 'JournalEntry.entry-1.JournalEntryPage.page-1',
+                text: { content: '<p>Original</p>' },
+                flags: {},
+                update: jest.fn().mockResolvedValue()
+            };
+
+            mockFromUuidSync.mockReturnValue(mockPage);
+
+            const markdownFile = new MarkdownFile({
+                filePath: 'test.md',
+                content: '<p>New content</p>',
+                frontmatter: 'title: Hello'
+            });
+            markdownFile.foundryPageUuid = mockPage.uuid;
+
+            await updateContent([markdownFile]);
+
+            expect(mockPage.update).toHaveBeenCalledWith({
+                'text.content': '<p>New content</p>',
+                'flags.obsidian-bridge.frontmatter': 'title: Hello'
+            });
+        });
+
+        it('clears frontmatter flag when frontmatter is null', async () => {
+            const mockPage = {
+                uuid: 'JournalEntry.entry-1.JournalEntryPage.page-1',
+                text: { content: '<p>Original</p>' },
+                flags: { 'obsidian-bridge': { frontmatter: 'old: value' } },
+                update: jest.fn().mockResolvedValue()
+            };
+
+            mockFromUuidSync.mockReturnValue(mockPage);
+
+            const markdownFile = new MarkdownFile({
+                filePath: 'test.md',
+                content: '<p>New content</p>',
+                frontmatter: null
+            });
+            markdownFile.foundryPageUuid = mockPage.uuid;
+
+            await updateContent([markdownFile]);
+
+            expect(mockPage.update).toHaveBeenCalledWith({
+                'text.content': '<p>New content</p>',
+                'flags.obsidian-bridge.frontmatter': null
+            });
+        });
+
+        it('includes originalFrontmatter in return for rollback', async () => {
+            const mockPage = {
+                uuid: 'JournalEntry.entry-1.JournalEntryPage.page-1',
+                text: { content: '<p>Original</p>' },
+                flags: { 'obsidian-bridge': { frontmatter: 'original: frontmatter' } },
+                update: jest.fn().mockResolvedValue()
+            };
+
+            mockFromUuidSync.mockReturnValue(mockPage);
+
+            const markdownFile = new MarkdownFile({
+                filePath: 'test.md',
+                content: '<p>New content</p>',
+                frontmatter: 'new: frontmatter'
+            });
+            markdownFile.foundryPageUuid = mockPage.uuid;
+
+            const result = await updateContent([markdownFile]);
+
+            expect(result.updatedPages[0].originalFrontmatter).toBe('original: frontmatter');
+        });
+
+        it('handles missing flags when storing originalFrontmatter', async () => {
+            const mockPage = {
+                uuid: 'JournalEntry.entry-1.JournalEntryPage.page-1',
+                text: { content: '<p>Original</p>' },
+                update: jest.fn().mockResolvedValue()
+            };
+
+            mockFromUuidSync.mockReturnValue(mockPage);
+
+            const markdownFile = new MarkdownFile({
+                filePath: 'test.md',
+                content: '<p>New content</p>',
+                frontmatter: 'new: frontmatter'
+            });
+            markdownFile.foundryPageUuid = mockPage.uuid;
+
+            const result = await updateContent([markdownFile]);
+
+            expect(result.updatedPages[0].originalFrontmatter).toBeNull();
+        });
     });
 
     describe('rollbackUpdates', () => {
@@ -222,17 +318,19 @@ describe('journal/update', () => {
             };
 
             const updatedPages = [
-                { page: mockPage1, originalContent: '<p>Original 1</p>' },
-                { page: mockPage2, originalContent: '<p>Original 2</p>' }
+                { page: mockPage1, originalContent: '<p>Original 1</p>', originalFrontmatter: null },
+                { page: mockPage2, originalContent: '<p>Original 2</p>', originalFrontmatter: null }
             ];
 
             await rollbackUpdates(updatedPages);
 
             expect(mockPage2.update).toHaveBeenCalledWith({
-                'text.content': '<p>Original 2</p>'
+                'text.content': '<p>Original 2</p>',
+                'flags.obsidian-bridge.frontmatter': null
             });
             expect(mockPage1.update).toHaveBeenCalledWith({
-                'text.content': '<p>Original 1</p>'
+                'text.content': '<p>Original 1</p>',
+                'flags.obsidian-bridge.frontmatter': null
             });
             expect(updateOrder).toEqual(['page2', 'page1']);
         });
@@ -249,8 +347,8 @@ describe('journal/update', () => {
             };
 
             const updatedPages = [
-                { page: mockPage1, originalContent: '<p>Original 1</p>' },
-                { page: mockPage2, originalContent: '<p>Original 2</p>' }
+                { page: mockPage1, originalContent: '<p>Original 1</p>', originalFrontmatter: null },
+                { page: mockPage2, originalContent: '<p>Original 2</p>', originalFrontmatter: null }
             ];
 
             const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
@@ -283,7 +381,7 @@ describe('journal/update', () => {
             };
 
             const updatedPages = [
-                { page: mockPage, originalContent: '<p>Original</p>' }
+                { page: mockPage, originalContent: '<p>Original</p>', originalFrontmatter: null }
             ];
 
             const originalLength = updatedPages.length;
@@ -292,6 +390,50 @@ describe('journal/update', () => {
 
             expect(updatedPages).toHaveLength(originalLength);
             expect(updatedPages[0].page).toBe(mockPage);
+        });
+
+        it('restores both content and frontmatter flag', async () => {
+            const mockPage = {
+                uuid: 'page-1',
+                update: jest.fn().mockResolvedValue()
+            };
+
+            const updatedPages = [
+                {
+                    page: mockPage,
+                    originalContent: '<p>Original</p>',
+                    originalFrontmatter: 'title: Original'
+                }
+            ];
+
+            await rollbackUpdates(updatedPages);
+
+            expect(mockPage.update).toHaveBeenCalledWith({
+                'text.content': '<p>Original</p>',
+                'flags.obsidian-bridge.frontmatter': 'title: Original'
+            });
+        });
+
+        it('restores null frontmatter correctly', async () => {
+            const mockPage = {
+                uuid: 'page-1',
+                update: jest.fn().mockResolvedValue()
+            };
+
+            const updatedPages = [
+                {
+                    page: mockPage,
+                    originalContent: '<p>Original</p>',
+                    originalFrontmatter: null
+                }
+            ];
+
+            await rollbackUpdates(updatedPages);
+
+            expect(mockPage.update).toHaveBeenCalledWith({
+                'text.content': '<p>Original</p>',
+                'flags.obsidian-bridge.frontmatter': null
+            });
         });
     });
 });

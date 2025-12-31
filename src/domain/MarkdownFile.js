@@ -4,6 +4,7 @@
  *
  * Properties mutated during pipeline execution:
  * - content: Populated by resolvePlaceholders usecase
+ * - frontmatter: Set during extract-frontmatter phase (import) or read from page flags (export)
  * - foundryPageUuid: Set by createJournalDocuments interface function
  */
 export default class MarkdownFile {
@@ -11,6 +12,7 @@ export default class MarkdownFile {
         filePath: '',
         lookupKeys: [],
         content: '',
+        frontmatter: null,
         links: [],
         assets: [],
         foundryPageUuid: null
