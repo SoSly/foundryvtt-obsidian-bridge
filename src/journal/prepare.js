@@ -65,8 +65,20 @@ function createPageFile(journal, page) {
     });
 }
 
+function buildFolderPath(folder) {
+    const parts = [];
+    let current = folder;
+
+    while (current) {
+        parts.unshift(current.name);
+        current = current.folder;
+    }
+
+    return parts.join('/');
+}
+
 function buildFilePath(folder, journalName, pageName = null) {
-    const folderPath = folder?.name || '';
+    const folderPath = buildFolderPath(folder);
     const isCombinedFolder = folderPath && journalName === folderPath.split('/').pop();
 
     if (pageName) {
