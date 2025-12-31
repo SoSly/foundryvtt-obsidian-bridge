@@ -81,6 +81,22 @@ const MARKDOWN_LINK_PATTERN = /(?<!!)\[([^\]]+)\]\(([^)]+)\)/g;
  */
 const OBSIDIAN_EMBED_PATTERN = /!?\[\[([^\]#|]+\.[^\]#|]+)\]\]/g;
 
+/**
+ * Matches standard markdown link syntax with foundry:// protocol.
+ *
+ * Examples:
+ *   [Bob](foundry://Actor.abc123)                           - Actor link
+ *   [Magic Sword](foundry://Item.xyz789)                    - Item link
+ *   [Goblin](foundry://Compendium.dnd5e.monsters.Actor.xyz) - Compendium link
+ *
+ * Capture groups:
+ *   1: link text/label (required)
+ *   2: Foundry UUID (required)
+ *
+ * Does not match: Links with other protocols, Obsidian [[]] syntax
+ */
+const FOUNDRY_LINK_PATTERN = /\[([^\]]+)\]\(foundry:\/\/([^)]+)\)/g;
+
 export function extractLinkReferences(markdownText) {
     if (!markdownText) {
         return [];
@@ -116,6 +132,25 @@ export function extractLinkReferences(markdownText) {
             metadata: {
                 heading,
                 isEmbed
+            }
+        }));
+    }
+
+    let foundryMatch;
+    while ((foundryMatch = FOUNDRY_LINK_PATTERN.exec(markdownText)) !== null) {
+        const label = foundryMatch[1].trim();
+        const uuid = foundryMatch[2].trim();
+        const source = foundryMatch[0];
+
+        links.push(new Reference({
+            source,
+            obsidian: '',
+            foundry: uuid,
+            label,
+            type: 'document',
+            isImage: false,
+            metadata: {
+                isFoundryProtocol: true
             }
         }));
     }
@@ -158,7 +193,8 @@ export function extractAssetReferences(markdownText) {
 
             if (obsidianPath.endsWith('.md')
                 || obsidianPath.startsWith('http://')
-                || obsidianPath.startsWith('https://')) {
+                || obsidianPath.startsWith('https://')
+                || obsidianPath.startsWith('foundry://')) {
                 continue;
             }
 

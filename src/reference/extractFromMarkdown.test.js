@@ -332,4 +332,85 @@ describe('extractAssetReferences', () => {
 
         expect(result).toEqual([]);
     });
+
+    it('should skip foundry:// URLs in asset extraction', () => {
+        const markdown = 'See [Bob](foundry://Actor.abc123) and [Dragon](dragon.png)';
+        const result = extractAssetReferences(markdown);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].obsidian).toBe('dragon.png');
+    });
+});
+
+describe('extractLinkReferences - foundry:// protocol', () => {
+    it('should extract foundry:// link with label', () => {
+        const markdown = 'See [Bob the NPC](foundry://Actor.abc123) for details.';
+        const result = extractLinkReferences(markdown);
+
+        expect(result).toHaveLength(1);
+        expect(result[0]).toBeInstanceOf(Reference);
+        expect(result[0].source).toBe('[Bob the NPC](foundry://Actor.abc123)');
+        expect(result[0].foundry).toBe('Actor.abc123');
+        expect(result[0].label).toBe('Bob the NPC');
+        expect(result[0].type).toBe('document');
+        expect(result[0].isImage).toBe(false);
+        expect(result[0].metadata.isFoundryProtocol).toBe(true);
+    });
+
+    it('should extract multi-word labels from foundry:// links', () => {
+        const markdown = 'Check [The Ancient Red Dragon of Doom](foundry://Actor.xyz789) here.';
+        const result = extractLinkReferences(markdown);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].label).toBe('The Ancient Red Dragon of Doom');
+        expect(result[0].foundry).toBe('Actor.xyz789');
+        expect(result[0].metadata.isFoundryProtocol).toBe(true);
+    });
+
+    it('should extract labels with special characters from foundry:// links', () => {
+        const markdown = 'See [Bob\'s Magic Sword (Legendary)](foundry://Item.abc123) here.';
+        const result = extractLinkReferences(markdown);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].label).toBe('Bob\'s Magic Sword (Legendary)');
+        expect(result[0].foundry).toBe('Item.abc123');
+    });
+
+    it('should extract multiple foundry:// links', () => {
+        const markdown = 'See [Bob](foundry://Actor.abc) and [Sword](foundry://Item.xyz) here.';
+        const result = extractLinkReferences(markdown);
+
+        expect(result).toHaveLength(2);
+        expect(result[0].foundry).toBe('Actor.abc');
+        expect(result[0].label).toBe('Bob');
+        expect(result[0].metadata.isFoundryProtocol).toBe(true);
+        expect(result[1].foundry).toBe('Item.xyz');
+        expect(result[1].label).toBe('Sword');
+        expect(result[1].metadata.isFoundryProtocol).toBe(true);
+    });
+
+    it('should extract both wiki-links and foundry:// links from mixed content', () => {
+        const markdown = 'See [[Quest Log]] and [Bob](foundry://Actor.abc123) for details.';
+        const result = extractLinkReferences(markdown);
+
+        expect(result).toHaveLength(2);
+
+        const wikiLink = result.find(r => r.obsidian === 'Quest Log');
+        expect(wikiLink).toBeDefined();
+        expect(wikiLink.metadata.isFoundryProtocol).toBeUndefined();
+
+        const foundryLink = result.find(r => r.foundry === 'Actor.abc123');
+        expect(foundryLink).toBeDefined();
+        expect(foundryLink.metadata.isFoundryProtocol).toBe(true);
+    });
+
+    it('should extract Compendium UUIDs from foundry:// links', () => {
+        const markdown = 'See [Goblin](foundry://Compendium.dnd5e.monsters.Actor.xyz) here.';
+        const result = extractLinkReferences(markdown);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].foundry).toBe('Compendium.dnd5e.monsters.Actor.xyz');
+        expect(result[0].label).toBe('Goblin');
+        expect(result[0].metadata.isFoundryProtocol).toBe(true);
+    });
 });

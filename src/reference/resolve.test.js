@@ -1303,7 +1303,7 @@ describe('resolveForExport', () => {
     });
 
     describe('non-journal reference resolution', () => {
-        it('should format non-journal reference as Obsidian link with UUID', () => {
+        it('should format non-journal reference as markdown link with foundry:// protocol', () => {
             const markdownFiles = [
                 new MarkdownFile({
                     filePath: 'Document.md',
@@ -1325,7 +1325,7 @@ describe('resolveForExport', () => {
 
             const result = resolveForExport(markdownFiles);
 
-            expect(result[0].content).toBe('Check out [[@UUID[Actor.abc123]|Strahd]].');
+            expect(result[0].content).toBe('Check out [Strahd](foundry://Actor.abc123).');
         });
 
         it('should format non-journal reference without label using UUID as display', () => {
@@ -1350,7 +1350,7 @@ describe('resolveForExport', () => {
 
             const result = resolveForExport(markdownFiles);
 
-            expect(result[0].content).toBe('Item: [[@UUID[Item.xyz789]|Item.xyz789]]');
+            expect(result[0].content).toBe('Item: [Item.xyz789](foundry://Item.xyz789)');
         });
     });
 
@@ -1477,7 +1477,7 @@ describe('resolveForExport', () => {
 
             const result = resolveForExport(markdownFiles);
 
-            expect(result[0].content).toBe('See [[Target]] and [[@UUID[Actor.abc123]|Strahd]] with ![](modules/obsidian-bridge/imported/dragon.png)');
+            expect(result[0].content).toBe('See [[Target]] and [Strahd](foundry://Actor.abc123) with ![](modules/obsidian-bridge/imported/dragon.png)');
         });
     });
 
@@ -1559,5 +1559,254 @@ describe('resolveForExport', () => {
             const result = resolveForExport(markdownFiles);
             expect(result[0].content).toBe('Image: ![](dragon.png)');
         });
+    });
+
+    describe('non-journal reference resolution with foundry:// protocol', () => {
+        it('should output [label](foundry://UUID) for non-journal references', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Document.md',
+                    lookupKeys: ['Document'],
+                    content: 'Check out {{LINK:0}}.',
+                    links: [new Reference({
+                        source: '@UUID[Actor.abc123]{Strahd}',
+                        foundry: 'Actor.abc123',
+                        label: 'Strahd',
+                        type: 'document',
+                        isImage: false,
+                        placeholder: '{{LINK:0}}',
+                        metadata: { isJournalReference: false }
+                    })],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+                })
+            ];
+
+            const result = resolveForExport(markdownFiles);
+
+            expect(result[0].content).toBe('Check out [Strahd](foundry://Actor.abc123).');
+        });
+
+        it('should still output [[path]] for journal references', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Document.md',
+                    lookupKeys: ['Document'],
+                    content: 'See {{LINK:0}} for details.',
+                    links: [new Reference({
+                        source: '@UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Quest Log}',
+                        foundry: 'JournalEntry.def456.JournalEntryPage.uvw012',
+                        label: null,
+                        type: 'document',
+                        isImage: false,
+                        placeholder: '{{LINK:0}}',
+                        metadata: { isJournalReference: true }
+                    })],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+                }),
+                new MarkdownFile({
+                    filePath: 'Quest Log.md',
+                    lookupKeys: ['Quest Log'],
+                    content: 'Quest content',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
+                })
+            ];
+
+            const result = resolveForExport(markdownFiles);
+
+            expect(result[0].content).toBe('See [[Quest Log]] for details.');
+        });
+
+        it('should preserve multi-word labels in foundry:// output', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Document.md',
+                    lookupKeys: ['Document'],
+                    content: 'See {{LINK:0}} here.',
+                    links: [new Reference({
+                        source: '@UUID[Actor.xyz]{The Ancient Red Dragon of Doom}',
+                        foundry: 'Actor.xyz',
+                        label: 'The Ancient Red Dragon of Doom',
+                        type: 'document',
+                        isImage: false,
+                        placeholder: '{{LINK:0}}',
+                        metadata: { isJournalReference: false }
+                    })],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+                })
+            ];
+
+            const result = resolveForExport(markdownFiles);
+
+            expect(result[0].content).toBe('See [The Ancient Red Dragon of Doom](foundry://Actor.xyz) here.');
+        });
+
+        it('should handle mixed journal and non-journal references', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Document.md',
+                    lookupKeys: ['Document'],
+                    content: 'See {{LINK:0}} and {{LINK:1}} for details.',
+                    links: [
+                        new Reference({
+                            source: '@UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Quest Log}',
+                            foundry: 'JournalEntry.def456.JournalEntryPage.uvw012',
+                            label: null,
+                            type: 'document',
+                            isImage: false,
+                            placeholder: '{{LINK:0}}',
+                            metadata: { isJournalReference: true }
+                        }),
+                        new Reference({
+                            source: '@UUID[Actor.abc123]{Strahd}',
+                            foundry: 'Actor.abc123',
+                            label: 'Strahd',
+                            type: 'document',
+                            isImage: false,
+                            placeholder: '{{LINK:1}}',
+                            metadata: { isJournalReference: false }
+                        })
+                    ],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+                }),
+                new MarkdownFile({
+                    filePath: 'Quest Log.md',
+                    lookupKeys: ['Quest Log'],
+                    content: 'Quest content',
+                    links: [],
+                    assets: [],
+                    foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
+                })
+            ];
+
+            const result = resolveForExport(markdownFiles);
+
+            expect(result[0].content).toBe('See [[Quest Log]] and [Strahd](foundry://Actor.abc123) for details.');
+        });
+    });
+});
+
+describe('resolvePlaceholders - foundry:// protocol', () => {
+    let consoleWarnSpy;
+
+    beforeEach(() => {
+        consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    });
+
+    afterEach(() => {
+        consoleWarnSpy.mockRestore();
+    });
+
+    it('should output @UUID[UUID]{label} for foundry:// references', () => {
+        const markdownFiles = [
+            new MarkdownFile({
+                filePath: 'Document.md',
+                lookupKeys: ['Document'],
+                content: '<p>See {{LINK:0}} for details.</p>',
+                links: [new Reference({
+                    source: '[Bob](foundry://Actor.abc123)',
+                    foundry: 'Actor.abc123',
+                    obsidian: '',
+                    label: 'Bob',
+                    type: 'document',
+                    isImage: false,
+                    placeholder: '{{LINK:0}}',
+                    metadata: { isFoundryProtocol: true }
+                })],
+                assets: [],
+                foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+            })
+        ];
+
+        const result = resolvePlaceholders(markdownFiles, []);
+
+        expect(result[0].content).toBe('<p>See @UUID[Actor.abc123]{Bob} for details.</p>');
+    });
+
+    it('should still resolve wiki-links via link map', () => {
+        const markdownFiles = [
+            new MarkdownFile({
+                filePath: 'Source.md',
+                lookupKeys: ['Source'],
+                content: '<p>See {{LINK:0}} for details.</p>',
+                links: [new Reference({
+                    source: '[[Target]]',
+                    obsidian: 'Target',
+                    label: null,
+                    type: 'document',
+                    isImage: false,
+                    placeholder: '{{LINK:0}}',
+                    metadata: { heading: null, isEmbed: false }
+                })],
+                assets: [],
+                foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+            }),
+            new MarkdownFile({
+                filePath: 'Target.md',
+                lookupKeys: ['Target'],
+                content: '<p>Target content</p>',
+                links: [],
+                assets: [],
+                foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
+            })
+        ];
+
+        const result = resolvePlaceholders(markdownFiles, []);
+
+        expect(result[0].content).toBe(
+            '<p>See @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Target} for details.</p>'
+        );
+    });
+
+    it('should handle mixed foundry:// and wiki-link references', () => {
+        const markdownFiles = [
+            new MarkdownFile({
+                filePath: 'Source.md',
+                lookupKeys: ['Source'],
+                content: '<p>See {{LINK:0}} and {{LINK:1}} for details.</p>',
+                links: [
+                    new Reference({
+                        source: '[[Target]]',
+                        obsidian: 'Target',
+                        label: null,
+                        type: 'document',
+                        isImage: false,
+                        placeholder: '{{LINK:0}}',
+                        metadata: { heading: null, isEmbed: false }
+                    }),
+                    new Reference({
+                        source: '[Strahd](foundry://Actor.abc123)',
+                        foundry: 'Actor.abc123',
+                        obsidian: '',
+                        label: 'Strahd',
+                        type: 'document',
+                        isImage: false,
+                        placeholder: '{{LINK:1}}',
+                        metadata: { isFoundryProtocol: true }
+                    })
+                ],
+                assets: [],
+                foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+            }),
+            new MarkdownFile({
+                filePath: 'Target.md',
+                lookupKeys: ['Target'],
+                content: '<p>Target content</p>',
+                links: [],
+                assets: [],
+                foundryPageUuid: 'JournalEntry.def456.JournalEntryPage.uvw012'
+            })
+        ];
+
+        const result = resolvePlaceholders(markdownFiles, []);
+
+        expect(result[0].content).toBe(
+            '<p>See @UUID[JournalEntry.def456.JournalEntryPage.uvw012]{Target} and @UUID[Actor.abc123]{Strahd} for details.</p>'
+        );
     });
 });

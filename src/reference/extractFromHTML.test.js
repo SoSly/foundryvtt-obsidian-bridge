@@ -1,11 +1,20 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect, jest } from '@jest/globals';
 import { extractLinkReferences, extractAssetReferences } from './extractFromHTML.js';
 import Reference from '../domain/Reference.js';
 
+// Mock fromUuid for tests that don't need it
+beforeEach(() => {
+    global.fromUuid = jest.fn().mockResolvedValue({ name: 'Mocked Name' });
+});
+
+afterEach(() => {
+    delete global.fromUuid;
+});
+
 describe('extractLinkReferences', () => {
-    it('should extract a basic UUID link', () => {
+    it('should extract a basic UUID link', async () => {
         const html = '<p>Check out @UUID[Actor.abc123]{Bob the NPC} for details.</p>';
-        const result = extractLinkReferences(html);
+        const result = await extractLinkReferences(html);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toBeInstanceOf(Reference);
@@ -18,9 +27,9 @@ describe('extractLinkReferences', () => {
         expect(result[0].metadata.isJournalReference).toBe(false);
     });
 
-    it('should extract a journal entry UUID link', () => {
+    it('should extract a journal entry UUID link', async () => {
         const html = '<p>See @UUID[JournalEntry.xyz789]{Quest Log} here.</p>';
-        const result = extractLinkReferences(html);
+        const result = await extractLinkReferences(html);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toBeInstanceOf(Reference);
@@ -30,9 +39,9 @@ describe('extractLinkReferences', () => {
         expect(result[0].metadata.isJournalReference).toBe(true);
     });
 
-    it('should extract a journal entry page UUID link', () => {
+    it('should extract a journal entry page UUID link', async () => {
         const html = '<p>Read @UUID[JournalEntry.abc123.JournalEntryPage.def456]{Page Title}.</p>';
-        const result = extractLinkReferences(html);
+        const result = await extractLinkReferences(html);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toBeInstanceOf(Reference);
@@ -42,9 +51,9 @@ describe('extractLinkReferences', () => {
         expect(result[0].metadata.isJournalReference).toBe(true);
     });
 
-    it('should extract multiple UUID links', () => {
+    it('should extract multiple UUID links', async () => {
         const html = '<p>See @UUID[Actor.abc]{Bob} and @UUID[Item.xyz]{Sword}.</p>';
-        const result = extractLinkReferences(html);
+        const result = await extractLinkReferences(html);
 
         expect(result).toHaveLength(2);
         expect(result[0].foundry).toBe('Actor.abc');
@@ -55,14 +64,14 @@ describe('extractLinkReferences', () => {
         expect(result[1].metadata.isJournalReference).toBe(false);
     });
 
-    it('should differentiate journal from non-journal UUIDs', () => {
+    it('should differentiate journal from non-journal UUIDs', async () => {
         const html = `
             <p>@UUID[Actor.abc]{NPC}</p>
             <p>@UUID[JournalEntry.def]{Journal}</p>
             <p>@UUID[Item.ghi]{Item}</p>
             <p>@UUID[Scene.jkl.JournalEntry.mno]{Embedded}</p>
         `;
-        const result = extractLinkReferences(html);
+        const result = await extractLinkReferences(html);
 
         expect(result).toHaveLength(4);
         expect(result[0].metadata.isJournalReference).toBe(false);
@@ -71,35 +80,111 @@ describe('extractLinkReferences', () => {
         expect(result[3].metadata.isJournalReference).toBe(true);
     });
 
-    it('should handle empty HTML', () => {
-        expect(extractLinkReferences('')).toEqual([]);
-        expect(extractLinkReferences(null)).toEqual([]);
-        expect(extractLinkReferences(undefined)).toEqual([]);
+    it('should handle empty HTML', async () => {
+        expect(await extractLinkReferences('')).toEqual([]);
+        expect(await extractLinkReferences(null)).toEqual([]);
+        expect(await extractLinkReferences(undefined)).toEqual([]);
     });
 
-    it('should handle HTML with no UUID links', () => {
+    it('should handle HTML with no UUID links', async () => {
         const html = '<p>Just some plain text with no links.</p>';
-        const result = extractLinkReferences(html);
+        const result = await extractLinkReferences(html);
 
         expect(result).toEqual([]);
     });
 
-    it('should trim whitespace from UUID and label', () => {
+    it('should trim whitespace from UUID and label', async () => {
         const html = '<p>@UUID[ Actor.abc123 ]{ Bob the NPC }</p>';
-        const result = extractLinkReferences(html);
+        const result = await extractLinkReferences(html);
 
         expect(result).toHaveLength(1);
         expect(result[0].foundry).toBe('Actor.abc123');
         expect(result[0].label).toBe('Bob the NPC');
     });
 
-    it('should handle UUIDs with special characters', () => {
+    it('should handle UUIDs with special characters', async () => {
         const html = '<p>@UUID[Compendium.dnd5e.monsters.Actor.abc-123_xyz]{Monster}</p>';
-        const result = extractLinkReferences(html);
+        const result = await extractLinkReferences(html);
 
         expect(result).toHaveLength(1);
         expect(result[0].foundry).toBe('Compendium.dnd5e.monsters.Actor.abc-123_xyz');
         expect(result[0].label).toBe('Monster');
+    });
+
+    it('should extract UUID without label using document lookup', async () => {
+        const html = '<p>See @UUID[Actor.abc123] for details.</p>';
+        const mockFromUuid = jest.fn().mockResolvedValue({ name: 'Bob the NPC' });
+        global.fromUuid = mockFromUuid;
+
+        const result = await extractLinkReferences(html);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].foundry).toBe('Actor.abc123');
+        expect(result[0].label).toBe('Bob the NPC');
+        expect(mockFromUuid).toHaveBeenCalledWith('Actor.abc123');
+
+        delete global.fromUuid;
+    });
+
+    it('should fall back to UUID as label when document lookup fails', async () => {
+        const html = '<p>See @UUID[Actor.deleted123] for details.</p>';
+        const mockFromUuid = jest.fn().mockRejectedValue(new Error('Not found'));
+        global.fromUuid = mockFromUuid;
+
+        const result = await extractLinkReferences(html);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].foundry).toBe('Actor.deleted123');
+        expect(result[0].label).toBe('Actor.deleted123');
+
+        delete global.fromUuid;
+    });
+
+    it('should fall back to UUID as label when document has no name', async () => {
+        const html = '<p>See @UUID[Actor.noname123] for details.</p>';
+        const mockFromUuid = jest.fn().mockResolvedValue({ name: null });
+        global.fromUuid = mockFromUuid;
+
+        const result = await extractLinkReferences(html);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].foundry).toBe('Actor.noname123');
+        expect(result[0].label).toBe('Actor.noname123');
+
+        delete global.fromUuid;
+    });
+
+    it('should treat empty braces as no label and trigger lookup', async () => {
+        const html = '<p>See @UUID[Actor.abc123]{} for details.</p>';
+        const mockFromUuid = jest.fn().mockResolvedValue({ name: 'Bob' });
+        global.fromUuid = mockFromUuid;
+
+        const result = await extractLinkReferences(html);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].foundry).toBe('Actor.abc123');
+        expect(result[0].label).toBe('Bob');
+        expect(mockFromUuid).toHaveBeenCalledWith('Actor.abc123');
+
+        delete global.fromUuid;
+    });
+
+    it('should extract multiple UUIDs with mixed labeled and unlabeled', async () => {
+        const html = '<p>@UUID[Actor.abc]{Bob} and @UUID[Item.xyz] here.</p>';
+        const mockFromUuid = jest.fn().mockResolvedValue({ name: 'Magic Sword' });
+        global.fromUuid = mockFromUuid;
+
+        const result = await extractLinkReferences(html);
+
+        expect(result).toHaveLength(2);
+        expect(result[0].foundry).toBe('Actor.abc');
+        expect(result[0].label).toBe('Bob');
+        expect(result[1].foundry).toBe('Item.xyz');
+        expect(result[1].label).toBe('Magic Sword');
+        expect(mockFromUuid).toHaveBeenCalledTimes(1);
+        expect(mockFromUuid).toHaveBeenCalledWith('Item.xyz');
+
+        delete global.fromUuid;
     });
 });
 
