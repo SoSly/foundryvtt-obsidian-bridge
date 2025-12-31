@@ -12,3 +12,18 @@ export default function convertHtmlToMarkdown(htmlContent, showdownConverter) {
 
     return showdownConverter.makeMarkdown(htmlContent);
 }
+
+/**
+ * Removes empty HTML comments from markdown content.
+ * Showdown inserts these after lists to prevent merging during round-trips.
+ *
+ * @param {string} markdown - Markdown content potentially containing empty comments
+ * @returns {string} Markdown with empty HTML comments removed
+ */
+export function stripEmptyHtmlComments(markdown) {
+    if (!markdown) {
+        return '';
+    }
+
+    return markdown.replace(/<!--\s*-->\n?/g, '');
+}
