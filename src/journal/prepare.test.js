@@ -2,6 +2,10 @@ import { describe, it, expect } from '@jest/globals';
 import prepareJournalsForExport from './prepare.js';
 import MarkdownFile from '../domain/MarkdownFile.js';
 
+function createMockFolder(name, parentFolder = null) {
+    return { name, folder: parentFolder };
+}
+
 describe('prepareJournalsForExport', () => {
     describe('with merge=false (separate page files)', () => {
         it('should create separate MarkdownFile for each page', () => {
@@ -482,6 +486,161 @@ describe('prepareJournalsForExport', () => {
             expect(result).toHaveLength(2);
             expect(result[0].filePath).toBe('Journal 1.md');
             expect(result[1].filePath).toBe('Journal 2.md');
+        });
+    });
+
+    describe('with nested folder hierarchies', () => {
+        it('should preserve full folder path for deeply nested single-page journal', () => {
+            const folderA = createMockFolder('Story Planning');
+            const folderB = createMockFolder('Main Stories', folderA);
+            const folderC = createMockFolder('The Sanctuary', folderB);
+
+            const journals = [
+                {
+                    name: 'Abstract',
+                    uuid: 'JournalEntry.abc',
+                    folder: folderC,
+                    pages: {
+                        contents: [
+                            {
+                                name: 'Overview',
+                                uuid: 'JournalEntry.abc.JournalEntryPage.p1',
+                                text: { content: '<p>Abstract overview</p>' }
+                            }
+                        ]
+                    }
+                }
+            ];
+
+            const result = prepareJournalsForExport(journals, { merge: false });
+
+            expect(result).toHaveLength(1);
+            expect(result[0].filePath).toBe('Story Planning/Main Stories/The Sanctuary/Abstract.md');
+        });
+
+        it('should preserve full folder path for deeply nested multi-page journal', () => {
+            const folderA = createMockFolder('World');
+            const folderB = createMockFolder('Continent', folderA);
+            const folderC = createMockFolder('Region', folderB);
+            const folderD = createMockFolder('City', folderC);
+
+            const journals = [
+                {
+                    name: 'Tavern',
+                    uuid: 'JournalEntry.tavern',
+                    folder: folderD,
+                    pages: {
+                        contents: [
+                            {
+                                name: 'Description',
+                                uuid: 'JournalEntry.tavern.JournalEntryPage.p1',
+                                text: { content: '<p>A cozy tavern</p>' }
+                            },
+                            {
+                                name: 'NPCs',
+                                uuid: 'JournalEntry.tavern.JournalEntryPage.p2',
+                                text: { content: '<p>The barkeep</p>' }
+                            }
+                        ]
+                    }
+                }
+            ];
+
+            const result = prepareJournalsForExport(journals, { merge: false });
+
+            expect(result).toHaveLength(2);
+            expect(result[0].filePath).toBe('World/Continent/Region/City/Tavern/Description.md');
+            expect(result[1].filePath).toBe('World/Continent/Region/City/Tavern/NPCs.md');
+        });
+
+        it('should handle combined folder at depth (journal name matches leaf folder)', () => {
+            const folderA = createMockFolder('Campaign');
+            const folderB = createMockFolder('Lore', folderA);
+
+            const journals = [
+                {
+                    name: 'Lore',
+                    uuid: 'JournalEntry.lore',
+                    folder: folderB,
+                    pages: {
+                        contents: [
+                            {
+                                name: 'History',
+                                uuid: 'JournalEntry.lore.JournalEntryPage.p1',
+                                text: { content: '<p>Ancient history</p>' }
+                            },
+                            {
+                                name: 'Culture',
+                                uuid: 'JournalEntry.lore.JournalEntryPage.p2',
+                                text: { content: '<p>Cultural notes</p>' }
+                            }
+                        ]
+                    }
+                }
+            ];
+
+            const result = prepareJournalsForExport(journals, { merge: false });
+
+            expect(result).toHaveLength(2);
+            expect(result[0].filePath).toBe('Campaign/Lore/History.md');
+            expect(result[1].filePath).toBe('Campaign/Lore/Culture.md');
+        });
+
+        it('should generate lookup keys with full folder path', () => {
+            const folderA = createMockFolder('Campaign');
+            const folderB = createMockFolder('NPCs', folderA);
+
+            const journals = [
+                {
+                    name: 'Merchant',
+                    uuid: 'JournalEntry.merchant',
+                    folder: folderB,
+                    pages: {
+                        contents: [
+                            {
+                                name: 'Bio',
+                                uuid: 'JournalEntry.merchant.JournalEntryPage.p1',
+                                text: { content: '<p>A friendly merchant</p>' }
+                            }
+                        ]
+                    }
+                }
+            ];
+
+            const result = prepareJournalsForExport(journals, { merge: false });
+
+            expect(result[0].lookupKeys).toEqual([
+                'Merchant',
+                'NPCs/Merchant',
+                'Campaign/NPCs/Merchant'
+            ]);
+        });
+
+        it('should preserve full folder path with merge=true', () => {
+            const folderA = createMockFolder('Story Planning');
+            const folderB = createMockFolder('Main Stories', folderA);
+
+            const journals = [
+                {
+                    name: 'Quest Log',
+                    uuid: 'JournalEntry.quest',
+                    folder: folderB,
+                    pages: {
+                        contents: [
+                            {
+                                name: 'Chapter 1',
+                                uuid: 'JournalEntry.quest.JournalEntryPage.p1',
+                                text: { content: '<p>Begin the quest</p>' }
+                            }
+                        ]
+                    }
+                }
+            ];
+
+            const result = prepareJournalsForExport(journals, { merge: true });
+
+            expect(result).toHaveLength(1);
+            expect(result[0].filePath).toBe('Story Planning/Main Stories/Quest Log.md');
         });
     });
 
