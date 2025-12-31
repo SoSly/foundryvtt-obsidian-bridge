@@ -220,21 +220,23 @@ function parseInlineArray(value) {
     let inQuote = false;
     let quoteChar = '';
 
-    for (let i = 0; i < inner.length; i++) {
-        const char = inner[i];
-
+    for (const char of inner) {
         if ((char === '"' || char === "'") && !inQuote) {
             inQuote = true;
             quoteChar = char;
-        } else if (char === quoteChar && inQuote) {
+            continue;
+        }
+        if (char === quoteChar && inQuote) {
             inQuote = false;
             quoteChar = '';
-        } else if (char === ',' && !inQuote) {
+            continue;
+        }
+        if (char === ',' && !inQuote) {
             items.push(parseScalarValue(current.trim()));
             current = '';
-        } else {
-            current += char;
+            continue;
         }
+        current += char;
     }
 
     if (current.trim()) {
