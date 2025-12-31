@@ -10,6 +10,7 @@ import resolvePlaceholders from '../reference/resolve.js';
 import { createJournals, rollbackJournals } from '../journal/create';
 import { uploadAssets, rollbackUploads } from '../asset/upload';
 import { updateContent, rollbackUpdates } from '../journal/update';
+import { extractFrontmatter } from '../content/frontmatter.js';
 
 /**
  * Creates a configured pipeline for importing an Obsidian vault into Foundry.
@@ -17,14 +18,15 @@ import { updateContent, rollbackUpdates } from '../journal/update';
  * Pipeline phases:
  * 1. Filter files - Select files based on tree selection
  * 2. Prepare documents - Read file content and create MarkdownFile objects
- * 3. Extract references - Extract links and assets from markdown
- * 4. Replace references - Replace references with placeholders
- * 5. Convert markdown - Convert markdown text to HTML
- * 6. Plan structure - Determine folder and journal entry structure
- * 7. Create documents - Create Foundry folders, journal entries, and pages
- * 8. Upload assets - Upload non-markdown files to data path (conditional)
- * 9. Resolve placeholders - Replace placeholders with actual UUIDs and paths
- * 10. Update content - Write final HTML content to journal pages
+ * 3. Extract frontmatter - Extract YAML frontmatter before markdown processing
+ * 4. Extract references - Extract links and assets from markdown
+ * 5. Replace references - Replace references with placeholders
+ * 6. Convert markdown - Convert markdown text to HTML
+ * 7. Plan structure - Determine folder and journal entry structure
+ * 8. Create documents - Create Foundry folders, journal entries, and pages
+ * 9. Upload assets - Upload non-markdown files to data path (conditional)
+ * 10. Resolve placeholders - Replace placeholders with actual UUIDs and paths
+ * 11. Update content - Write final HTML content to journal pages
  *
  * @param {import('../domain/ImportOptions').default} importOptions - Import configuration
  * @param {import('showdown').Converter} showdownConverter - Markdown to HTML converter
@@ -67,6 +69,22 @@ export default function createImportPipeline(importOptions, showdownConverter) {
                 const markdownFiles = await prepareFilesForImport(ctx.filesToParse);
                 ctx.markdownFiles = markdownFiles;
                 return { markdownFiles: markdownFiles.length };
+            }
+        }),
+
+        new PhaseDefinition({
+            name: 'extract-frontmatter',
+            execute: async ctx => {
+                let count = 0;
+                for (const markdownFile of ctx.markdownFiles) {
+                    const result = extractFrontmatter(markdownFile.content);
+                    markdownFile.frontmatter = result.frontmatter;
+                    markdownFile.content = result.content;
+                    if (result.frontmatter !== null) {
+                        count++;
+                    }
+                }
+                return { frontmatterExtracted: count };
             }
         }),
 

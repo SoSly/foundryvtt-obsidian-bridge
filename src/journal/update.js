@@ -24,14 +24,17 @@ export async function updateContent(markdownFiles) {
         }
 
         const originalContent = page.text?.content || '';
+        const originalFrontmatter = page.flags?.['obsidian-bridge']?.frontmatter ?? null;
 
         await page.update({
-            'text.content': markdownFile.content
+            'text.content': markdownFile.content,
+            'flags.obsidian-bridge.frontmatter': markdownFile.frontmatter
         });
 
         updatedPages.push({
             page,
-            originalContent
+            originalContent,
+            originalFrontmatter
         });
     }
 
@@ -45,10 +48,11 @@ export async function rollbackUpdates(updatedPages) {
 
     const reversedPages = [...updatedPages].reverse();
 
-    for (const { page, originalContent } of reversedPages) {
+    for (const { page, originalContent, originalFrontmatter } of reversedPages) {
         try {
             await page.update({
-                'text.content': originalContent
+                'text.content': originalContent,
+                'flags.obsidian-bridge.frontmatter': originalFrontmatter
             });
         } catch (error) {
             console.error(`Failed to rollback page ${page.uuid}:`, error);

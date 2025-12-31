@@ -7,6 +7,7 @@ import convertHtmlToMarkdown from '../content/htmlToMarkdown.js';
 import { resolveForExport } from '../reference/resolve.js';
 import identifyAssets from '../asset/identify.js';
 import writeVault from '../vault/write.js';
+import { prependFrontmatter } from '../content/frontmatter.js';
 
 /**
  * Creates a configured pipeline for exporting Foundry journals to Obsidian format.
@@ -18,8 +19,9 @@ import writeVault from '../vault/write.js';
  * 4. replace-references - Replace references with placeholders
  * 5. convert-to-markdown - Convert HTML to markdown
  * 6. resolve-references - Replace placeholders with Obsidian syntax
- * 7. identify-assets - Identify asset paths to export (conditional on exportAssets)
- * 8. write-vault - Write files to filesystem or ZIP
+ * 7. prepend-frontmatter - Prepend stored frontmatter to markdown content
+ * 8. identify-assets - Identify asset paths to export (conditional on exportAssets)
+ * 9. write-vault - Write files to filesystem or ZIP
  *
  * @param {import('../domain/ExportOptions.js').default} exportOptions - Export configuration
  * @param {import('showdown').Converter} showdownConverter - Showdown converter instance
@@ -126,6 +128,20 @@ export default function createExportPipeline(exportOptions, showdownConverter) {
             execute: async ctx => {
                 resolveForExport(ctx.markdownFiles);
                 return { filesResolved: ctx.markdownFiles.length };
+            }
+        }),
+
+        new PhaseDefinition({
+            name: 'prepend-frontmatter',
+            execute: async ctx => {
+                let count = 0;
+                for (const markdownFile of ctx.markdownFiles) {
+                    if (markdownFile.frontmatter !== null) {
+                        prependFrontmatter(markdownFile);
+                        count++;
+                    }
+                }
+                return { frontmatterPrepended: count };
             }
         }),
 

@@ -1,4 +1,4 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect, jest } from '@jest/globals';
 import prepareJournalsForExport from './prepare.js';
 import MarkdownFile from '../domain/MarkdownFile.js';
 
@@ -711,6 +711,211 @@ describe('prepareJournalsForExport', () => {
             const result = prepareJournalsForExport(journals, { merge: false });
 
             expect(result).toEqual([]);
+        });
+    });
+
+    describe('frontmatter handling', () => {
+        describe('createPageFile (single page export)', () => {
+            it('should read frontmatter from page flags', () => {
+                const journals = [
+                    {
+                        name: 'Journal',
+                        uuid: 'JournalEntry.abc',
+                        folder: null,
+                        pages: {
+                            contents: [
+                                {
+                                    name: 'Page',
+                                    uuid: 'JournalEntry.abc.JournalEntryPage.page1',
+                                    text: { content: '<p>Content</p>' },
+                                    flags: { 'obsidian-bridge': { frontmatter: 'title: Hello' } }
+                                }
+                            ]
+                        }
+                    }
+                ];
+
+                const result = prepareJournalsForExport(journals, { merge: false });
+
+                expect(result[0].frontmatter).toBe('title: Hello');
+            });
+
+            it('should handle missing flags (null frontmatter)', () => {
+                const journals = [
+                    {
+                        name: 'Journal',
+                        uuid: 'JournalEntry.abc',
+                        folder: null,
+                        pages: {
+                            contents: [
+                                {
+                                    name: 'Page',
+                                    uuid: 'JournalEntry.abc.JournalEntryPage.page1',
+                                    text: { content: '<p>Content</p>' }
+                                }
+                            ]
+                        }
+                    }
+                ];
+
+                const result = prepareJournalsForExport(journals, { merge: false });
+
+                expect(result[0].frontmatter).toBeNull();
+            });
+
+            it('should handle missing obsidian-bridge flag namespace', () => {
+                const journals = [
+                    {
+                        name: 'Journal',
+                        uuid: 'JournalEntry.abc',
+                        folder: null,
+                        pages: {
+                            contents: [
+                                {
+                                    name: 'Page',
+                                    uuid: 'JournalEntry.abc.JournalEntryPage.page1',
+                                    text: { content: '<p>Content</p>' },
+                                    flags: { 'other-module': { data: 'value' } }
+                                }
+                            ]
+                        }
+                    }
+                ];
+
+                const result = prepareJournalsForExport(journals, { merge: false });
+
+                expect(result[0].frontmatter).toBeNull();
+            });
+        });
+
+        describe('createMergedFile (merged page export)', () => {
+            it('should use frontmatter from single page when only one has it', () => {
+                const journals = [
+                    {
+                        name: 'Journal',
+                        uuid: 'JournalEntry.abc',
+                        folder: null,
+                        pages: {
+                            contents: [
+                                {
+                                    name: 'Page 1',
+                                    uuid: 'JournalEntry.abc.JournalEntryPage.page1',
+                                    text: { content: '<p>Content 1</p>' }
+                                },
+                                {
+                                    name: 'Page 2',
+                                    uuid: 'JournalEntry.abc.JournalEntryPage.page2',
+                                    text: { content: '<p>Content 2</p>' },
+                                    flags: { 'obsidian-bridge': { frontmatter: 'title: Hello' } }
+                                }
+                            ]
+                        }
+                    }
+                ];
+
+                const result = prepareJournalsForExport(journals, { merge: true });
+
+                expect(result[0].frontmatter).toBe('title: Hello');
+            });
+
+            it('should merge frontmatter from multiple pages with no conflicts', () => {
+                const journals = [
+                    {
+                        name: 'Journal',
+                        uuid: 'JournalEntry.abc',
+                        folder: null,
+                        pages: {
+                            contents: [
+                                {
+                                    name: 'Page 1',
+                                    uuid: 'JournalEntry.abc.JournalEntryPage.page1',
+                                    text: { content: '<p>Content 1</p>' },
+                                    flags: { 'obsidian-bridge': { frontmatter: 'title: Hello' } }
+                                },
+                                {
+                                    name: 'Page 2',
+                                    uuid: 'JournalEntry.abc.JournalEntryPage.page2',
+                                    text: { content: '<p>Content 2</p>' },
+                                    flags: { 'obsidian-bridge': { frontmatter: 'author: Jane' } }
+                                }
+                            ]
+                        }
+                    }
+                ];
+
+                const result = prepareJournalsForExport(journals, { merge: true });
+
+                expect(result[0].frontmatter).toContain('title: Hello');
+                expect(result[0].frontmatter).toContain('author: Jane');
+            });
+
+            it('should use first value on conflict and log warning', () => {
+                const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+                const mockUiNotifications = { warn: jest.fn() };
+                global.ui = { notifications: mockUiNotifications };
+
+                const journals = [
+                    {
+                        name: 'Journal',
+                        uuid: 'JournalEntry.abc',
+                        folder: null,
+                        pages: {
+                            contents: [
+                                {
+                                    name: 'Page 1',
+                                    uuid: 'JournalEntry.abc.JournalEntryPage.page1',
+                                    text: { content: '<p>Content 1</p>' },
+                                    flags: { 'obsidian-bridge': { frontmatter: 'title: First' } }
+                                },
+                                {
+                                    name: 'Page 2',
+                                    uuid: 'JournalEntry.abc.JournalEntryPage.page2',
+                                    text: { content: '<p>Content 2</p>' },
+                                    flags: { 'obsidian-bridge': { frontmatter: 'title: Second' } }
+                                }
+                            ]
+                        }
+                    }
+                ];
+
+                const result = prepareJournalsForExport(journals, { merge: true });
+
+                expect(result[0].frontmatter).toContain('title: First');
+                expect(result[0].frontmatter).not.toContain('title: Second');
+                expect(consoleWarnSpy).toHaveBeenCalled();
+                expect(mockUiNotifications.warn).toHaveBeenCalled();
+
+                consoleWarnSpy.mockRestore();
+                delete global.ui;
+            });
+
+            it('should return null frontmatter when no pages have frontmatter', () => {
+                const journals = [
+                    {
+                        name: 'Journal',
+                        uuid: 'JournalEntry.abc',
+                        folder: null,
+                        pages: {
+                            contents: [
+                                {
+                                    name: 'Page 1',
+                                    uuid: 'JournalEntry.abc.JournalEntryPage.page1',
+                                    text: { content: '<p>Content 1</p>' }
+                                },
+                                {
+                                    name: 'Page 2',
+                                    uuid: 'JournalEntry.abc.JournalEntryPage.page2',
+                                    text: { content: '<p>Content 2</p>' }
+                                }
+                            ]
+                        }
+                    }
+                ];
+
+                const result = prepareJournalsForExport(journals, { merge: true });
+
+                expect(result[0].frontmatter).toBeNull();
+            });
         });
     });
 });

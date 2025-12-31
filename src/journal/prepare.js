@@ -1,5 +1,6 @@
 import MarkdownFile from '../domain/MarkdownFile.js';
 import generateLookupKeys from '../reference/keys.js';
+import { mergeFrontmatter } from '../content/frontmatter.js';
 
 /**
  * Transforms Foundry JournalEntry documents into MarkdownFile objects.
@@ -40,10 +41,21 @@ function createMergedFile(journal, pages) {
     const filePath = buildFilePath(journal.folder, journal.name);
     const lookupKeys = generateLookupKeys(filePath);
 
+    const frontmatterStrings = pages.map(
+        page => page.flags?.['obsidian-bridge']?.frontmatter ?? null
+    );
+    const { merged, warnings } = mergeFrontmatter(frontmatterStrings);
+
+    for (const warning of warnings) {
+        console.warn(`Frontmatter merge warning for ${journal.name}: ${warning}`);
+        ui.notifications.warn(`${journal.name}: ${warning}`);
+    }
+
     return new MarkdownFile({
         filePath,
         lookupKeys,
         content: combinedContent,
+        frontmatter: merged,
         links: [],
         assets: [],
         foundryPageUuid: journal.uuid
@@ -54,11 +66,13 @@ function createPageFile(journal, page) {
     const htmlContent = page.text?.content || '';
     const filePath = buildFilePath(journal.folder, journal.name, page.name);
     const lookupKeys = generateLookupKeys(filePath);
+    const frontmatter = page.flags?.['obsidian-bridge']?.frontmatter ?? null;
 
     return new MarkdownFile({
         filePath,
         lookupKeys,
         content: htmlContent,
+        frontmatter,
         links: [],
         assets: [],
         foundryPageUuid: page.uuid
