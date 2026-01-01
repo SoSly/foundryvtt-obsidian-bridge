@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/SoSly/foundryvtt-obsidian-bridge)
 
 ### Added
+- Obsidian callout blocks now convert to styled callouts in Foundry and back
 - ZIP download fallback for browsers without File System Access API (Firefox, Safari, remote connections)
 - "Strict line breaks" import option to preserve single line breaks through round-trips
 

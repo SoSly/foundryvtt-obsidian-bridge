@@ -8,6 +8,7 @@ A FoundryVTT module for bidirectional synchronization between Obsidian MD vaults
 - Import Obsidian MD vaults into Foundry journal entries
 - Preserve folder structure
 - Convert Obsidian links to Foundry UUIDs
+- Convert callout blocks to styled callouts
 - Properly editable journals after import
 - Overwrite existing journals on re-import
 
@@ -15,6 +16,7 @@ A FoundryVTT module for bidirectional synchronization between Obsidian MD vaults
 - Export Foundry journals back to Obsidian format
 - Reconstruct folder structure
 - Convert Foundry UUIDs back to Obsidian `[[links]]`
+- Convert styled callouts back to callout blocks
 - Overwrite existing files in vault
 
 ## Compatibility
@@ -51,7 +53,6 @@ https://github.com/SoSly/foundryvtt-obsidian-bridge/bundle/module.json
 
 - Folder depth is limited to Foundry's folder depth limit
 - Not all Obsidian markdown features are supported in Foundry
-  - Callouts are formatted as block quotes
   - Code blocks work but without syntax highlighting
   - Embeds are linked but not embedded
   - Math/LaTeX is not supported
