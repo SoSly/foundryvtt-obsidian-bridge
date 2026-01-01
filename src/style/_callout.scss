@@ -1,0 +1,139 @@
+.journal-page-content {
+    .obsidian-callout {
+        --callout-color: 68, 138, 255;
+        --callout-icon: '\f303';
+
+        margin: 1em 0;
+        padding: 0.75em 1em;
+        border-left: 4px solid rgb(var(--callout-color));
+        background: rgba(var(--callout-color), 0.1);
+        border-radius: 4px;
+
+        :is(.theme-dark) & {
+            background: rgba(var(--callout-color), 0.15);
+        }
+
+        .callout-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+            font-weight: 600;
+            margin-bottom: 0.5em;
+            color: rgb(var(--callout-color));
+
+            &::before {
+                font-family: var(--font-awesome);
+                font-weight: 900;
+                content: var(--callout-icon);
+            }
+        }
+
+        .callout-content {
+            > :first-child {
+                margin-top: 0;
+            }
+
+            > :last-child {
+                margin-bottom: 0;
+            }
+        }
+
+        &[data-callout-type="note"] {
+            --callout-color: 68, 138, 255;
+            --callout-icon: '\f303';
+        }
+
+        &[data-callout-type="abstract"],
+        &[data-callout-type="summary"],
+        &[data-callout-type="tldr"] {
+            --callout-color: 0, 176, 255;
+            --callout-icon: '\f46d';
+        }
+
+        &[data-callout-type="info"],
+        &[data-callout-type="todo"] {
+            --callout-color: 0, 184, 212;
+            --callout-icon: '\f05a';
+        }
+
+        &[data-callout-type="tip"],
+        &[data-callout-type="hint"],
+        &[data-callout-type="important"] {
+            --callout-color: 0, 191, 165;
+            --callout-icon: '\f0eb';
+        }
+
+        &[data-callout-type="success"],
+        &[data-callout-type="check"],
+        &[data-callout-type="done"] {
+            --callout-color: 0, 200, 83;
+            --callout-icon: '\f00c';
+        }
+
+        &[data-callout-type="question"],
+        &[data-callout-type="help"],
+        &[data-callout-type="faq"] {
+            --callout-color: 100, 221, 23;
+            --callout-icon: '\f059';
+        }
+
+        &[data-callout-type="warning"],
+        &[data-callout-type="caution"],
+        &[data-callout-type="attention"] {
+            --callout-color: 255, 145, 0;
+            --callout-icon: '\f071';
+        }
+
+        &[data-callout-type="failure"],
+        &[data-callout-type="fail"],
+        &[data-callout-type="missing"] {
+            --callout-color: 255, 82, 82;
+            --callout-icon: '\f00d';
+        }
+
+        &[data-callout-type="danger"],
+        &[data-callout-type="error"] {
+            --callout-color: 255, 23, 68;
+            --callout-icon: '\f0e7';
+        }
+
+        &[data-callout-type="bug"] {
+            --callout-color: 255, 23, 68;
+            --callout-icon: '\f188';
+        }
+
+        &[data-callout-type="example"] {
+            --callout-color: 124, 77, 255;
+            --callout-icon: '\f03a';
+        }
+
+        &[data-callout-type="quote"],
+        &[data-callout-type="cite"] {
+            --callout-color: 158, 158, 158;
+            --callout-icon: '\f10d';
+        }
+    }
+
+    details.obsidian-callout {
+        summary.callout-title {
+            cursor: pointer;
+            list-style: none;
+
+            &::-webkit-details-marker {
+                display: none;
+            }
+
+            &::after {
+                font-family: var(--font-awesome);
+                font-weight: 900;
+                content: '\f078';
+                margin-left: auto;
+                transition: transform 0.2s ease;
+            }
+        }
+
+        &[open] summary.callout-title::after {
+            transform: rotate(180deg);
+        }
+    }
+}

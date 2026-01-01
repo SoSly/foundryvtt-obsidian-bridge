@@ -12,6 +12,8 @@ import { uploadAssets, rollbackUploads } from '../asset/upload';
 import { updateContent, rollbackUpdates } from '../journal/update';
 import { extractFrontmatter } from '../content/frontmatter.js';
 import convertNewlinesToBr from '../content/markdownPreprocess.js';
+import { extractCallouts } from '../callout/extract.js';
+import { replaceCalloutPlaceholders } from '../callout/replace.js';
 
 /**
  * Creates a configured pipeline for importing an Obsidian vault into Foundry.
@@ -20,15 +22,17 @@ import convertNewlinesToBr from '../content/markdownPreprocess.js';
  * 1. Filter files - Select files based on tree selection
  * 2. Prepare documents - Read file content and create MarkdownFile objects
  * 3. Extract frontmatter - Extract YAML frontmatter before markdown processing
- * 4. Convert line breaks - Convert single newlines to <br /> (conditional on strictLineBreaks)
- * 5. Extract references - Extract links and assets from markdown
- * 6. Replace references - Replace references with placeholders
- * 7. Convert markdown - Convert markdown text to HTML
- * 8. Plan structure - Determine folder and journal entry structure
- * 9. Create documents - Create Foundry folders, journal entries, and pages
- * 10. Upload assets - Upload non-markdown files to data path (conditional)
- * 11. Resolve placeholders - Replace placeholders with actual UUIDs and paths
- * 12. Update content - Write final HTML content to journal pages
+ * 4. Extract callouts - Extract Obsidian callouts and replace with placeholders
+ * 5. Convert line breaks - Convert single newlines to <br /> (conditional on strictLineBreaks)
+ * 6. Replace callouts - Replace callout placeholders with rendered HTML
+ * 7. Extract references - Extract links and assets from markdown
+ * 8. Replace references - Replace references with placeholders
+ * 9. Convert markdown - Convert markdown text to HTML
+ * 10. Plan structure - Determine folder and journal entry structure
+ * 11. Create documents - Create Foundry folders, journal entries, and pages
+ * 12. Upload assets - Upload non-markdown files to data path (conditional)
+ * 13. Resolve placeholders - Replace placeholders with actual UUIDs and paths
+ * 14. Update content - Write final HTML content to journal pages
  *
  * @param {import('../domain/ImportOptions').default} importOptions - Import configuration
  * @param {import('showdown').Converter} showdownConverter - Markdown to HTML converter
@@ -42,6 +46,7 @@ export default function createImportPipeline(importOptions, showdownConverter) {
         filesToParse: null,
         markdownFiles: null,
         structurePlan: null,
+        callouts: new Map(),
     };
 
     const phases = [
@@ -91,6 +96,20 @@ export default function createImportPipeline(importOptions, showdownConverter) {
         }),
 
         new PhaseDefinition({
+            name: 'extract-callouts',
+            execute: async ctx => {
+                let totalCallouts = 0;
+                for (const markdownFile of ctx.markdownFiles) {
+                    const result = extractCallouts(markdownFile.content);
+                    markdownFile.content = result.content;
+                    ctx.callouts.set(markdownFile.filePath, result.callouts);
+                    totalCallouts += result.callouts.length;
+                }
+                return { calloutsExtracted: totalCallouts };
+            }
+        }),
+
+        new PhaseDefinition({
             name: 'convert-line-breaks',
             execute: async ctx => {
                 let filesConverted = 0;
@@ -101,6 +120,25 @@ export default function createImportPipeline(importOptions, showdownConverter) {
                 return { filesConverted };
             },
             condition: ctx => !ctx.importOptions.strictLineBreaks
+        }),
+
+        new PhaseDefinition({
+            name: 'replace-callouts',
+            execute: async ctx => {
+                let totalReplaced = 0;
+                for (const markdownFile of ctx.markdownFiles) {
+                    const callouts = ctx.callouts.get(markdownFile.filePath) || [];
+                    if (callouts.length > 0) {
+                        markdownFile.content = replaceCalloutPlaceholders(
+                            markdownFile.content,
+                            callouts,
+                            ctx.showdownConverter
+                        );
+                        totalReplaced += callouts.length;
+                    }
+                }
+                return { calloutsReplaced: totalReplaced };
+            }
         }),
 
         new PhaseDefinition({

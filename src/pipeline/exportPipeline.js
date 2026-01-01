@@ -8,6 +8,7 @@ import { resolveForExport } from '../reference/resolve.js';
 import identifyAssets from '../asset/identify.js';
 import writeVault from '../vault/write.js';
 import { prependFrontmatter } from '../content/frontmatter.js';
+import { extractCalloutsToPlaceholders, restoreCalloutPlaceholders } from '../callout/toMarkdown.js';
 
 /**
  * Creates a configured pipeline for exporting Foundry journals to Obsidian format.
@@ -17,7 +18,7 @@ import { prependFrontmatter } from '../content/frontmatter.js';
  * 2. prepare-documents - Transform journals into MarkdownFile objects with HTML content
  * 3. extract-references - Extract links and assets from HTML
  * 4. replace-references - Replace references with placeholders
- * 5. convert-to-markdown - Convert HTML to markdown
+ * 5. convert-to-markdown - Extract callouts, convert HTML to markdown, restore callouts
  * 6. resolve-references - Replace placeholders with Obsidian syntax
  * 7. prepend-frontmatter - Prepend stored frontmatter to markdown content
  * 8. identify-assets - Identify asset paths to export (conditional on exportAssets)
@@ -110,18 +111,32 @@ export default function createExportPipeline(exportOptions, showdownConverter) {
             name: 'convert-to-markdown',
             execute: async ctx => {
                 let filesConverted = 0;
+                let calloutsConverted = 0;
 
                 for (const markdownFile of ctx.markdownFiles) {
+                    const calloutResult = extractCalloutsToPlaceholders(
+                        markdownFile.content,
+                        ctx.showdownConverter
+                    );
+                    markdownFile.content = calloutResult.content;
+                    calloutsConverted += calloutResult.callouts.length;
+
                     markdownFile.content = convertHtmlToMarkdown(
                         markdownFile.content,
                         ctx.showdownConverter
                     );
+
+                    markdownFile.content = restoreCalloutPlaceholders(
+                        markdownFile.content,
+                        calloutResult.callouts
+                    );
+
                     markdownFile.content = stripEmptyHtmlComments(markdownFile.content);
                     markdownFile.content = convertBrToNewline(markdownFile.content);
                     filesConverted++;
                 }
 
-                return { filesConverted };
+                return { filesConverted, calloutsConverted };
             }
         }),
 

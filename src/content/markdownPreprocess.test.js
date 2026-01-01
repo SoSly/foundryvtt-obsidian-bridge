@@ -74,4 +74,31 @@ describe('convertNewlinesToBr', () => {
         const input = 'text\n  ```\n  code\n  ```\nmore text';
         expect(convertNewlinesToBr(input)).toBe('text<br />\n  ```\n  code\n  ```<br />\nmore text');
     });
+
+    it('should not add br to callout placeholder lines', () => {
+        const input = 'Some text\n{{CALLOUT:0}}\nMore text';
+        const result = convertNewlinesToBr(input);
+        expect(result).not.toContain('{{CALLOUT:0}}<br />');
+        expect(result).toContain('Some text<br />');
+    });
+
+    it('should handle callout placeholder between content lines', () => {
+        const input = 'First line\n{{CALLOUT:0}}\nLast line';
+        const result = convertNewlinesToBr(input);
+        // Line before placeholder gets br (content followed by content)
+        // Placeholder itself does NOT get br (it's a callout placeholder)
+        // Last line has no next line so no br
+        expect(result).toBe('First line<br />\n{{CALLOUT:0}}\nLast line');
+    });
+
+    it('should handle multiple callout placeholders', () => {
+        const input = 'Text\n{{CALLOUT:0}}\nMiddle\n{{CALLOUT:1}}\nEnd';
+        const result = convertNewlinesToBr(input);
+        // Text gets br (followed by placeholder which has content after)
+        // CALLOUT:0 does NOT get br (it's a placeholder)
+        // Middle gets br (followed by placeholder which has content after)
+        // CALLOUT:1 does NOT get br (it's a placeholder)
+        // End has no next line so no br
+        expect(result).toBe('Text<br />\n{{CALLOUT:0}}\nMiddle<br />\n{{CALLOUT:1}}\nEnd');
+    });
 });
