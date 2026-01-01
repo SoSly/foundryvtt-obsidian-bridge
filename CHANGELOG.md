@@ -1,6 +1,6 @@
 # Obsidian Bridge
 
-## [Unreleased](https://github.com/SoSly/foundryvtt-obsidian-bridge)
+## [1.1.0](https://github.com/SoSly/foundryvtt-obsidian-bridge/releases/tag/v1.1.0) - 2026-01-01
 
 ### Added
 - Obsidian callout blocks now convert to styled callouts in Foundry and back
