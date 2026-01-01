@@ -13,7 +13,7 @@ function typeToTitleCase(type) {
 }
 
 /**
- * Renders a single callout to HTML.
+ * Renders a single callout to HTML using the callout Handlebars partial.
  *
  * @param {import('../domain/Callout').default} callout - The callout to render
  * @param {object} showdownConverter - Showdown converter instance
@@ -27,16 +27,16 @@ function renderCallout(callout, showdownConverter) {
         const titleHtml = showdownConverter.makeHtml(title);
         displayTitle = titleHtml.replace(/^<p>|<\/p>$/g, '').trim();
     }
-    const bodyHtml = body ? showdownConverter.makeHtml(body) : '';
 
-    const dataAttrs = `data-callout-type="${type}" data-callout-custom-title="${customTitle}"`;
-
-    if (foldable) {
-        const openAttr = defaultOpen ? ' open' : '';
-        return `<details class="obsidian-callout" ${dataAttrs}${openAttr}><summary class="callout-title">${displayTitle}</summary><div class="callout-content">${bodyHtml}</div></details>`;
-    }
-
-    return `<div class="obsidian-callout" ${dataAttrs}><div class="callout-title">${displayTitle}</div><div class="callout-content">${bodyHtml}</div></div>`;
+    const template = Handlebars.partials.callout;
+    return template({
+        type,
+        customTitle,
+        foldable,
+        defaultOpen,
+        displayTitle,
+        bodyHtml: body ? showdownConverter.makeHtml(body) : ''
+    }).trim();
 }
 
 /**

@@ -10,4 +10,7 @@ export async function registerHandlebarsHelpers() {
 
     const treeNodeTemplate = await getTemplate('modules/obsidian-bridge/templates/partials/tree-node.hbs');
     Handlebars.registerPartial('tree-node', treeNodeTemplate);
+
+    const calloutTemplate = await getTemplate('modules/obsidian-bridge/templates/partials/callout.hbs');
+    Handlebars.registerPartial('callout', calloutTemplate);
 }

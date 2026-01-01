@@ -26,6 +26,20 @@ const CALLOUT_HEADER_PATTERN = /^>\s*\[!([\w-]+)\]([+-])?(?:\s+(.*))?$/;
 const BLOCKQUOTE_LINE_PATTERN = /^>(.*)/;
 
 /**
+ * Creates a Callout from collected header info and body lines.
+ */
+function createCallout(header, bodyLines) {
+    return new Callout({
+        type: header.type,
+        title: header.titleText,
+        customTitle: header.titleText.length > 0,
+        foldable: header.foldModifier !== null,
+        defaultOpen: header.foldModifier !== '-',
+        body: bodyLines.join('\n')
+    });
+}
+
+/**
  * Extracts Obsidian callout blocks from markdown content.
  * Replaces callouts with placeholders in the format {{CALLOUT:N}}.
  *
@@ -41,62 +55,53 @@ export function extractCallouts(content) {
     const callouts = [];
     const outputLines = [];
 
-    let i = 0;
-    while (i < lines.length) {
-        const line = lines[i];
+    let currentHeader = null;
+    let bodyLines = [];
+
+    function finalizeCallout() {
+        callouts.push(createCallout(currentHeader, bodyLines));
+        outputLines.push(`{{CALLOUT:${callouts.length - 1}}}`);
+        currentHeader = null;
+        bodyLines = [];
+    }
+
+    for (const line of lines) {
         const headerMatch = line.match(CALLOUT_HEADER_PATTERN);
 
         if (headerMatch) {
-            const type = headerMatch[1].toLowerCase();
-            const foldModifier = headerMatch[2] || null;
-            const titleText = headerMatch[3] ? headerMatch[3].trim() : '';
-
-            const foldable = foldModifier !== null;
-            const defaultOpen = foldModifier !== '-';
-            const customTitle = titleText.length > 0;
-
-            const bodyLines = [];
-            i++;
-
-            while (i < lines.length) {
-                const bodyLine = lines[i];
-                const bodyMatch = bodyLine.match(BLOCKQUOTE_LINE_PATTERN);
-
-                if (!bodyMatch) {
-                    break;
-                }
-
-                const nextHeaderMatch = bodyLine.match(CALLOUT_HEADER_PATTERN);
-                if (nextHeaderMatch) {
-                    break;
-                }
-
-                let lineContent = bodyMatch[1];
-                if (lineContent.startsWith(' ')) {
-                    lineContent = lineContent.slice(1);
-                }
-
-                bodyLines.push(lineContent);
-                i++;
+            if (currentHeader) {
+                finalizeCallout();
             }
 
-            const body = bodyLines.join('\n');
-
-            const callout = new Callout({
-                type,
-                title: titleText,
-                customTitle,
-                foldable,
-                defaultOpen,
-                body
-            });
-
-            callouts.push(callout);
-            outputLines.push(`{{CALLOUT:${callouts.length - 1}}}`);
-        } else {
-            outputLines.push(line);
-            i++;
+            currentHeader = {
+                type: headerMatch[1].toLowerCase(),
+                foldModifier: headerMatch[2] || null,
+                titleText: headerMatch[3] ? headerMatch[3].trim() : ''
+            };
+            continue;
         }
+
+        if (!currentHeader) {
+            outputLines.push(line);
+            continue;
+        }
+
+        const blockquoteMatch = line.match(BLOCKQUOTE_LINE_PATTERN);
+
+        if (blockquoteMatch) {
+            let lineContent = blockquoteMatch[1];
+            if (lineContent.startsWith(' ')) {
+                lineContent = lineContent.slice(1);
+            }
+            bodyLines.push(lineContent);
+        } else {
+            finalizeCallout();
+            outputLines.push(line);
+        }
+    }
+
+    if (currentHeader) {
+        finalizeCallout();
     }
 
     return {

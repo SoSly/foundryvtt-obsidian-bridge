@@ -1,0 +1,5 @@
+{{#if foldable}}
+<details class="obsidian-callout" data-callout-type="{{type}}" data-callout-custom-title="{{customTitle}}"{{#if defaultOpen}} open{{/if}}><summary class="callout-title">{{{displayTitle}}}</summary><div class="callout-content">{{{bodyHtml}}}</div></details>
+{{else}}
+<div class="obsidian-callout" data-callout-type="{{type}}" data-callout-custom-title="{{customTitle}}"><div class="callout-title">{{{displayTitle}}}</div><div class="callout-content">{{{bodyHtml}}}</div></div>
+{{/if}}
