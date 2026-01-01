@@ -94,10 +94,11 @@ export function extractCallouts(content) {
                 lineContent = lineContent.slice(1);
             }
             bodyLines.push(lineContent);
-        } else {
-            finalizeCallout();
-            outputLines.push(line);
+            continue;
         }
+
+        finalizeCallout();
+        outputLines.push(line);
     }
 
     if (currentHeader) {
