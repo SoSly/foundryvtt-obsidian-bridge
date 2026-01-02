@@ -1,7 +1,6 @@
 [![Release Status](https://github.com/SoSly/foundryvtt-obsidian-bridge/workflows/release/badge.svg)](https://github.com/SoSly/foundryvtt-obsidian-bridge/actions)
 [![Downloads](https://img.shields.io/github/downloads/SoSly/foundryvtt-obsidian-bridge/latest/module.zip)](https://github.com/SoSly/foundryvtt-obsidian-bridge/releases/latest)
 [![Forge Install %](https://img.shields.io/badge/dynamic/json?label=Forge%20Installs&query=package.installs&suffix=%25&url=https%3A%2F%2Fforge-vtt.com%2Fapi%2Fbazaar%2Fpackage%2Fobsidian-bridge&colorB=4aa94a)](https://forge-vtt.com/bazaar#package=obsidian-bridge)
-[![Foundry Hub Endorsements](https://img.shields.io/endpoint?logoColor=white&url=https%3A%2F%2Fwww.foundryvtt-hub.com%2Fwp-json%2Fhubapi%2Fv1%2Fpackage%2Fobsidian-bridge%2Fshield%2Fendorsements)](https://www.foundryvtt-hub.com/package/obsidian-bridge/)
 [![Supported Foundry Versions](https://img.shields.io/endpoint?url=https://foundryshields.com/version?url=https://raw.githubusercontent.com/SoSly/foundryvtt-obsidian-bridge/main/module.json)](https://foundryvtt.com/)
 
 # Obsidian Bridge
