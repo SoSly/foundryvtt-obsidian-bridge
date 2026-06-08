@@ -675,6 +675,102 @@ describe('resolvePlaceholders', () => {
             );
         });
 
+        it('should resolve image asset with size (width)', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Document.md',
+                    lookupKeys: ['Document'],
+                    content: '<p>Image: {{ASSET:0}}</p>',
+                    links: [],
+                    assets: [{
+                        obsidian: 'images/dragon.png',
+                        source: '![[dragon.png|250]]',
+                        placeholder: '{{ASSET:0}}',
+                        isImage: true,
+                        label: '250'
+                    }],
+                    foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+                })
+            ];
+
+            const nonMarkdownFiles = [
+                new NonMarkdownFile({
+                    filePath: 'images/dragon.png',
+                    foundryDataPath: 'modules/obsidian-bridge/imported/images/dragon.png'
+                })
+            ];
+
+            const result = resolvePlaceholders(markdownFiles, nonMarkdownFiles);
+
+            expect(result[0].content).toBe(
+                '<p>Image: <img src="modules/obsidian-bridge/imported/images/dragon.png" width="250" /></p>'
+            );
+        });
+
+        it('should resolve image asset with size (width x height)', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Document.md',
+                    lookupKeys: ['Document'],
+                    content: '<p>Image: {{ASSET:0}}</p>',
+                    links: [],
+                    assets: [{
+                        obsidian: 'images/dragon.png',
+                        source: '![[dragon.png|250x100]]',
+                        placeholder: '{{ASSET:0}}',
+                        isImage: true,
+                        label: '250x100'
+                    }],
+                    foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+                })
+            ];
+
+            const nonMarkdownFiles = [
+                new NonMarkdownFile({
+                    filePath: 'images/dragon.png',
+                    foundryDataPath: 'modules/obsidian-bridge/imported/images/dragon.png'
+                })
+            ];
+
+            const result = resolvePlaceholders(markdownFiles, nonMarkdownFiles);
+
+            expect(result[0].content).toBe(
+                '<p>Image: <img src="modules/obsidian-bridge/imported/images/dragon.png" width="250" height="100" /></p>'
+            );
+        });
+
+        it('should resolve image asset with alt text', () => {
+            const markdownFiles = [
+                new MarkdownFile({
+                    filePath: 'Document.md',
+                    lookupKeys: ['Document'],
+                    content: '<p>Image: {{ASSET:0}}</p>',
+                    links: [],
+                    assets: [{
+                        obsidian: 'images/dragon.png',
+                        source: '![[dragon.png|A scary dragon]]',
+                        placeholder: '{{ASSET:0}}',
+                        isImage: true,
+                        label: 'A scary dragon'
+                    }],
+                    foundryPageUuid: 'JournalEntry.abc123.JournalEntryPage.xyz789'
+                })
+            ];
+
+            const nonMarkdownFiles = [
+                new NonMarkdownFile({
+                    filePath: 'images/dragon.png',
+                    foundryDataPath: 'modules/obsidian-bridge/imported/images/dragon.png'
+                })
+            ];
+
+            const result = resolvePlaceholders(markdownFiles, nonMarkdownFiles);
+
+            expect(result[0].content).toBe(
+                '<p>Image: <img src="modules/obsidian-bridge/imported/images/dragon.png" alt="A scary dragon" /></p>'
+            );
+        });
+
         it('should revert to original markdown when asset not found', () => {
             const markdownFiles = [
                 new MarkdownFile({
