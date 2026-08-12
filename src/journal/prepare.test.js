@@ -644,6 +644,85 @@ describe('prepareJournalsForExport', () => {
         });
     });
 
+    describe('special characters in names', () => {
+        it('should sanitize colons in folder (package) names', () => {
+            const folder = createMockFolder('Act 1: The Reckoning');
+
+            const journals = [
+                {
+                    name: 'Chapter 1',
+                    uuid: 'JournalEntry.ch1',
+                    folder,
+                    pages: {
+                        contents: [
+                            {
+                                name: 'Opening',
+                                uuid: 'JournalEntry.ch1.JournalEntryPage.p1',
+                                text: { content: '<p>It begins.</p>' }
+                            }
+                        ]
+                    }
+                }
+            ];
+
+            const result = prepareJournalsForExport(journals, { merge: false });
+
+            expect(result[0].filePath).not.toContain(':');
+        });
+
+        it('should sanitize colons in journal entry names', () => {
+            const journals = [
+                {
+                    name: 'Act 1: The Reckoning',
+                    uuid: 'JournalEntry.act1',
+                    folder: null,
+                    pages: {
+                        contents: [
+                            {
+                                name: 'Opening',
+                                uuid: 'JournalEntry.act1.JournalEntryPage.p1',
+                                text: { content: '<p>It begins.</p>' }
+                            }
+                        ]
+                    }
+                }
+            ];
+
+            const result = prepareJournalsForExport(journals, { merge: false });
+
+            expect(result[0].filePath).not.toContain(':');
+        });
+
+        it('should sanitize colons in page names', () => {
+            const journals = [
+                {
+                    name: 'Campaign Notes',
+                    uuid: 'JournalEntry.notes',
+                    folder: null,
+                    pages: {
+                        contents: [
+                            {
+                                name: 'Session 1: Introduction',
+                                uuid: 'JournalEntry.notes.JournalEntryPage.p1',
+                                text: { content: '<p>First session.</p>' }
+                            },
+                            {
+                                name: 'Session 2: The Twist',
+                                uuid: 'JournalEntry.notes.JournalEntryPage.p2',
+                                text: { content: '<p>Second session.</p>' }
+                            }
+                        ]
+                    }
+                }
+            ];
+
+            const result = prepareJournalsForExport(journals, { merge: false });
+
+            expect(result[0].filePath).not.toContain(':');
+            expect(result[1].filePath).not.toContain(':');
+        });
+    });
+
     describe('edge cases', () => {
         it('should return empty array for null journals', () => {
             const result = prepareJournalsForExport(null);

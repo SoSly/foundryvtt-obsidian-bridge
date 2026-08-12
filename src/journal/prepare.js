@@ -80,12 +80,16 @@ function createPageFile(journal, page) {
     });
 }
 
+function sanitizeName(name) {
+    return name.replace(/:/g, '');
+}
+
 function buildFolderPath(folder) {
     const parts = [];
     let current = folder;
 
     while (current) {
-        parts.unshift(current.name);
+        parts.unshift(sanitizeName(current.name));
         current = current.folder;
     }
 
@@ -93,21 +97,23 @@ function buildFolderPath(folder) {
 }
 
 function buildFilePath(folder, journalName, pageName = null) {
+    const sanitizedJournalName = sanitizeName(journalName);
+    const sanitizedPageName = pageName ? sanitizeName(pageName) : null;
     const folderPath = buildFolderPath(folder);
-    const isCombinedFolder = folderPath && journalName === folderPath.split('/').pop();
+    const isCombinedFolder = folderPath && sanitizedJournalName === folderPath.split('/').pop();
 
-    if (pageName) {
+    if (sanitizedPageName) {
         if (isCombinedFolder) {
-            return `${folderPath}/${pageName}.md`;
+            return `${folderPath}/${sanitizedPageName}.md`;
         }
         if (folderPath) {
-            return `${folderPath}/${journalName}/${pageName}.md`;
+            return `${folderPath}/${sanitizedJournalName}/${sanitizedPageName}.md`;
         }
-        return `${journalName}/${pageName}.md`;
+        return `${sanitizedJournalName}/${sanitizedPageName}.md`;
     }
 
     if (folderPath) {
-        return `${folderPath}/${journalName}.md`;
+        return `${folderPath}/${sanitizedJournalName}.md`;
     }
-    return `${journalName}.md`;
+    return `${sanitizedJournalName}.md`;
 }
