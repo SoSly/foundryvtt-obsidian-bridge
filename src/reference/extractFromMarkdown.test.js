@@ -238,6 +238,37 @@ describe('extractAssetReferences', () => {
         expect(result[0].isImage).toBe(true);
     });
 
+    it('should extract Obsidian embedded image with size', () => {
+        const markdown = 'Look at this: ![[dragon.png|250]]';
+        const result = extractAssetReferences(markdown);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].source).toBe('![[dragon.png|250]]');
+        expect(result[0].obsidian).toBe('dragon.png');
+        expect(result[0].label).toBe('250');
+        expect(result[0].isImage).toBe(true);
+    });
+
+    it('should extract Obsidian embedded image with size and height', () => {
+        const markdown = 'Look at this: ![[dragon.png|250x100]]';
+        const result = extractAssetReferences(markdown);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].source).toBe('![[dragon.png|250x100]]');
+        expect(result[0].obsidian).toBe('dragon.png');
+        expect(result[0].label).toBe('250x100');
+    });
+
+    it('should extract Obsidian embedded image with alt text', () => {
+        const markdown = 'Look at this: ![[dragon.png|A scary dragon]]';
+        const result = extractAssetReferences(markdown);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].source).toBe('![[dragon.png|A scary dragon]]');
+        expect(result[0].obsidian).toBe('dragon.png');
+        expect(result[0].label).toBe('A scary dragon');
+    });
+
     it('should extract Obsidian link to file', () => {
         const markdown = 'See [[rules.pdf]] for details.';
         const result = extractAssetReferences(markdown);

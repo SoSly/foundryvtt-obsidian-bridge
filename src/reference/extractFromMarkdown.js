@@ -72,14 +72,17 @@ const MARKDOWN_LINK_PATTERN = /(?<!!)\[([^\]]+)\]\(([^)]+)\)/g;
  *   [[image.png]]                       - Basic embed
  *   ![[document.pdf]]                   - Explicit embed with !
  *   [[folder/file.jpg]]                 - Embed with path
+ *   ![[image.png|250]]                  - Embed with size
+ *   ![[image.png|alt text]]             - Embed with alt text
  *
  * Capture groups:
  *   1: full file path with extension (required)
+ *   2: label/size after | (optional)
  *
  * Must have file extension to distinguish from page links.
  * Does not match: Page links without extensions, heading references
  */
-const OBSIDIAN_EMBED_PATTERN = /!?\[\[([^\]#|]+\.[^\]#|]+)\]\]/g;
+const OBSIDIAN_EMBED_PATTERN = /!?\[\[([^\]#|]+\.[^\]#|]+)(?:\|([^\]]+))?\]\]/g;
 
 /**
  * Matches standard markdown link syntax with foundry:// protocol.
@@ -180,6 +183,7 @@ export function extractAssetReferences(markdownText) {
 
             if (pattern === OBSIDIAN_EMBED_PATTERN) {
                 obsidianPath = match[1].trim();
+                altText = match[2] ? match[2].trim() : '';
                 isImage = originalText.startsWith('!');
             } else if (pattern === MARKDOWN_IMAGE_PATTERN) {
                 altText = match[1].trim();

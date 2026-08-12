@@ -295,8 +295,17 @@ function resolveAssets(content, assets, assetFiles) {
         if (foundryPath) {
             let replacement;
             if (asset.isImage) {
-                const alt = asset.label || '';
-                replacement = `<img src="${foundryPath}" alt="${alt}" />`;
+                const altOrSize = asset.label || '';
+                const sizeMatch = altOrSize.match(/^(\d+)(?:x(\d+))?$/);
+
+                if (sizeMatch) {
+                    const width = sizeMatch[1];
+                    const height = sizeMatch[2];
+                    const heightAttr = height ? ` height="${height}"` : '';
+                    replacement = `<img src="${foundryPath}" width="${width}"${heightAttr} />`;
+                } else {
+                    replacement = `<img src="${foundryPath}" alt="${altOrSize}" />`;
+                }
             } else {
                 const text = asset.label || asset.obsidian;
                 replacement = `<a href="${foundryPath}">${text}</a>`;
