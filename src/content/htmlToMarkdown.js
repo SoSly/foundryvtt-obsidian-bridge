@@ -10,7 +10,33 @@ export default function convertHtmlToMarkdown(htmlContent, showdownConverter) {
         return '';
     }
 
-    return showdownConverter.makeMarkdown(htmlContent);
+    return showdownConverter.makeMarkdown(normalizeTableHeaders(htmlContent));
+}
+
+/**
+ * Moves Foundry table header rows into a thead element for Showdown.
+ *
+ * @param {string} htmlContent - HTML that may contain tables without thead elements
+ * @returns {string} HTML with table header sections normalized
+ */
+export function normalizeTableHeaders(htmlContent) {
+    if (!htmlContent) {
+        return '';
+    }
+
+    const template = document.createElement('template');
+    template.innerHTML = htmlContent;
+
+    for (const table of template.content.querySelectorAll('table')) {
+        const firstRow = table.rows[0];
+        if (table.tHead || !firstRow || !Array.from(firstRow.cells).some(cell => cell.tagName === 'TH')) {
+            continue;
+        }
+
+        table.createTHead().append(firstRow);
+    }
+
+    return template.innerHTML;
 }
 
 /**

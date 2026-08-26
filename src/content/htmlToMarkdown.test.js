@@ -1,10 +1,16 @@
-import { describe, it, expect, beforeEach } from '@jest/globals';
-import convertHtmlToMarkdown, { stripEmptyHtmlComments, convertBrToNewline } from './htmlToMarkdown.js';
+import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { JSDOM } from 'jsdom';
+import convertHtmlToMarkdown, {
+    stripEmptyHtmlComments,
+    convertBrToNewline,
+    normalizeTableHeaders
+} from './htmlToMarkdown.js';
 
 describe('convertHtmlToMarkdown', () => {
     let converter;
 
     beforeEach(() => {
+        global.document = new JSDOM('<!DOCTYPE html>').window.document;
         converter = {
             makeMarkdown: html => {
                 if (!html) {
@@ -13,6 +19,10 @@ describe('convertHtmlToMarkdown', () => {
                 return `[CONVERTED: ${html}]`;
             }
         };
+    });
+
+    afterEach(() => {
+        delete global.document;
     });
 
     it('should call makeMarkdown on the converter', () => {
@@ -75,6 +85,42 @@ describe('convertHtmlToMarkdown', () => {
         expect(result).toContain('{{LINK:0}}');
         expect(result).toContain('{{LINK:1}}');
         expect(result).toContain('{{ASSET:0}}');
+    });
+});
+
+describe('normalizeTableHeaders', () => {
+    beforeEach(() => {
+        global.document = new JSDOM('<!DOCTYPE html>').window.document;
+    });
+
+    afterEach(() => {
+        delete global.document;
+    });
+
+    it('should move a leading header row from tbody to thead', () => {
+        const html = [
+            '<table><tbody>',
+            '<tr><th>Career</th><th>Survival</th></tr>',
+            '<tr><td>Law Enforcement</td><td>END 6+</td></tr>',
+            '</tbody></table>'
+        ].join('');
+
+        const result = normalizeTableHeaders(html);
+
+        expect(result).toContain('<thead><tr><th>Career</th><th>Survival</th></tr></thead>');
+        expect(result).toContain('<tbody><tr><td>Law Enforcement</td><td>END 6+</td></tr></tbody>');
+    });
+
+    it('should leave tables with an existing thead unchanged', () => {
+        const html = '<table><thead><tr><th>Header</th></tr></thead><tbody><tr><td>Value</td></tr></tbody></table>';
+
+        expect(normalizeTableHeaders(html)).toBe(html);
+    });
+
+    it('should leave data-only tables unchanged', () => {
+        const html = '<table><tbody><tr><td>Value</td></tr></tbody></table>';
+
+        expect(normalizeTableHeaders(html)).toBe(html);
     });
 });
 
