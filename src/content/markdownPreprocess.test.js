@@ -47,6 +47,43 @@ describe('convertNewlinesToBr', () => {
         expect(convertNewlinesToBr(input)).toBe('**Walls:** Wood.<br />\n**Furniture:** Difficult terrain.<br />\n**Lighting:** Dim.');
     });
 
+    it('should leave markdown tables unchanged', () => {
+        const input = [
+            '| Column A | Column B |',
+            '| --- | --- |',
+            '| Value 1 | Value 2 |',
+            '| Value 3 | Value 4 |'
+        ].join('\n');
+
+        expect(convertNewlinesToBr(input)).toBe(input);
+    });
+
+    it('should support aligned tables without changing surrounding text handling', () => {
+        const input = [
+            'Before',
+            '',
+            'Column A | Column B',
+            ':--- | ---:',
+            'Value 1 | Value 2',
+            '',
+            'After one',
+            'After two'
+        ].join('\n');
+
+        expect(convertNewlinesToBr(input)).toBe(
+            [
+                'Before',
+                '',
+                'Column A | Column B',
+                ':--- | ---:',
+                'Value 1 | Value 2',
+                '',
+                'After one<br />',
+                'After two'
+            ].join('\n')
+        );
+    });
+
     it('should NOT add br to last line of content', () => {
         const input = 'line1\nline2\nline3';
         const result = convertNewlinesToBr(input);

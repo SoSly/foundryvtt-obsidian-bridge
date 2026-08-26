@@ -3,6 +3,25 @@
  * These are injected by extractCallouts and should not get <br /> tags.
  */
 const CALLOUT_PLACEHOLDER_PATTERN = /^\{\{CALLOUT:\d+\}\}$/;
+const TABLE_SEPARATOR_PATTERN = /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/;
+
+function findTableLines(lines) {
+    const tableLines = new Set();
+
+    for (let i = 0; i < lines.length - 1; i++) {
+        if (!lines[i].includes('|') || !TABLE_SEPARATOR_PATTERN.test(lines[i + 1])) {
+            continue;
+        }
+
+        tableLines.add(i);
+        tableLines.add(i + 1);
+        for (let row = i + 2; row < lines.length && lines[row].includes('|'); row++) {
+            tableLines.add(row);
+        }
+    }
+
+    return tableLines;
+}
 
 /**
  * Converts single line breaks to <br /> tags for line break preservation.
@@ -18,6 +37,7 @@ export default function convertNewlinesToBr(content) {
     }
 
     const lines = content.split(/\r?\n/);
+    const tableLines = findTableLines(lines);
     const result = [];
     let inCodeBlock = false;
 
@@ -38,7 +58,8 @@ export default function convertNewlinesToBr(content) {
         const shouldAddBr = !inCodeBlock
             && hasContent
             && nextHasContent
-            && !isCalloutPlaceholder;
+            && !isCalloutPlaceholder
+            && !tableLines.has(i);
 
         if (shouldAddBr) {
             result.push(`${line}<br />`);
